@@ -77,7 +77,7 @@ test.describe('users and API keys', () => {
     expect(savedKey?.allowedProviders).toContain('deepseek')
   })
 
-  test('new client key reveal provides one-time ready-to-copy Anthropic settings', async ({ page }) => {
+  test('new client key reveal provides one-time ready-to-copy harness profiles', async ({ page }) => {
     const suffix = Date.now()
     const username = `e2e_reveal_${suffix}`
     const createUserResponse = await page.request.post('/admin/users', {
@@ -104,7 +104,10 @@ test.describe('users and API keys', () => {
     await expect(revealedKey).toHaveValue(/^sk-mp-/)
     await expect(dialog.getByText('完整密钥只显示这一次。', { exact: false })).toBeVisible()
     await expect(dialog.getByText('Claude Code / Anthropic SDK')).toBeVisible()
-    await expect(dialog.getByText(/同一把密钥可访问 Anthropic Messages 与 OpenAI Chat Completions/)).toBeVisible()
+    await expect(dialog.getByText('Qwen Code', { exact: true })).toBeVisible()
+    await expect(dialog.getByText('OpenAI SDK', { exact: true })).toBeVisible()
+    await expect(dialog.getByText(/Codex CLI · 暂不支持/)).toBeVisible()
+    await expect(dialog.getByRole('button', { name: /Codex CLI.*复制配置/ })).toHaveCount(0)
     await expect.poll(() => dialog.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
     await dialog.getByRole('button', { name: '已保存，关闭' }).click()
     await expect(dialog).toBeHidden()
