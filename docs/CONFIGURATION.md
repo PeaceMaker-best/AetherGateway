@@ -1039,7 +1039,7 @@ These names are consumed outside the backend configuration loader:
 | `MODELPORT_IMAGE`, `MODELPORT_DASHBOARD_IMAGE` | Compose | Release images; use version tags for evaluation and immutable digests for shared/production use. |
 | `MODELPORT_PULL_POLICY` | Compose | Image pull policy; root source-build Compose defaults to `never`, release Compose to `missing`. Production upgrades set `always`. |
 | `MODELPORT_COMPOSE_FILE` | `scripts/compose-up.sh`, `scripts/doctor.sh` | Selected Compose manifest; defaults to the root source-build profile. |
-| `MODELPORT_LOCAL_BUILD` | `scripts/compose-up.sh` | Set to `1` after `scripts/build-container.sh` to select the two `:local` images and disable pulls. |
+| `MODELPORT_LOCAL_BUILD` | `scripts/compose-up.sh` | Image mode for the selected manifest: `auto` (default) enables local-build mode when the manifest resolves to `:local` images and remote mode otherwise; `1` forces local-build mode (verifies the `:local` images built by `scripts/build-container.sh` and disables pulls); `0` forces remote mode. |
 | `MODELPORT_HEALTHCHECK_API_KEY` | Compose healthcheck | Dedicated scoped key for authenticated `/readyz`; local Compose falls back to the legacy router token when omitted. |
 | `MODELPORT_STOP_GRACE_PERIOD` | Compose | Backend SIGTERM-to-SIGKILL window; defaults to 11 minutes. |
 | `MODELPORT_RUNTIME_ENV_FILE`, `MODELPORT_CONFIG_FILE`, `MODELPORT_DATABASE_CA_FILE`, `MODELPORT_OWNERSHIP_FILE` | Production Compose/preflight | Operator-owned runtime secret, reviewed config, PostgreSQL CA, and named operations-ownership paths required by the single-instance production profile. |

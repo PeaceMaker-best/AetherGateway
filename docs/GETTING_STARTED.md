@@ -1,8 +1,10 @@
 # Getting Started
 
-This is the shortest Tier 1 path from a published Small-Team Beta to a governed
-request. It uses prebuilt Linux x86_64 images, Docker Compose, PostgreSQL, the
-Dashboard, and the DeepSeek example; it does not compile source. Use
+This is the shortest Tier 1 path to a governed request. It builds the backend
+and Dashboard images locally inside Docker (no host Rust or Node toolchain is
+needed), then runs them with Docker Compose, PostgreSQL, and the DeepSeek
+example. Once the `v0.1.0` release images are published, an optional section
+below shows pulling them instead of building. Use
 [Providers](PROVIDERS.md) for a local runtime or another hosted Provider.
 
 ## 1. Prerequisites
@@ -48,23 +50,38 @@ the request examples together.
 
 ## 3. Check The Setup
 
-Run the read-only Linux and Compose preflight before pulling images:
+Run the read-only Linux and Compose preflight before building images. The
+scripts default to the root source-build manifest (`docker-compose.yml`), so no
+`MODELPORT_COMPOSE_FILE` export is needed:
 
 ```bash
-export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 scripts/doctor.sh --setup
 ```
 
 Fix the first `[fail]` and rerun it. This mode does not start services or make a
 Provider request.
 
-## 4. Pull And Start
+## 4. Build And Start
+
+```bash
+scripts/build-container.sh
+MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
+docker compose ps
+```
+
+`scripts/build-container.sh` builds `modelport:local`,
+`modelport-dashboard:local`, and `modelport-ops-agent:local` with Docker.
+`MODELPORT_LOCAL_BUILD=1` verifies those local images exist and disables image
+pulls; with the manifest defaulting to `docker-compose.yml`, `docker compose
+ps` shows the running project.
+
+### Optional: Pull Published Release Images
 
 ```bash
 export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 docker compose -f "$MODELPORT_COMPOSE_FILE" config --quiet
 docker compose -f "$MODELPORT_COMPOSE_FILE" pull
-scripts/compose-up.sh
+MODELPORT_LOCAL_BUILD=0 scripts/compose-up.sh
 docker compose -f "$MODELPORT_COMPOSE_FILE" ps
 ```
 
@@ -76,19 +93,8 @@ attestations, and SBOMs through
 [Upgrading and Rollback](UPGRADING.md#release-inputs).
 
 Do not run this release path until the `v0.1.0` tag and required GHCR images
-actually exist. A repository change cannot publish them. Before the first
-Release, current-main testing is a contributor path:
-
-```bash
-git clone https://github.com/tiammomo/ModelPort.git
-cd ModelPort
-cp deploy/docker/modelport.env.example .env
-cp config.example.toml config.toml
-# replace required placeholders
-export MODELPORT_COMPOSE_FILE="$PWD/docker-compose.yml"
-scripts/build-container.sh
-MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
-```
+actually exist; they are not published yet, so the default is the local build
+in step 4. A repository change cannot publish them.
 
 Expected services:
 
