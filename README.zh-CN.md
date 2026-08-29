@@ -61,6 +61,11 @@ cp config.example.toml config.toml
 管理员、PostgreSQL 和 Provider 凭证。首次本地测试时，让
 `MODELPORT_AUTH_TOKEN` 与客户端侧 `ANTHROPIC_AUTH_TOKEN` 保持一致。
 
+默认情况下，Compose 栈会启动内置的 PostgreSQL 容器。若在 `.env` 中设置
+`MODELPORT_DATABASE_URL` 指向外部 PostgreSQL 实例，内置 `postgres` 容器将
+不会启动（Compose profile `internal-db`）；保持该变量未设置或为空即可使用
+内置数据库。
+
 ```bash
 export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 scripts/doctor.sh --setup

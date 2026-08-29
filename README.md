@@ -69,6 +69,11 @@ unique router, administrator, PostgreSQL, and Provider credentials. Keep
 `MODELPORT_AUTH_TOKEN` and the client-side `ANTHROPIC_AUTH_TOKEN` equal for the
 first local test.
 
+By default the stack runs its own internal PostgreSQL container. If you set
+`MODELPORT_DATABASE_URL` in `.env` to an external PostgreSQL instance, the
+internal `postgres` container is not started (Compose profile `internal-db`);
+leave it unset or empty to keep the internal database.
+
 ```bash
 export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 scripts/doctor.sh --setup

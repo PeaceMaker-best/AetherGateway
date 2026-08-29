@@ -98,6 +98,12 @@ Expected services:
 | `modelport` | healthy |
 | `dashboard` | running |
 
+The table shows the default internal-database stack. When `.env` sets
+`MODELPORT_DATABASE_URL` to an external PostgreSQL instance, `postgres` is not
+started (Compose profile `internal-db`); the remaining services connect to that
+external instance, so expect only `modelport` and `dashboard` in `docker
+compose ps`.
+
 The optional operations Agent is not started by the default profile. After the
 gateway is configured, follow [Operations Agent](OPS_AGENT.md) to create its
 dedicated, non-inference service account. Starting the optional container and
