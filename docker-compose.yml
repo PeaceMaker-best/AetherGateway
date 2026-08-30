@@ -2,6 +2,11 @@ name: modelport
 
 services:
   postgres:
+    # Starts only when using the internal database. When MODELPORT_DATABASE_URL
+    # is set (an external PostgreSQL), this service moves to the "internal-db"
+    # profile and is not started unless explicitly enabled with
+    # `--profile internal-db`.
+    profiles: ["${MODELPORT_DATABASE_URL:+internal-db}"]
     image: postgres:18.4-alpine
     environment:
       POSTGRES_DB: ${MODELPORT_POSTGRES_DB:-modelport}
@@ -65,9 +70,6 @@ services:
         read_only: true
       # Optional file-based provider config:
       - ./config.toml:/config/config.toml:ro
-    depends_on:
-      postgres:
-        condition: service_healthy
     # The image-level healthcheck is liveness-only. Compose overrides it with
     # authenticated storage readiness so `healthy` means the gateway may take
     # traffic. Shared deployments should issue a dedicated scoped probe key.

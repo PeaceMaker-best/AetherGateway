@@ -407,7 +407,7 @@ direct path and cannot govern its usage or balance.
 | `MODELPORT_OIDC_EMAIL_CLAIM` | `email` | ID-token claim read as the ModelPort email. Initial linking/JIT requires the standard `email` claim plus `email_verified=true`; verification is not inherited by a custom claim name. |
 | `MODELPORT_OIDC_ALLOW_INSECURE_HTTP` | off | Allow HTTP only for loopback OIDC development URLs. Never enable it for a remote or production identity provider. |
 | `MODELPORT_STATE_DIR` | `.modelport` | Working directory for explicit backup output. Runtime state is not stored here. |
-| `MODELPORT_DATABASE_URL` | required at runtime | PostgreSQL target for the operational ledger and low-frequency auth/control documents. Compose constructs an internal default unless explicitly overridden. |
+| `MODELPORT_DATABASE_URL` | required at runtime | PostgreSQL target for the operational ledger and low-frequency auth/control documents. Compose constructs an internal default unless explicitly overridden. Setting an external URL moves the internal `postgres` service to the `internal-db` Compose profile, so that container is not started. |
 | `MODELPORT_ENTERPRISE_DATABASE_URL` | inherits `MODELPORT_DATABASE_URL` | Optional separate PostgreSQL target for the operational ledger and embedded migrations. `MODELPORT_DATABASE_URL` is still required. |
 | `MODELPORT_DATABASE_TLS_MODE` | `prefer`; `verify-full` in enterprise mode | SQLx PostgreSQL TLS mode: `disable`, `allow`, `prefer`, `require`, `verify-ca`, or `verify-full`. Enterprise mode rejects every value except `verify-full`. Certificate options such as `sslrootcert` can be supplied in the PostgreSQL URL. |
 | `MODELPORT_DATABASE_MAX_CONNECTIONS` | `16` | Maximum connections in the normalized ledger pool. Each auth/control document worker independently caps its pool at one connection. |
@@ -1039,7 +1039,7 @@ These names are consumed outside the backend configuration loader:
 | `MODELPORT_IMAGE`, `MODELPORT_DASHBOARD_IMAGE` | Compose | Release images; use version tags for evaluation and immutable digests for shared/production use. |
 | `MODELPORT_PULL_POLICY` | Compose | Image pull policy; root source-build Compose defaults to `never`, release Compose to `missing`. Production upgrades set `always`. |
 | `MODELPORT_COMPOSE_FILE` | `scripts/compose-up.sh`, `scripts/doctor.sh` | Selected Compose manifest; defaults to the root source-build profile. |
-| `MODELPORT_LOCAL_BUILD` | `scripts/compose-up.sh` | Set to `1` after `scripts/build-container.sh` to select the two `:local` images and disable pulls. |
+| `MODELPORT_LOCAL_BUILD` | `scripts/compose-up.sh` | Image mode for the selected manifest: `auto` (default) enables local-build mode when the manifest resolves to `:local` images and remote mode otherwise; `1` forces local-build mode (verifies the `:local` images built by `scripts/build-container.sh` and disables pulls); `0` forces remote mode. |
 | `MODELPORT_HEALTHCHECK_API_KEY` | Compose healthcheck | Dedicated scoped key for authenticated `/readyz`; local Compose falls back to the legacy router token when omitted. |
 | `MODELPORT_STOP_GRACE_PERIOD` | Compose | Backend SIGTERM-to-SIGKILL window; defaults to 11 minutes. |
 | `MODELPORT_RUNTIME_ENV_FILE`, `MODELPORT_CONFIG_FILE`, `MODELPORT_DATABASE_CA_FILE`, `MODELPORT_OWNERSHIP_FILE` | Production Compose/preflight | Operator-owned runtime secret, reviewed config, PostgreSQL CA, and named operations-ownership paths required by the single-instance production profile. |

@@ -52,13 +52,13 @@ service, model runtime, chat UI, payment processor, or Provider invoice. See
 ## Quick Start
 
 Requirements: Linux x86_64, Git, Docker, Docker Compose v2, and credentials for
-at least one Provider. Once `v0.1.0` appears on the GitHub Releases page, the
-supported user path below pulls its prebuilt images and does not compile Rust
-or the Dashboard. The maintained example uses DeepSeek's Anthropic-compatible
-endpoint.
+at least one Provider. The default path below builds the backend, Dashboard,
+and optional Agent images locally from source (Docker performs the build;
+no Rust or Node toolchain is needed on the host). The maintained example uses
+DeepSeek's Anthropic-compatible endpoint.
 
 ```bash
-git clone --branch v0.1.0 --depth 1 https://github.com/tiammomo/ModelPort.git
+git clone https://github.com/tiammomo/ModelPort.git
 cd ModelPort
 cp deploy/docker/modelport.env.example .env
 cp config.example.toml config.toml
@@ -69,40 +69,51 @@ unique router, administrator, PostgreSQL, and Provider credentials. Keep
 `MODELPORT_AUTH_TOKEN` and the client-side `ANTHROPIC_AUTH_TOKEN` equal for the
 first local test.
 
+By default the stack runs its own internal PostgreSQL container. If you set
+`MODELPORT_DATABASE_URL` in `.env` to an external PostgreSQL instance, the
+internal `postgres` container is not started (Compose profile `internal-db`);
+leave it unset or empty to keep the internal database.
+
+```bash
+scripts/doctor.sh --setup
+scripts/build-container.sh
+MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
+docker compose ps
+scripts/smoke-test.sh
+```
+
+No `MODELPORT_COMPOSE_FILE` export is needed: the scripts default to the root
+source-build manifest (`docker-compose.yml`), and `MODELPORT_LOCAL_BUILD=1`
+selects the `:local` images built in the previous step.
+
+Open `http://127.0.0.1:33002` and sign in with
+`MODELPORT_ADMIN_USERNAME`/`MODELPORT_ADMIN_PASSWORD`.
+
+### Optional: Pull Published Release Images
+
+The `ghcr.io/tiammomo/*:0.1.0` release images are not published yet, so the
+default is the local build above. Once they exist, switch to the release
+manifest to pull them instead of building:
+
 ```bash
 export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 scripts/doctor.sh --setup
 docker compose -f "$MODELPORT_COMPOSE_FILE" pull
-scripts/compose-up.sh
+MODELPORT_LOCAL_BUILD=0 scripts/compose-up.sh
 docker compose -f "$MODELPORT_COMPOSE_FILE" ps
 scripts/smoke-test.sh
 ```
 
-The release command is intentionally invalid before the `v0.1.0` tag and GHCR
-images exist; this repository edit cannot publish external artifacts. To test
-current `main` or contribute before that release, use the source-build path:
-
-```bash
-git clone https://github.com/tiammomo/ModelPort.git
-cd ModelPort
-cp deploy/docker/modelport.env.example .env
-cp config.example.toml config.toml
-# replace required placeholders
-export MODELPORT_COMPOSE_FILE="$PWD/docker-compose.yml"
-scripts/build-container.sh
-MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
-```
-
-Open `http://127.0.0.1:33002` and sign in with
-`MODELPORT_ADMIN_USERNAME`/`MODELPORT_ADMIN_PASSWORD`.
+The release manifest resolves to `ghcr.io/tiammomo/*:0.1.0` with
+`pull_policy: missing`, so `up` pulls them automatically and the explicit
+`pull` step is optional. Image mode is otherwise automatic:
+`scripts/compose-up.sh` detects local vs remote from the manifest and runs the
+local preflight only for the source-build profile.
 
 For local Qwen, another Provider, production hardening, digest pinning, or
 troubleshooting, follow the tested [Getting Started guide](docs/GETTING_STARTED.md).
 The optional Agent has its own [safe rollout guide](docs/OPS_AGENT.md); it is
 free and open source with the rest of ModelPort and starts in shadow mode.
-After the first Release exists, building images from source is a contributor
-workflow documented in [Development](docs/DEVELOPMENT.md), not a normal user
-installation step.
 
 ## Send Your First Request
 

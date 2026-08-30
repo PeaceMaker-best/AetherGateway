@@ -46,12 +46,12 @@ ModelPort 当前只正式支持 Linux x86_64 单实例、可信主机或小型�
 ## 快速开始
 
 要求：Linux x86_64、Git、Docker、Docker Compose v2，以及至少一个 Provider
-凭证。`v0.1.0` 确实出现在 GitHub Releases 页面后，以下正式用户路径会直接
-拉取预构建镜像，不编译 Rust 或控制台。默认示例使用 DeepSeek 的
+凭证。默认路径会在本地从源码构建后端、控制台和可选 Agent 镜像（构建在
+Docker 内完成，本机无需安装 Rust 或 Node 工具链）。默认示例使用 DeepSeek 的
 Anthropic-compatible 接口。
 
 ```bash
-git clone --branch v0.1.0 --depth 1 https://github.com/tiammomo/ModelPort.git
+git clone https://github.com/tiammomo/ModelPort.git
 cd ModelPort
 cp deploy/docker/modelport.env.example .env
 cp config.example.toml config.toml
@@ -61,39 +61,49 @@ cp config.example.toml config.toml
 管理员、PostgreSQL 和 Provider 凭证。首次本地测试时，让
 `MODELPORT_AUTH_TOKEN` 与客户端侧 `ANTHROPIC_AUTH_TOKEN` 保持一致。
 
+默认情况下，Compose 栈会启动内置的 PostgreSQL 容器。若在 `.env` 中设置
+`MODELPORT_DATABASE_URL` 指向外部 PostgreSQL 实例，内置 `postgres` 容器将
+不会启动（Compose profile `internal-db`）；保持该变量未设置或为空即可使用
+内置数据库。
+
+```bash
+scripts/doctor.sh --setup
+scripts/build-container.sh
+MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
+docker compose ps
+scripts/smoke-test.sh
+```
+
+无需导出 `MODELPORT_COMPOSE_FILE`：脚本默认使用根目录的源码构建清单
+（`docker-compose.yml`），`MODELPORT_LOCAL_BUILD=1` 选用上一步构建的
+`:local` 镜像。
+
+打开 `http://127.0.0.1:33002`，使用
+`MODELPORT_ADMIN_USERNAME`/`MODELPORT_ADMIN_PASSWORD` 登录。
+
+### 可选：拉取已发布的 Release 镜像
+
+`ghcr.io/tiammomo/*:0.1.0` 发布镜像尚未真实存在，因此默认走上面的本地构建。
+待镜像发布后，切换为 release 清单即可改为拉取而非构建：
+
 ```bash
 export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 scripts/doctor.sh --setup
 docker compose -f "$MODELPORT_COMPOSE_FILE" pull
-scripts/compose-up.sh
+MODELPORT_LOCAL_BUILD=0 scripts/compose-up.sh
 docker compose -f "$MODELPORT_COMPOSE_FILE" ps
 scripts/smoke-test.sh
 ```
 
-在 `v0.1.0` 标签和 GHCR 镜像尚未真实发布前，上述 Release 命令会明确失败；
-仓库代码变更本身不能假装外部发布已发生。发布前测试当前 `main` 或参与贡献时，
-使用源码构建路径：
-
-```bash
-git clone https://github.com/tiammomo/ModelPort.git
-cd ModelPort
-cp deploy/docker/modelport.env.example .env
-cp config.example.toml config.toml
-# 替换必填 placeholder
-export MODELPORT_COMPOSE_FILE="$PWD/docker-compose.yml"
-scripts/build-container.sh
-MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
-```
-
-打开 `http://127.0.0.1:33002`，使用
-`MODELPORT_ADMIN_USERNAME`/`MODELPORT_ADMIN_PASSWORD` 登录。
+release 清单解析为 `ghcr.io/tiammomo/*:0.1.0`，且 `pull_policy: missing`，
+`up` 时会自动拉取，显式的 `pull` 步骤可选。镜像模式本身是自动的：
+`scripts/compose-up.sh` 会根据清单判断本地构建还是远程拉取，并且只对源码
+构建清单执行本地镜像预检。
 
 使用本地 Qwen、其他 Provider、生产加固或排障时，继续阅读经过验证的
 [上手指南](docs/GETTING_STARTED.md)。
 可选 Agent 请按[安全上线指南](docs/OPS_AGENT.md)先运行 Shadow，再切换只读事件
 写入；它与 ModelPort 一样免费开源。
-首个 Release 发布后，从源码构建镜像属于
-[贡献者开发流程](docs/DEVELOPMENT.md)，不是普通安装步骤。
 
 ## 发送第一个请求
 

@@ -67,13 +67,27 @@ preflight first.
 Set MODELPORT_COMPOSE_FILE to select a manifest; it defaults to the root
 source-build profile.
 
-Set MODELPORT_LOCAL_BUILD=1 after scripts/build-container.sh to use the local
-backend, dashboard, and optional operations-agent images without pulling GHCR.
+Image mode is automatic by default: the root source-build manifest (which
+resolves to `:local` images) runs in local-build mode, while a manifest
+referencing published GHCR images runs in remote-pull mode. Force either with
+MODELPORT_LOCAL_BUILD=1 (verify and use the local `:local` images built by
+scripts/build-container.sh) or MODELPORT_LOCAL_BUILD=0 (never touch the local
+preflight and let Compose resolve images normally).
 USAGE
   exit 0
 fi
 
-if [[ "${MODELPORT_LOCAL_BUILD:-0}" == "1" ]]; then
+local_mode="${MODELPORT_LOCAL_BUILD:-auto}"
+if [[ "$local_mode" == "auto" ]]; then
+  if docker compose -f "$COMPOSE_FILE" config --images 2>/dev/null \
+      | grep -Fxq "modelport:local"; then
+    local_mode=1
+  else
+    local_mode=0
+  fi
+fi
+
+if [[ "$local_mode" == "1" ]]; then
   local_images=(modelport:local modelport-dashboard:local)
   if [[ ",${COMPOSE_PROFILES:-}," == *,ops-agent,* ]]; then
     local_images+=(modelport-ops-agent:local)

@@ -4,6 +4,11 @@ name: modelport
 # source checkout and pulls signed GHCR images instead of compiling source.
 services:
   postgres:
+    # Starts only when using the internal database. When MODELPORT_DATABASE_URL
+    # is set (an external PostgreSQL), this service moves to the "internal-db"
+    # profile and is not started unless explicitly enabled with
+    # `--profile internal-db`.
+    profiles: ["${MODELPORT_DATABASE_URL:+internal-db}"]
     image: postgres:18.4-alpine
     environment:
       POSTGRES_DB: ${MODELPORT_POSTGRES_DB:-modelport}
@@ -61,9 +66,6 @@ services:
         source: ${MODELPORT_CONFIG_FILE:-../../config.toml}
         target: /config/config.toml
         read_only: true
-    depends_on:
-      postgres:
-        condition: service_healthy
     healthcheck:
       test:
         - CMD-SHELL
