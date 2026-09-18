@@ -1,6 +1,6 @@
 [Unit]
-Description=ModelDock local Claude model gateway
-Documentation=https://github.com/PeaceMaker-best/ModelDock
+Description=AetherGateway local Claude model gateway
+Documentation=https://github.com/PeaceMaker-best/AetherGateway
 After=network-online.target
 Wants=network-online.target
 

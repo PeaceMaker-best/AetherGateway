@@ -1,10 +1,10 @@
 # Governance
 
-ModelDock is an open-source project maintained by `@PeaceMaker-best`.
+AetherGateway is an open-source project maintained by `@PeaceMaker-best`.
 
 ## Roles
 
-- **Users** operate ModelDock and provide reproducible feedback.
+- **Users** operate AetherGateway and provide reproducible feedback.
 - **Contributors** submit documentation, tests, code, or review.
 - **Maintainers** triage issues, review changes, manage security reports, and
   publish releases.

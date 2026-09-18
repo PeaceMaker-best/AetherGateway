@@ -249,7 +249,7 @@ jobs:
             enterprise_ledger::tests::postgres_operations_incident_queries_round_trip \
             -- --exact
 
-      - name: Build and start PostgreSQL-backed ModelDock
+      - name: Build and start PostgreSQL-backed AetherGateway
         run: |
           cargo build --locked --bin model-port
           export MODELPORT_CONFIG="${RUNNER_TEMP}/modelport-no-config.toml"
@@ -274,12 +274,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "$RUNNER_TEMP/modelport-rollback"
-          gh release download v0.1.1 --repo PeaceMaker-best/ModelDock \
+          gh release download v0.1.1 --repo PeaceMaker-best/AetherGateway \
             --pattern model-port-v0.1.1-linux-amd64.tar.gz --pattern SHA256SUMS \
             --dir "$RUNNER_TEMP/modelport-rollback"
           cd "$RUNNER_TEMP/modelport-rollback"
           sha256sum --check --ignore-missing SHA256SUMS
-          gh attestation verify model-port-v0.1.1-linux-amd64.tar.gz --repo PeaceMaker-best/ModelDock
+          gh attestation verify model-port-v0.1.1-linux-amd64.tar.gz --repo PeaceMaker-best/AetherGateway
           tar -xzf model-port-v0.1.1-linux-amd64.tar.gz \
             model-port-v0.1.1-linux-amd64/model-port
 

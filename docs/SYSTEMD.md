@@ -98,7 +98,7 @@ browser CORS. A same-origin proxy is the supported layout.
 Preserve the original Host authority including a non-default port. For Nginx,
 use `proxy_set_header Host $http_host`; `$host` may drop the port and cause the
 Origin/Host write check to fail. A single-hop proxy should overwrite
-`X-Forwarded-For` with `$remote_addr`. ModelDock accepts forwarded headers only
+`X-Forwarded-For` with `$remote_addr`. AetherGateway accepts forwarded headers only
 from `MODELPORT_TRUSTED_PROXIES` and removes trusted hops from the right-hand end
 of the chain, so configure every trusted hop explicitly.
 

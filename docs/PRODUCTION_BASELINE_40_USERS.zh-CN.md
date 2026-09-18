@@ -14,12 +14,12 @@ Runtime Adapter、Compute Node/GPU 与 Deployment 所有权以
 
 第一阶段仍然只有：
 
-- 1 个 ModelDock 实例；
+- 1 个 AetherGateway 实例；
 - 1 个本地 Qwen GPU 节点；
 - 审核通过后才能接入的云 Provider；
 - 1 个 Dashboard 应用，严格分为用户自助视图与管理员治理控制台。
 
-当前不能宣称 ModelDock 高可用。40 人并发准入、四种路由模式、项目预算硬限制、双人审批
+当前不能宣称 AetherGateway 高可用。40 人并发准入、四种路由模式、项目预算硬限制、双人审批
 和生产级 Service Account 已进入稳定 API 与自动化验收；生产数据库切换、密钥轮换和真实
 云 Provider 开通仍必须取得第二名管理员批准并在维护窗口执行。
 
@@ -88,7 +88,7 @@ archive="$(./scripts/backup-compose.sh create)"
 ### 3. 单实例生产模板不自带数据库
 
 [`deploy/production/compose.single.yml`](../deploy/production/compose.single.yml)
-只启动一个 ModelDock 和 Dashboard，生产数据库必须使用外部托管 PostgreSQL。运行环境
+只启动一个 AetherGateway 和 Dashboard，生产数据库必须使用外部托管 PostgreSQL。运行环境
 由 Secret Manager 写入仓库外、权限 `0600` 的短期文件；生产配置禁止挂载项目 `.env`。
 
 该模板目前用于评审和迁移演练。在托管数据库、TLS CA、镜像 Digest、密钥注入与回滚
@@ -101,22 +101,22 @@ archive="$(./scripts/backup-compose.sh create)"
 ## 投产前必须完成
 
 - [ ] 选定平台 Owner 和 Backup，确定维护窗口与回滚负责人。
-- [ ] 轮换曾出现在终端或旧备份中的 ModelDock、Provider、数据库凭证。
+- [ ] 轮换曾出现在终端或旧备份中的 AetherGateway、Provider、数据库凭证。
 - [x] PostgreSQL 16 备份已在隔离 PostgreSQL 18.4 完成逻辑恢复演练。
 - [ ] 确认托管 PostgreSQL `verify-full`、PITR、RPO 5 分钟、RTO 30 分钟。
-- [ ] 使用固定 Digest 的 ModelDock 与 Dashboard 镜像。
+- [ ] 使用固定 Digest 的 AetherGateway 与 Dashboard 镜像。
 - [ ] 运行 `scripts/check-all.sh`，并确保 CI 的 ShellCheck 门禁通过。
-- [ ] 运行 ModelDock Provider/Tool Use 验收及每个已配置 Runtime Adapter 的验收；
+- [ ] 运行 AetherGateway Provider/Tool Use 验收及每个已配置 Runtime Adapter 的验收；
   现有 Qwen 参考部署可继续使用可选的 `local-inference-stack standard` 兼容套件。
 - [x] 运行 `scripts/capacity-acceptance.sh`，确认 40 人准入不变量。
 - [ ] 保存不含 Prompt、回复、工具参数和密钥的验收证据。
 
 ## 第一阶段不做什么
 
-- 不启动第二个 ModelDock；
+- 不启动第二个 AetherGateway；
 - 不在没有维护窗口时迁移真实数据库；
 - 不在仓库脚本中实现 Secret Manager；
-- 不让 ModelDock 执行 Shell、数据库查询或业务工具；
+- 不让 AetherGateway 执行 Shell、数据库查询或业务工具；
 - 不允许用户配置任意 OpenAI-compatible URL；
 - 不绕过本页 Enterprise 基线强制的双人审批执行数据库、密钥、外发、身份或生产
   模型变更。

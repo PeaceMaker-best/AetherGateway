@@ -1,7 +1,7 @@
 # Operations Agent
 
 `modelport-ops-agent` is an optional, free, open-source companion process for a
-single ModelDock instance. It evaluates sanitized runtime snapshots with
+single AetherGateway instance. It evaluates sanitized runtime snapshots with
 deterministic rules and writes incidents back through a versioned API. It is
 off by default, is not a shell runner, and does not repair the system
 automatically.
@@ -31,7 +31,7 @@ Sign in as an administrator, open **API 密钥**, and create a service account:
 - Provider scope: `__ops_agent_no_inference__`;
 - no team unless your operating policy explicitly requires one.
 
-The sentinel scopes make the key unusable for normal inference. ModelDock also
+The sentinel scopes make the key unusable for normal inference. AetherGateway also
 checks the service-account principal and exact purpose on every internal Agent
 request. Save the one-time secret in `.env` as `MODELPORT_OPS_API_KEY`.
 Heartbeat identity is bound server-side to that API key ID; the Agent cannot
@@ -49,7 +49,7 @@ incidents. It cannot create facts, change severity, close incidents, or execute
 actions. Create a second service account with purpose `modelport_ops_model` and
 a least-privilege inference key limited to the selected model and Provider,
 then set it as `MODELPORT_OPS_MODEL_API_KEY`. Never reuse the Agent control key:
-ModelDock deliberately rejects that key on `/v1`.
+AetherGateway deliberately rejects that key on `/v1`.
 
 ## Safe Rollout
 
@@ -105,7 +105,7 @@ The Compose profile defaults to 0.5 CPU, 256 MiB memory, and 128 PIDs; override
 those explicit limits only after measuring the host.
 
 PostgreSQL stores the authoritative incident, evidence, timeline, heartbeat,
-and feedback records. Back up and restore it with the same ModelDock database
+and feedback records. Back up and restore it with the same AetherGateway database
 procedure. Deleting the SQLite volume only loses observations that were not yet
 accepted; it does not delete accepted incidents.
 
@@ -115,7 +115,7 @@ blocks the incident ledger or the gateway.
 
 ## Current Boundaries
 
-- one Agent per ModelDock instance;
+- one Agent per AetherGateway instance;
 - no HA leadership or cross-instance incident merging;
 - no arbitrary queries, commands, or automatic changes;
 - optional model diagnosis uses a separately scoped key and sanitized facts;

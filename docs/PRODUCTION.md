@@ -23,7 +23,7 @@ name of a fail-closed configuration switch, not an enterprise-readiness claim.
 
 The accepted forty-user hybrid-routing target is defined in
 [ADR-0005](adr/0005-forty-user-hybrid-routing-baseline.md). Its first phase
-still uses one ModelDock instance. Routing modes and per-user queue rules have
+still uses one AetherGateway instance. Routing modes and per-user queue rules have
 implementation and automated acceptance. Managed-secret injection is operator
 owned, and active-active operation remains unsupported. These implemented
 rules do not establish a particular real-model throughput or latency.
@@ -155,7 +155,7 @@ commit does not establish which digest a production host is running.
 
 ## Reliability Objectives
 
-ModelDock does not publish a universal end-to-end SLO because Provider
+AetherGateway does not publish a universal end-to-end SLO because Provider
 availability and local inference capacity dominate results. Each operator
 should define:
 

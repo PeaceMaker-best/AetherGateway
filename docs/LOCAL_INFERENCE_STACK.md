@@ -1,7 +1,7 @@
 # 本地 Qwen 参考适配（兼容性文档）
 
 本文只保留原始 `local-inference-stack` 集成的可选 Linux/WSL2 复现路径，供
-现有部署迁移和兼容性回归使用。它不是 ModelDock 的安装前提、模型/GPU
+现有部署迁移和兼容性回归使用。它不是 AetherGateway 的安装前提、模型/GPU
 事实来源或架构依赖。新的本地运行时必须遵循
 [ADR-0007](adr/0007-independent-model-and-gpu-control-plane.md) 定义的通用
 Runtime Adapter 边界，不能依赖本文中的仓库目录、脚本或环境变量。
@@ -18,9 +18,9 @@ Compute Inventory 或 Deployment 生命周期 API。下面的兼容性命令先�
 ```text
 Claude Code / SDK
         |
-        | ModelDock API Key，Anthropic/OpenAI-compatible
+        | AetherGateway API Key，Anthropic/OpenAI-compatible
         v
-    ModelDock :38082
+    AetherGateway :38082
         | 认证、路由、Token 准入、Tool 协议、账本
         |
         | Docker DNS: qwen-runtime:8080/v1
@@ -31,8 +31,8 @@ Claude Code / SDK
    Qwen3.5 GGUF
 ```
 
-ModelDock v0.1.x 不下载或运行模型；参考 Runtime 不签发客户端密钥、不执行业务
-工具。未来 ModelDock 将通过 Runtime Adapter 管理 desired state、observed
+AetherGateway v0.1.x 不下载或运行模型；参考 Runtime 不签发客户端密钥、不执行业务
+工具。未来 AetherGateway 将通过 Runtime Adapter 管理 desired state、observed
 inventory 和执行证据，实际推理仍由外部 Runtime 完成。宿主机
 `127.0.0.1:18080` 只用于直接诊断；容器间调用不经过这个端口。
 
@@ -41,7 +41,7 @@ inventory 和执行证据，实际推理仍由外部 Runtime 完成。宿主机
 在 Linux/WSL2 Shell 中设置两个真实路径：
 
 ```bash
-export MODELPORT_PROJECT_DIR=/path/to/ModelDock
+export MODELPORT_PROJECT_DIR=/path/to/AetherGateway
 export LOCAL_INFERENCE_STACK_DIR=/path/to/local-inference-stack
 ```
 
@@ -56,7 +56,7 @@ cd "$LOCAL_INFERENCE_STACK_DIR"
 重点看 `readyToDeploy`、`resourceAvailableNow`、固定 revision、SHA256、许可证和
 `caveats`。`readyToDeploy=false` 时停在这里，处理资源或审批问题，不绕过准入。
 
-先校验 ModelDock 自有的通用 capability 和 Qwen 参考 Fixture：
+先校验 AetherGateway 自有的通用 capability 和 Qwen 参考 Fixture：
 
 ```bash
 cd "$MODELPORT_PROJECT_DIR"
@@ -79,7 +79,7 @@ cd "$MODELPORT_PROJECT_DIR"
 `x-modelport-hybrid-mode: local_first` 或 `balanced`；`unknown` / `sensitive` 分类无论何种
 请求头都不会离开本地。后台任务显式发送 `x-modelport-traffic-class: batch`。
 
-## 第 2 阶段：准备 ModelDock
+## 第 2 阶段：准备 AetherGateway
 
 全新本地 Qwen 配置可以从维护的示例开始：
 
@@ -99,8 +99,8 @@ ANTHROPIC_BASE_URL=http://127.0.0.1:38082
 ANTHROPIC_MODEL=qwen3.5-code
 ```
 
-同时替换 ModelDock、管理员和 PostgreSQL 的 placeholder 密码。Qwen-only 配置
-不需要 DeepSeek Key；客户端只拿 ModelDock Key。
+同时替换 AetherGateway、管理员和 PostgreSQL 的 placeholder 密码。Qwen-only 配置
+不需要 DeepSeek Key；客户端只拿 AetherGateway Key。
 
 ```bash
 ./scripts/doctor.sh --setup
@@ -113,7 +113,7 @@ ANTHROPIC_MODEL=qwen3.5-code
 
 只有 local-inference-stack 的计划返回 `readyToDeploy=true`，且操作者明确批准
 下载/选择/启动后，才按照该仓库的首次部署指南处理模型。为避免共享网络的启动
-顺序歧义，先启动 ModelDock 基础栈，再启动推理 Runtime：
+顺序歧义，先启动 AetherGateway 基础栈，再启动推理 Runtime：
 
 ```bash
 cd "$MODELPORT_PROJECT_DIR"
@@ -152,7 +152,7 @@ MODELPORT_PROJECT_DIR="$MODELPORT_PROJECT_DIR" \
 
 `standard` 包含真实生成、Reasoning、长上下文、Token 计数和 Tool Use 路径，不是
 静态检查。正式联合发布再使用 `local-inference-check.sh --release`，它还会要求
-两个仓库干净且 ModelDock commit 与部署清单一致。
+两个仓库干净且 AetherGateway commit 与部署清单一致。
 
 ## 三个逻辑档位
 
@@ -162,7 +162,7 @@ MODELPORT_PROJECT_DIR="$MODELPORT_PROJECT_DIR" \
 | `qwen3.5-code` | 4,096 | 57,344 | 16,384 |
 | `qwen3.5-deep` | 16,384 | 94,208 | 32,768 |
 
-三档共享同一份权重，不会增加显存占用。ModelDock 在进入推理 Slot 前执行精确
+三档共享同一份权重，不会增加显存占用。AetherGateway 在进入推理 Slot 前执行精确
 Token 计数；超出逻辑档位或 131,072 硬上下文时返回可操作的 4xx，不静默截断。
 
 ## 最短排障顺序
@@ -171,11 +171,11 @@ Token 计数；超出逻辑档位或 131,072 硬上下文时返回可操作的 4
 2. `readyToDeploy=false`：回到 `plan --json` 的 `caveats`，不要启动 Runtime。
 3. `qwen-runtime` 无法解析：检查两个容器是否都连接
    `modelport_default`，以及 Runtime 的网络别名。
-4. `18080/health` 成功但 `38082/livez` 失败：问题在 ModelDock 进程或 Compose。
-5. `/livez` 成功但请求被拒：检查 ModelDock Key、逻辑模型和返回的 Token 准入信息。
+4. `18080/health` 成功但 `38082/livez` 失败：问题在 AetherGateway 进程或 Compose。
+5. `/livez` 成功但请求被拒：检查 AetherGateway Key、逻辑模型和返回的 Token 准入信息。
 
 在这个历史参考流程中，`local-inference-stack` 的契约文件只用于验证该适配
-Fixture，不是 ModelDock 的跨仓库事实来源。v1alpha1 当前只定义 capability，
+Fixture，不是 AetherGateway 的跨仓库事实来源。v1alpha1 当前只定义 capability，
 不代表库存、认证传输或生命周期 API 已交付。影响历史 Fixture 的接口、模型、
 Reasoning、Token 限制或 Tool Use 变化仍需同步更新兼容测试和 `standard` 验收；
 新的核心功能不得读取该仓库的内部文件。

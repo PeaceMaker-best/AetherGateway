@@ -50,7 +50,7 @@ status="$(
     -H 'x-modelport-traffic-class: synthetic' \
     -H 'Content-Type: application/json' \
     "$(base_url)/v1/messages" \
-    -d "$(printf '{"model":"%s","max_tokens":256,"messages":[{"role":"user","content":"用一句话回复：ModelDock upstream OK。"}]}' "$model")"
+    -d "$(printf '{"model":"%s","max_tokens":256,"messages":[{"role":"user","content":"用一句话回复：AetherGateway upstream OK。"}]}' "$model")"
 )"
 
 cat "$body_file"

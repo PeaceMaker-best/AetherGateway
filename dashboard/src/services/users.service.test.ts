@@ -67,12 +67,12 @@ describe('API key service contract', () => {
     expect(rotatePath).toBe('/admin/api-keys/key%2Fcreated/rotate')
     expect(rotateOptions.method).toBe('POST')
     expect(rotateOptions.body).toBeUndefined()
-    expect(new Headers(rotateOptions.headers).get('X-ModelDock-CSRF')).toBe('1')
+    expect(new Headers(rotateOptions.headers).get('X-AetherGateway-CSRF')).toBe('1')
 
     const [confirmPath, confirmOptions] = fetchMock.mock.calls[2] as [string, RequestInit]
     expect(confirmPath).toBe('/admin/api-keys/key%2Fcreated/rotate/key%2Frotated')
     expect(confirmOptions.method).toBe('POST')
-    expect(new Headers(confirmOptions.headers).get('X-ModelDock-CSRF')).toBe('1')
+    expect(new Headers(confirmOptions.headers).get('X-AetherGateway-CSRF')).toBe('1')
 
     const [cancelPath, cancelOptions] = fetchMock.mock.calls[3] as [string, RequestInit]
     expect(cancelPath).toBe('/admin/api-keys/key%2Fcreated/rotate/key%2Frotated')

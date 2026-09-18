@@ -1,6 +1,6 @@
 # Changelog
 
-All notable ModelDock changes are recorded here. The project follows
+All notable AetherGateway changes are recorded here. The project follows
 [Semantic Versioning](https://semver.org/) once a version is published.
 
 ## [Unreleased]
@@ -154,8 +154,8 @@ Back up PostgreSQL and run a restore drill before upgrading. Compose still uses
 the PostgreSQL 18 volume `modelport_modelport-postgres-18`; export any older
 volume before removing it.
 
-[Unreleased]: https://github.com/PeaceMaker-best/ModelDock/compare/v0.1.3...HEAD
-[0.1.3]: https://github.com/PeaceMaker-best/ModelDock/releases/tag/v0.1.3
-[0.1.2]: https://github.com/PeaceMaker-best/ModelDock/releases/tag/v0.1.2
-[0.1.1]: https://github.com/PeaceMaker-best/ModelDock/releases/tag/v0.1.1
-[0.1.0]: https://github.com/PeaceMaker-best/ModelDock/tree/v0.1.0
+[Unreleased]: https://github.com/PeaceMaker-best/AetherGateway/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/PeaceMaker-best/AetherGateway/releases/tag/v0.1.3
+[0.1.2]: https://github.com/PeaceMaker-best/AetherGateway/releases/tag/v0.1.2
+[0.1.1]: https://github.com/PeaceMaker-best/AetherGateway/releases/tag/v0.1.1
+[0.1.0]: https://github.com/PeaceMaker-best/AetherGateway/tree/v0.1.0

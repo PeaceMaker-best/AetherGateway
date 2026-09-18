@@ -1,4 +1,4 @@
-# ModelDock 精炼与易用性审查
+# AetherGateway 精炼与易用性审查
 
 审查基线：`fa2b510`，2026-09-06。投入决策见
 [ADR-0008](adr/0008-team-gateway-focus-and-task-navigation.md)，后续顺序由

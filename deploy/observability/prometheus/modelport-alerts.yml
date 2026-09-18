@@ -1,109 +1,109 @@
 groups:
   - name: modelport.availability
     rules:
-      - alert: ModelDockMetricsTargetDown
+      - alert: AetherGatewayMetricsTargetDown
         expr: up{job="modelport"} == 0
         for: 2m
         labels:
           severity: critical
           component: gateway
         annotations:
-          summary: ModelDock metrics target is unreachable
+          summary: AetherGateway metrics target is unreachable
           description: Prometheus has been unable to scrape {{ $labels.instance }} for two minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportmetricstargetdown
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportmetricstargetdown
 
-      - alert: ModelDockNotReady
+      - alert: AetherGatewayNotReady
         expr: modelport_gateway_ready == 0
         for: 2m
         labels:
           severity: critical
           component: gateway
         annotations:
-          summary: ModelDock is alive but not ready for governed traffic
+          summary: AetherGateway is alive but not ready for governed traffic
           description: Fail-closed gateway dependencies on {{ $labels.instance }} have been unready for two minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportnotready
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportnotready
 
       # Optional independent endpoint probe. It remains silent when the
       # Blackbox Exporter example has not been installed.
-      - alert: ModelDockReadinessProbeFailed
+      - alert: AetherGatewayReadinessProbeFailed
         expr: probe_success{job="modelport-readiness"} == 0
         for: 2m
         labels:
           severity: critical
           component: gateway
         annotations:
-          summary: ModelDock authenticated readiness endpoint is unreachable
+          summary: AetherGateway authenticated readiness endpoint is unreachable
           description: The independent /readyz probe for {{ $labels.instance }} has failed for two minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportnotready
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportnotready
 
-      - alert: ModelDockDirtyBuildRunning
+      - alert: AetherGatewayDirtyBuildRunning
         expr: modelport_build_info{source_state!="clean"} == 1
         for: 10m
         labels:
           severity: warning
           component: release
         annotations:
-          summary: A non-release ModelDock build is running
+          summary: A non-release AetherGateway build is running
           description: Instance {{ $labels.instance }} reports source_state={{ $labels.source_state }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportdirtybuildrunning
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportdirtybuildrunning
 
   - name: modelport.storage
     rules:
-      - alert: ModelDockDatabaseNotReady
+      - alert: AetherGatewayDatabaseNotReady
         expr: modelport_database_ready == 0
         for: 1m
         labels:
           severity: critical
           component: database
         annotations:
-          summary: ModelDock cannot complete its PostgreSQL readiness query
+          summary: AetherGateway cannot complete its PostgreSQL readiness query
           description: PostgreSQL readiness is failing on {{ $labels.instance }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportnotready
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportnotready
 
-      - alert: ModelDockDatabasePoolSaturated
+      - alert: AetherGatewayDatabasePoolSaturated
         expr: modelport_database_pool_utilization_ratio > 0.85
         for: 5m
         labels:
           severity: warning
           component: database
         annotations:
-          summary: ModelDock PostgreSQL pool utilization is above 85%
+          summary: AetherGateway PostgreSQL pool utilization is above 85%
           description: Instance {{ $labels.instance }} has sustained pool utilization of {{ $value | humanizePercentage }} for five minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportdatabasepoolsaturated
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportdatabasepoolsaturated
 
-      - alert: ModelDockLedgerOperationDegraded
+      - alert: AetherGatewayLedgerOperationDegraded
         expr: modelport_ledger_operation_degraded == 1
         for: 1m
         labels:
           severity: critical
           component: database
         annotations:
-          summary: ModelDock ledger operation is degraded
+          summary: AetherGateway ledger operation is degraded
           description: The most recent {{ $labels.operation }} operation failed on {{ $labels.instance }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportledgeroperationdegraded
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportledgeroperationdegraded
 
-      - alert: ModelDockLedgerFailuresDetected
+      - alert: AetherGatewayLedgerFailuresDetected
         expr: increase(modelport_ledger_operation_failures_total[10m]) > 0
         labels:
           severity: warning
           component: database
         annotations:
-          summary: ModelDock ledger failures occurred
+          summary: AetherGateway ledger failures occurred
           description: Operation {{ $labels.operation }} failed {{ $value | humanize }} time(s) in ten minutes on {{ $labels.instance }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportledgeroperationdegraded
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportledgeroperationdegraded
 
-      - alert: ModelDockPendingFinalizersStuck
+      - alert: AetherGatewayPendingFinalizersStuck
         expr: modelport_ledger_pending_finalizers > 0
         for: 2m
         labels:
           severity: critical
           component: ledger
         annotations:
-          summary: ModelDock request finalizers are not settling
+          summary: AetherGateway request finalizers are not settling
           description: Instance {{ $labels.instance }} has {{ $value | humanize }} pending finalizer(s) after two minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportpendingfinalizersstuck
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportpendingfinalizersstuck
 
-      - alert: ModelDockExpiredLeasesReconciled
+      - alert: AetherGatewayExpiredLeasesReconciled
         expr: >-
           increase(modelport_ledger_reconciled_requests_total[15m])
           + increase(modelport_ledger_reconciled_attempts_total[15m]) > 0
@@ -111,13 +111,13 @@ groups:
           severity: warning
           component: ledger
         annotations:
-          summary: ModelDock reconciled expired request leases
+          summary: AetherGateway reconciled expired request leases
           description: Instance {{ $labels.instance }} reconciled {{ $value | humanize }} expired request/attempt lease(s) in fifteen minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportexpiredleasesreconciled
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportexpiredleasesreconciled
 
   - name: modelport.traffic
     rules:
-      - alert: ModelDockInferenceErrorRateHigh
+      - alert: AetherGatewayInferenceErrorRateHigh
         expr: >-
           (
             sum(rate(modelport_message_failures_total[10m]))
@@ -131,11 +131,11 @@ groups:
           severity: critical
           component: gateway
         annotations:
-          summary: ModelDock inference error rate is above 10%
+          summary: AetherGateway inference error rate is above 10%
           description: The ten-minute inference error ratio is {{ $value | humanizePercentage }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportinferenceerrorratehigh
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportinferenceerrorratehigh
 
-      - alert: ModelDockInferenceP95LatencyHigh
+      - alert: AetherGatewayInferenceP95LatencyHigh
         expr: >-
           histogram_quantile(
             0.95,
@@ -148,11 +148,11 @@ groups:
           severity: warning
           component: gateway
         annotations:
-          summary: ModelDock inference p95 latency is above two minutes
+          summary: AetherGateway inference p95 latency is above two minutes
           description: Global end-to-end p95 latency is {{ $value | humanize }} ms; compare with Provider generation time before changing gateway limits.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportinferencep95latencyhigh
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportinferencep95latencyhigh
 
-      - alert: ModelDockAdmissionOrStreamPressure
+      - alert: AetherGatewayAdmissionOrStreamPressure
         expr: >-
           sum by (phase) (
             increase(modelport_inference_rejections_total{phase=~"admission|concurrency"}[10m])
@@ -162,33 +162,33 @@ groups:
           severity: warning
           component: admission
         annotations:
-          summary: ModelDock is rejecting work at admission or stream concurrency
+          summary: AetherGateway is rejecting work at admission or stream concurrency
           description: Phase {{ $labels.phase }} rejected {{ $value | humanize }} request(s) in ten minutes.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
 
-      - alert: ModelDockLocalInteractiveQueueWaiting
+      - alert: AetherGatewayLocalInteractiveQueueWaiting
         expr: modelport_local_scheduler_oldest_interactive_wait_ms > 30000
         for: 5m
         labels:
           severity: warning
           component: queue
         annotations:
-          summary: ModelDock local interactive queue wait exceeds 30 seconds
+          summary: AetherGateway local interactive queue wait exceeds 30 seconds
           description: The oldest interactive request on {{ $labels.instance }} has waited {{ $value | humanize }} ms.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
 
-      - alert: ModelDockLocalBatchQueueWaiting
+      - alert: AetherGatewayLocalBatchQueueWaiting
         expr: modelport_local_scheduler_oldest_batch_wait_ms > 300000
         for: 10m
         labels:
           severity: warning
           component: queue
         annotations:
-          summary: ModelDock local batch queue wait exceeds five minutes
+          summary: AetherGateway local batch queue wait exceeds five minutes
           description: The oldest batch request on {{ $labels.instance }} has waited {{ $value | humanize }} ms.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
 
-      - alert: ModelDockStreamPermitsExhausted
+      - alert: AetherGatewayStreamPermitsExhausted
         expr: >-
           modelport_stream_permits_available == 0
           and on (instance)
@@ -200,46 +200,46 @@ groups:
           severity: warning
           component: stream
         annotations:
-          summary: ModelDock stream permits are exhausted and requests are being rejected
+          summary: AetherGateway stream permits are exhausted and requests are being rejected
           description: Instance {{ $labels.instance }} has no stream permits and recorded concurrency rejection(s).
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportadmissionorstreampressure
 
-      - alert: ModelDockQuotaRejectionsDetected
+      - alert: AetherGatewayQuotaRejectionsDetected
         expr: >-
           sum(increase(modelport_inference_rejections_total{reason="quota_exceeded"}[15m])) > 0
         labels:
           severity: warning
           component: budget
         annotations:
-          summary: ModelDock rejected requests for quota exhaustion
+          summary: AetherGateway rejected requests for quota exhaustion
           description: "{{ $value | humanize }} pre-ledger request(s) were rejected for quota exhaustion in fifteen minutes."
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportquotarejectionsdetected
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportquotarejectionsdetected
 
   - name: modelport.providers
     rules:
-      - alert: ModelDockProviderUnavailable
+      - alert: AetherGatewayProviderUnavailable
         expr: modelport_provider_available == 0
         for: 5m
         labels:
           severity: critical
           component: provider
         annotations:
-          summary: A configured ModelDock Provider is unavailable
+          summary: A configured AetherGateway Provider is unavailable
           description: Provider {{ $labels.provider }} has no usable credential or is cooling down on {{ $labels.instance }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportprovidererrorratehigh
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportprovidererrorratehigh
 
-      - alert: ModelDockProviderCoolingDown
+      - alert: AetherGatewayProviderCoolingDown
         expr: modelport_provider_cooldown == 1
         for: 2m
         labels:
           severity: warning
           component: provider
         annotations:
-          summary: ModelDock has placed a Provider in cooldown
+          summary: AetherGateway has placed a Provider in cooldown
           description: Provider {{ $labels.provider }} is cooling down on {{ $labels.instance }} after retryable/account failures.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportprovidererrorratehigh
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportprovidererrorratehigh
 
-      - alert: ModelDockProviderErrorRateHigh
+      - alert: AetherGatewayProviderErrorRateHigh
         expr: >-
           (
             sum by (provider) (
@@ -262,6 +262,6 @@ groups:
           severity: critical
           component: provider
         annotations:
-          summary: ModelDock Provider error rate is above 20%
+          summary: AetherGateway Provider error rate is above 20%
           description: Provider {{ $labels.provider }} has a ten-minute error ratio of {{ $value | humanizePercentage }}.
-          runbook_url: https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportprovidererrorratehigh
+          runbook_url: https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md#modelportprovidererrorratehigh

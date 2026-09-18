@@ -1,18 +1,18 @@
-# ModelDock
+# AetherGateway
 
-[![CI](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/ci.yml/badge.svg)](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/codeql.yml/badge.svg)](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/codeql.yml)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/PeaceMaker-best/ModelDock/badge)](https://scorecard.dev/viewer/?uri=github.com/PeaceMaker-best/ModelDock)
+[![CI](https://github.com/PeaceMaker-best/AetherGateway/actions/workflows/ci.yml/badge.svg)](https://github.com/PeaceMaker-best/AetherGateway/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/PeaceMaker-best/AetherGateway/actions/workflows/codeql.yml/badge.svg)](https://github.com/PeaceMaker-best/AetherGateway/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/PeaceMaker-best/AetherGateway/badge)](https://scorecard.dev/viewer/?uri=github.com/PeaceMaker-best/AetherGateway)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **English** | [简体中文](README.zh-CN.md)
 
-ModelDock is a free, self-hosted model gateway for 20–50 person development
+AetherGateway is a free, self-hosted model gateway for 20–50 person development
 teams. Administrators connect local or cloud models and define access boundaries;
 developers copy client configuration and inspect request, routing, usage and
 billing evidence when something fails. Licensed under MIT.
 
-![ModelDock architecture overview](docs/assets/modelport-overview.svg)
+![AetherGateway architecture overview](docs/assets/modelport-overview.svg)
 
 ## What You Get
 
@@ -35,8 +35,8 @@ Requires Linux x86_64, Git, Docker Compose v2 and Provider credentials. No host
 Rust or Node installation is needed.
 
 ```bash
-git clone https://github.com/PeaceMaker-best/ModelDock.git
-cd ModelDock
+git clone https://github.com/PeaceMaker-best/AetherGateway.git
+cd AetherGateway
 scripts/setup.sh
 # Set DEEPSEEK_ANTHROPIC_AUTH_TOKEN in .env
 scripts/doctor.sh --setup
@@ -84,7 +84,7 @@ shared use. Never commit `.env`, Provider keys, backups, prompts, responses, or
 raw sensitive logs.
 
 Read [Security](.github/SECURITY.md), [Privacy](docs/project/PRIVACY.md), [Support](.github/SUPPORT.md), and
-[Governance](docs/project/GOVERNANCE.md). ModelDock is free self-hosted software. The
+[Governance](docs/project/GOVERNANCE.md). AetherGateway is free self-hosted software. The
 project provides no paid edition, hosted service, or community-support SLA.
 
 ## Development

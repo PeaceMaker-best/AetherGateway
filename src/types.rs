@@ -428,9 +428,9 @@ fn tool_result_to_text(block: &Value) -> String {
     let content = content_to_text(block.get("content").unwrap_or(&Value::Null));
     if block.get("is_error").and_then(Value::as_bool) == Some(true) {
         if content.is_empty() {
-            "ModelDock tool execution error".to_owned()
+            "AetherGateway tool execution error".to_owned()
         } else {
-            format!("ModelDock tool execution error:\n{content}")
+            format!("AetherGateway tool execution error:\n{content}")
         }
     } else {
         content
@@ -1091,7 +1091,7 @@ mod tests {
 
         assert_eq!(
             body["messages"][1]["content"],
-            "ModelDock tool execution error:\nfile not found"
+            "AetherGateway tool execution error:\nfile not found"
         );
     }
 

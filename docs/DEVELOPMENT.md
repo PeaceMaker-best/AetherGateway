@@ -184,7 +184,7 @@ check is kept separate from the deterministic repository check script. Project
 exceptions live in `.cargo/audit.toml` and must document the exact dependency
 path, why the affected operation is unreachable, and the condition for removing
 the exception. `RUSTSEC-2023-0071` is currently limited to the transitive
-`openidconnect -> rsa` dependency: ModelDock verifies provider-signed ID tokens
+`openidconnect -> rsa` dependency: AetherGateway verifies provider-signed ID tokens
 with public JWKs and does not perform the vulnerable RSA private-key operation.
 
 ### Runtime And Deployment Checks

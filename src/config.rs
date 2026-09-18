@@ -977,7 +977,7 @@ impl AppConfig {
             routing_aliases.sort();
             for alias in routing_aliases {
                 if seen.insert(alias.clone()) {
-                    models.push((alias, "ModelDock Smart Router".to_owned()));
+                    models.push((alias, "AetherGateway Smart Router".to_owned()));
                 }
             }
         }
@@ -1069,7 +1069,7 @@ impl AppConfig {
                 && openai_base_url_targets_modelport_listener(&provider.base_url, self.bind_addr)
             {
                 issues.push(ConfigIssue::error(format!(
-                    "provider `openai` base_url `{}` points back to this ModelDock listener; set server-side `MODELPORT_OPENAI_BASE_URL` to the upstream OpenAI API and reserve `OPENAI_BASE_URL` for client processes",
+                    "provider `openai` base_url `{}` points back to this AetherGateway listener; set server-side `MODELPORT_OPENAI_BASE_URL` to the upstream OpenAI API and reserve `OPENAI_BASE_URL` for client processes",
                     provider.base_url
                 )));
             }
@@ -2454,7 +2454,7 @@ fn validate_openai_legacy_env_fallbacks(issues: &mut Vec<ConfigIssue>) {
 
     if !active_fallbacks.is_empty() {
         issues.push(ConfigIssue::warning(format!(
-            "provider `openai` is using legacy client-style environment fallback(s): {}; migrate the ModelDock server to `MODELPORT_OPENAI_*` names so client `OPENAI_*` settings cannot be mistaken for upstream configuration",
+            "provider `openai` is using legacy client-style environment fallback(s): {}; migrate the AetherGateway server to `MODELPORT_OPENAI_*` names so client `OPENAI_*` settings cannot be mistaken for upstream configuration",
             active_fallbacks.join(", ")
         )));
     }
@@ -3317,7 +3317,7 @@ fn validate_cpa_provider(
         }
         "cpa_claude" if path.ends_with("/v1") => {
             issues.push(ConfigIssue::error(
-                "provider `cpa_claude` base_url must omit `/v1`; ModelDock appends `/v1/messages`"
+                "provider `cpa_claude` base_url must omit `/v1`; AetherGateway appends `/v1/messages`"
                     .to_owned(),
             ));
         }
@@ -4581,7 +4581,7 @@ mod tests {
             "Content-Type",
             "X-Forwarded-For",
             "Baggage",
-            "X-ModelDock-Request-ID",
+            "X-AetherGateway-Request-ID",
         ] {
             assert!(
                 validate_provider_static_header(name, "unsafe").is_err(),
@@ -4590,7 +4590,7 @@ mod tests {
         }
         validate_provider_static_header("HTTP-Referer", "https://modelport.example")
             .expect("non-sensitive attribution header should be accepted");
-        validate_provider_static_header("X-Title", "ModelDock")
+        validate_provider_static_header("X-Title", "AetherGateway")
             .expect("non-sensitive attribution header should be accepted");
     }
 }

@@ -200,7 +200,7 @@ export function UsageGuidePage() {
         <SectionHeading
           eyebrow="Client setup"
           title="配置客户端"
-          description="Client/Harness 使用 ModelDock 客户端密钥；Provider 凭证始终留在服务端。"
+          description="Client/Harness 使用 AetherGateway 客户端密钥；Provider 凭证始终留在服务端。"
         />
         <div className="mb-6 rounded-lg border bg-muted/20 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">

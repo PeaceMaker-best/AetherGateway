@@ -1,13 +1,13 @@
 # Configuration
 
-This document is the maintained reference for ModelDock configuration. Start
+This document is the maintained reference for AetherGateway configuration. Start
 from [`.env.example`](../.env.example) for local development or
 [`deploy/docker/modelport.env.example`](../deploy/docker/modelport.env.example)
 for Docker Compose.
 
 ## Sources
 
-ModelDock supports two base-configuration modes:
+AetherGateway supports two base-configuration modes:
 
 1. **Environment defaults:** used when no TOML configuration file exists.
    Built-in provider templates are enabled by credentials, provider-specific
@@ -55,7 +55,7 @@ Each enabled entry requires a v1alpha1 adapter ID, an HTTPS origin (or plain
 HTTP on a literal loopback address), and the name of an environment variable
 containing an RFC 6750 Bearer token. Inline credentials and unknown fields are
 rejected. The environment-variable name must contain only ASCII letters,
-digits, and underscores and must not begin with a digit. ModelDock resolves and
+digits, and underscores and must not begin with a digit. AetherGateway resolves and
 validates the token at startup; debug output and errors redact it, and the token
 is never part of the TOML document or a serializable configuration type.
 
@@ -86,7 +86,7 @@ accepted as the router-token fallback when `MODELPORT_AUTH_TOKEN` is absent,
 but deployments should set one unambiguous server token and make the client
 match it.
 
-This minimum is one supported topology, not a requirement that every ModelDock
+This minimum is one supported topology, not a requirement that every AetherGateway
 deployment install DeepSeek. At least one enabled Provider and a valid
 `MODELPORT_DEFAULT_PROVIDER` are required; a Qwen-only deployment can omit all
 DeepSeek values.
@@ -254,7 +254,7 @@ model_max_output_tokens = { "qwen3.5-fast" = 4096, "qwen3.5-code" = 16384, "qwen
 ```
 
 Use an environment-backed API key field if the local runtime itself requires
-authentication; do not reuse ModelDock's client/router token as an upstream key
+authentication; do not reuse AetherGateway's client/router token as an upstream key
 unless the runtime was deliberately configured that way.
 
 ### DeepSeek official Anthropic only
@@ -267,7 +267,7 @@ server-side secret is `DEEPSEEK_ANTHROPIC_AUTH_TOKEN`.
 The dashboard's administrator-only balance action calls the official balance
 endpoint from the server with that credential. It can display availability and
 CNY/USD balances; it cannot recharge, refund, invoice, or replace the DeepSeek
-console's authoritative billing. ModelDock usage/cost records are local
+console's authoritative billing. AetherGateway usage/cost records are local
 governance evidence and must not be presented as the upstream invoice.
 
 ### Local Qwen plus DeepSeek
@@ -279,7 +279,7 @@ default_provider = "local_qwen"
 provider_order = ["local_qwen", "deepseek"]
 ```
 
-Keep both endpoint values in the ModelDock environment:
+Keep both endpoint values in the AetherGateway environment:
 
 ```env
 QWEN_LOCAL_BASE_URL=http://qwen-runtime:8080/v1
@@ -294,8 +294,8 @@ eligible for the fallback Provider and the failure must be retryable.
 
 ### CPA as an internal Provider
 
-CPA is an optional CLIProxyAPI account adapter behind ModelDock. Do not point
-clients directly to CPA and do not configure CPA as ModelDock's control plane.
+CPA is an optional CLIProxyAPI account adapter behind AetherGateway. Do not point
+clients directly to CPA and do not configure CPA as AetherGateway's control plane.
 In environment-default mode, enable its Codex and Claude channels
 independently:
 
@@ -357,13 +357,13 @@ because the Anthropic adapter appends `/v1/messages`.
 
 Docker deployments should use `http://cpa:8317/v1` and
 `http://cpa:8317` only after attaching CPA under the single-label `cpa` DNS
-name to ModelDock's private network. Keep CPA unexposed. A private literal IP
+name to AetherGateway's private network. Keep CPA unexposed. A private literal IP
 still requires `MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS=1`; a public hostname
 requires HTTPS.
 
-ModelDock owns request-level retries and cross-Provider fallback. Set CPA's
+AetherGateway owns request-level retries and cross-Provider fallback. Set CPA's
 `request-retry: 0` and bound `max-retry-credentials` initially so one
-ModelDock attempt cannot fan out across an unbounded CPA account pool. See the
+AetherGateway attempt cannot fan out across an unbounded CPA account pool. See the
 [CPA Provider contract](PROVIDERS.md#cpa-codex-and-claude-account-adapter).
 
 ### QuantPilot client boundary
@@ -376,13 +376,13 @@ needs, commonly:
 - `GET /v1/models` and `POST /v1/chat/completions`
 
 Store that client key in QuantPilot as `MODELPORT_API_KEY`. Never copy
-`DEEPSEEK_ANTHROPIC_AUTH_TOKEN`, a Qwen upstream key, the complete ModelDock
+`DEEPSEEK_ANTHROPIC_AUTH_TOKEN`, a Qwen upstream key, the complete AetherGateway
 `.env`, or provider credential-pool material into QuantPilot. A Qwen-only client
-key may omit every DeepSeek scope; ModelDock itself may also run Qwen-only.
+key may omit every DeepSeek scope; AetherGateway itself may also run Qwen-only.
 
-QuantPilot's official-direct `deepseek-v4-flash` profile bypasses ModelDock and
+QuantPilot's official-direct `deepseek-v4-flash` profile bypasses AetherGateway and
 uses its own `DEEPSEEK_API_KEY`; it is a separate path from the namespaced
-`deepseek:deepseek-v4-flash` ModelDock model. ModelDock is not involved in the
+`deepseek:deepseek-v4-flash` AetherGateway model. AetherGateway is not involved in the
 direct path and cannot govern its usage or balance.
 
 ## Server, Authentication, And State
@@ -410,8 +410,8 @@ direct path and cannot govern its usage or balance.
 | `MODELPORT_OIDC_LABEL` | `Single sign-on` | Login-button label. |
 | `MODELPORT_OIDC_REQUIRED_ACR` | unset | Exact signed OIDC authentication-class claim required for login. Sends `acr_values` and rejects missing/mismatched claims. Requires password login disabled; the identity provider must enforce the corresponding MFA policy. |
 | `MODELPORT_OIDC_AUTO_PROVISION` | off | Create missing ordinary users after a valid OIDC login. Keep off initially and pre-create users; it never grants administrator access. |
-| `MODELPORT_OIDC_USERNAME_CLAIM` | `preferred_username` | ID-token claim used as the ModelDock username. |
-| `MODELPORT_OIDC_EMAIL_CLAIM` | `email` | ID-token claim read as the ModelDock email. Initial linking/JIT requires the standard `email` claim plus `email_verified=true`; verification is not inherited by a custom claim name. |
+| `MODELPORT_OIDC_USERNAME_CLAIM` | `preferred_username` | ID-token claim used as the AetherGateway username. |
+| `MODELPORT_OIDC_EMAIL_CLAIM` | `email` | ID-token claim read as the AetherGateway email. Initial linking/JIT requires the standard `email` claim plus `email_verified=true`; verification is not inherited by a custom claim name. |
 | `MODELPORT_OIDC_ALLOW_INSECURE_HTTP` | off | Allow HTTP only for loopback OIDC development URLs. Never enable it for a remote or production identity provider. |
 | `MODELPORT_STATE_DIR` | `.modelport` | Working directory for explicit backup output. Runtime state is not stored here. |
 | `MODELPORT_DATABASE_URL` | required at runtime | PostgreSQL target for the operational ledger and low-frequency auth/control documents. Compose constructs an internal default unless explicitly overridden. Setting an external URL moves the internal `postgres` service to the `internal-db` Compose profile, so that container is not started. |
@@ -477,7 +477,7 @@ Compose database remains usable. For any remote or production database, use
 using `require` encrypts transport but does not enforce the enterprise hostname
 and certificate policy.
 
-At startup, ModelDock migrates the normalized organization/project/environment,
+At startup, AetherGateway migrates the normalized organization/project/environment,
 gateway-request, Provider-attempt, budget, and audit schema. Terminal request
 rows are the usage source for logs, Dashboard ranges, quota/spend checks, and
 management statistics. Auth and low-frequency control definitions may still
@@ -493,7 +493,7 @@ Always back up PostgreSQL and exercise the migration against a restored copy
 before upgrading production.
 
 Each PostgreSQL request and Provider-attempt row carries an instance lease.
-ModelDock renews it throughout non-stream and streaming lifecycles. Startup and
+AetherGateway renews it throughout non-stream and streaming lifecycles. Startup and
 the periodic reconciler terminalize only expired `started` rows as
 `lease_expired_unreconciled`; because Provider evidence is unknown after a
 crash, those rows retain zero usage and `chargeable=false` pending future
@@ -519,14 +519,14 @@ password used to initialize PostgreSQL.
 | `MODELPORT_INCLUDE_UNAVAILABLE_PROVIDERS` | off | Keep file-config providers that lack required keys; useful for diagnostics, not normal routing. |
 
 Forwarded headers are considered only when the connected peer matches
-`MODELPORT_TRUSTED_PROXIES`. ModelDock appends that peer to the received
+`MODELPORT_TRUSTED_PROXIES`. AetherGateway appends that peer to the received
 `X-Forwarded-For` chain, walks from right to left, removes explicitly trusted
 proxy hops, and uses the first untrusted address. Do not trust an entire client
 network just to make forwarding work. A single-hop proxy should overwrite XFF
 with its observed `$remote_addr` instead of preserving an untrusted incoming
 chain.
 
-Before every outbound Provider request, ModelDock resolves the hostname, rejects
+Before every outbound Provider request, AetherGateway resolves the hostname, rejects
 an answer set containing a private, link-local, metadata, or unspecified address
 unless that Provider is explicitly allowed to use private networking, and pins
 the original hostname to the validated addresses for the connection. Redirects
@@ -750,7 +750,7 @@ stream_idle_timeout_ms = 300000   # optional; resets after each SSE data chunk
 # are reserved and rejected during validation.
 [providers.example.static_headers]
 HTTP-Referer = "https://modelport.example"
-X-Title = "ModelDock"
+X-Title = "AetherGateway"
 
 [providers.example.retry]
 max_attempts = 2       # includes the first request; 1 disables same-Provider retry
@@ -881,7 +881,7 @@ and `max`. An explicit client control wins over logical-model defaults, exact
 model defaults, and Provider defaults. OpenAI clients send `reasoning_effort`;
 Anthropic clients keep native `thinking`. Known OpenAI-compatible dialects are
 `openai`, `deepseek`, `openrouter`, `qwen`, `zai`, `string_thinking`, and
-`llama_cpp`; native Anthropic providers use `native_anthropic`. ModelDock does
+`llama_cpp`; native Anthropic providers use `native_anthropic`. AetherGateway does
 not silently choose a nearby effort when the requested level is absent.
 `reasoning_effort_map` can map a portable effort to an exact upstream string.
 Budget and effort remain separate: a `thinking.budget_tokens` value is rejected
@@ -899,7 +899,7 @@ transport failures, HTTP 429, and HTTP 5xx are retried. Authentication, quota,
 ordinary invalid requests, and protocol/schema failures are not automatically
 retried. A numeric or HTTP-date `Retry-After` is honored within
 `retry.max_delay_ms` and the global 60-second bound. Once a streaming response
-has crossed the downstream header boundary, ModelDock never starts a fallback.
+has crossed the downstream header boundary, AetherGateway never starts a fallback.
 
 `tool_use.streaming_arguments` is a runtime Tool Use argument strategy. For an
 OpenAI-compatible provider, `delta` preserves incremental argument fragments,
@@ -910,7 +910,7 @@ upstream implements the advertised behavior; certify each provider/model with
 real acceptance calls.
 
 `tool_use.response_validation` defaults to `best_effort`. Set it to `strict`
-for a trusted local or certified OpenAI-compatible runtime: ModelDock then
+for a trusted local or certified OpenAI-compatible runtime: AetherGateway then
 rejects missing or undeclared function names, non-object or invalid JSON
 arguments, duplicate call IDs, `tool_choice`/parallel-count violations, and
 inconsistent tool-call finish reasons. In a live stream, a violation is
@@ -918,7 +918,7 @@ reported as an Anthropic `error` event after the SSE handshake.
 
 `tool_use.repair_invalid_arguments` defaults to `false` and is valid only for
 an OpenAI-compatible provider with `response_validation="strict"`. For a
-non-stream Anthropic Messages request, ModelDock may make exactly one additional
+non-stream Anthropic Messages request, AetherGateway may make exactly one additional
 attempt against the same provider when the first tool call fails its declared
 JSON Schema. The retry prompt contains neither arguments nor validation paths,
 the failed candidate is never delivered, both attempts enter the ledger and
@@ -935,7 +935,7 @@ is a validation error.
 llama.cpp OpenAI-compatible extensions. `thinking.type="disabled"` sends
 `chat_template_kwargs.enable_thinking=false`; `enabled` or `adaptive` enables
 thinking and sends `thinking_budget_tokens`. Budget precedence is the explicit
-request value, then the requested ModelDock alias in `model_budget_tokens`, then
+request value, then the requested AetherGateway alias in `model_budget_tokens`, then
 `default_budget_tokens`. Optional `default_enabled` is the Provider fallback
 when the client protocol has no portable thinking control, especially OpenAI
 Chat Completions. `model_enabled` overrides that fallback by requested logical
@@ -946,7 +946,7 @@ model ID is unchanged, so these aliases do not add model memory. Providers
 without this explicitly configured mode retain their existing native behavior.
 
 `sampling.mode="llama_cpp"` applies a profile selected by the originally
-requested ModelDock model or alias. Supported profile defaults are
+requested AetherGateway model or alias. Supported profile defaults are
 `temperature`, `top_p`, `top_k`, `min_p`, `presence_penalty`, and
 `repeat_penalty`. Explicit client values already present in the converted
 request take precedence; unlisted models are unchanged. Profiles are valid only
@@ -955,7 +955,7 @@ llama.cpp extensions. Validation rejects empty profile names, non-finite values,
 and unsafe ranges before reload.
 
 `token_counting.mode="anthropic"` enables authenticated
-`POST /v1/messages/count_tokens` for that Provider. ModelDock rewrites aliases
+`POST /v1/messages/count_tokens` for that Provider. AetherGateway rewrites aliases
 to the resolved upstream model and forwards the Anthropic Count Tokens body to
 the Provider's native endpoint. It returns only the Provider-reported integer
 `input_tokens`; it never substitutes the local characters/4 usage heuristic.
@@ -1023,14 +1023,14 @@ auto-provisions the normalized catalog rows for that trusted binding.
 Clients may send all three assertion headers:
 
 ```text
-X-ModelDock-Organization-Id: org_local
-X-ModelDock-Project-Id: prj_quantpilot
-X-ModelDock-Environment-Id: env_development
+X-AetherGateway-Organization-Id: org_local
+X-AetherGateway-Project-Id: prj_quantpilot
+X-AetherGateway-Environment-Id: env_development
 ```
 
 Omitting them uses the key binding. A partial tuple is 400; a different tuple is
 403. Headers never create authority. Give every consuming application its own
-key and ModelDock project; do not share QuantPilot's key with future products.
+key and AetherGateway project; do not share QuantPilot's key with future products.
 
 ## Client, Compose, Script, And Dashboard Variables
 
@@ -1038,7 +1038,7 @@ These names are consumed outside the backend configuration loader:
 
 | Variable | Consumer | Meaning |
 | --- | --- | --- |
-| `ANTHROPIC_BASE_URL` | Claude client | ModelDock API origin. |
+| `ANTHROPIC_BASE_URL` | Claude client | AetherGateway API origin. |
 | `ANTHROPIC_AUTH_TOKEN` | Claude client; server fallback | Client token; also the server token fallback when `MODELPORT_AUTH_TOKEN` is absent. |
 | `ANTHROPIC_MODEL`, `ANTHROPIC_DEFAULT_*_MODEL`, `ANTHROPIC_SMALL_FAST_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL` | Claude client | Client-side selected model names. |
 | `MODELPORT_API_PUBLISH`, `MODELPORT_DASHBOARD_PUBLISH` | Compose | Host publish address/port. |

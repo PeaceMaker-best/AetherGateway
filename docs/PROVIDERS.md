@@ -1,6 +1,6 @@
 # Providers
 
-ModelDock routes to hosted APIs and separately managed local inference
+AetherGateway routes to hosted APIs and separately managed local inference
 runtimes. It does not load model weights.
 
 Two facts must remain separate:
@@ -12,10 +12,10 @@ Two facts must remain separate:
 A model appearing in `/v1/models` proves neither account entitlement nor
 runtime compatibility.
 
-ModelDock also embeds a versioned adaptation catalog under
+AetherGateway also embeds a versioned adaptation catalog under
 `resources/catalog/provider-adaptations-v1.json`. It records exact-model context/output
 metadata, input modalities, tri-state Tool Use/reasoning capabilities,
-reasoning dialect/efforts, and replay constraints for the Providers ModelDock
+reasoning dialect/efforts, and replay constraints for the Providers AetherGateway
 already exposes. This catalog is owned and reviewed in this repository; it is
 not synchronized from another project at runtime. Entries start `unverified`
 until a separate real-provider acceptance process records evidence. Discovery
@@ -75,13 +75,13 @@ model traffic and is only for a controlled internal network.
 ## CPA: Codex And Claude Account Adapter
 
 CPA means [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) in this
-project. It is an optional internal credential/account adapter, not ModelDock's
+project. It is an optional internal credential/account adapter, not AetherGateway's
 public gateway and not a second source of policy truth:
 
 ```text
 Codex / Claude Code / SDK
             |
-         ModelDock
+         AetherGateway
      auth, policy, route,
    quota, evidence, billing
             |
@@ -95,12 +95,12 @@ OpenAI protocol   Anthropic protocol
    CPA OAuth/account pool
 ```
 
-ModelDock deliberately exposes two Provider IDs:
+AetherGateway deliberately exposes two Provider IDs:
 
 - `cpa_codex` sends OpenAI-compatible requests to CPA's `/v1` client API;
 - `cpa_claude` sends Anthropic requests to CPA's `/v1/messages` client API;
 - both can discover the shared CPA catalog through `GET /v1/models`;
-- both may use the same CPA `api-keys` value, but their ModelDock health,
+- both may use the same CPA `api-keys` value, but their AetherGateway health,
   routing, evidence, and model allowlists remain separate.
 
 Minimal host configuration:
@@ -132,16 +132,16 @@ unknown-model passthrough, and reject a management API URL.
 
 Keep the trust boundary narrow:
 
-- clients connect only to ModelDock; do not publish CPA port `8317`;
-- ModelDock stores only CPA's client API key; CPA owns OAuth tokens and auth
+- clients connect only to AetherGateway; do not publish CPA port `8317`;
+- AetherGateway stores only CPA's client API key; CPA owns OAuth tokens and auth
   files;
 - leave CPA remote management disabled unless it has a separate administrative
   trust path;
 - bind CPA to loopback for systemd or a private Docker network for containers;
-- ModelDock permits CPA HTTP only for loopback, a single-label internal service
+- AetherGateway permits CPA HTTP only for loopback, a single-label internal service
   name, or `host.docker.internal`; a public CPA hostname still requires HTTPS.
 
-ModelDock owns Provider-level retry, fallback, cooldown, quota, and accounting.
+AetherGateway owns Provider-level retry, fallback, cooldown, quota, and accounting.
 CPA should initially use `request-retry: 0` and a bounded
 `max-retry-credentials: 1`. The upstream CPA template's `0` value means
 unbounded legacy credential traversal, so it is not a safe production default
@@ -153,7 +153,7 @@ CPA candidates enter smart routing only after direct non-stream, stream, Tool
 Use, and error-path acceptance. CPA model discovery reports availability; it
 does not authorize a model or prove subscription eligibility.
 
-LiteLLM is not a runtime dependency in this topology. ModelDock may learn from
+LiteLLM is not a runtime dependency in this topology. AetherGateway may learn from
 its Provider abstraction, normalized errors, routing, and cost-governance
 ideas, but adding a second gateway hop would split policy, retry, and
 observability ownership.
@@ -194,7 +194,7 @@ OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
 ```
 
 The runtime owns model loading, tokenizer, context capacity, and generation
-limits. ModelDock owns routing, policy, aliases, pricing estimates, and stored
+limits. AetherGateway owns routing, policy, aliases, pricing estimates, and stored
 usage. Local pricing is internal chargeback, not a Provider invoice.
 
 Advanced reasoning, sampling, exact token-count forwarding, stream

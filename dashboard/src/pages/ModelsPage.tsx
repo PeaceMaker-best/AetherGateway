@@ -1325,11 +1325,11 @@ export function ModelsPage() {
           <DialogHeader>
             <DialogTitle>{editingProvider ? '编辑供应商' : '新增供应商'}</DialogTitle>
             <DialogDescription>
-              结构配置会写入控制面；这里只保存 Secret 环境变量引用。新增或修改真实环境变量后必须重启 ModelDock，并通过连接测试后才可投产。
+              结构配置会写入控制面；这里只保存 Secret 环境变量引用。新增或修改真实环境变量后必须重启 AetherGateway，并通过连接测试后才可投产。
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-900 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-100">
-            生效顺序：保存引用 → 在部署环境注入 Secret → 重启 ModelDock → 回到 Provider 卡片运行“连接测试并发现模型”。保存表单本身不代表凭证可用。
+            生效顺序：保存引用 → 在部署环境注入 Secret → 重启 AetherGateway → 回到 Provider 卡片运行“连接测试并发现模型”。保存表单本身不代表凭证可用。
           </div>
           <ScrollArea className="max-h-[70vh] pr-3">
             <div className="grid gap-4 md:grid-cols-2">
@@ -1543,7 +1543,7 @@ export function ModelsPage() {
               </div>
               <FormSectionHeader
                 title="4. 上游请求策略"
-                description="静态头只允许非敏感归因字段；认证、Cookie、转发、链路和 HTTP 帧头由 ModelDock 保留。重试次数包含首次请求。"
+                description="静态头只允许非敏感归因字段；认证、Cookie、转发、链路和 HTTP 帧头由 AetherGateway 保留。重试次数包含首次请求。"
               />
               <Field label="静态请求头" htmlFor="provider-static-headers" className="md:col-span-2" error={providerSubmitAttempted ? providerValidation.errors.staticHeaders : undefined} description="每行一个 Header-Name: value，例如 OpenRouter 的 HTTP-Referer 与 X-Title。">
                 <textarea
@@ -1551,7 +1551,7 @@ export function ModelsPage() {
                   className="min-h-20 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   value={providerForm.staticHeaders}
                   onChange={(event) => setProviderForm({ ...providerForm, staticHeaders: event.target.value })}
-                  placeholder={'HTTP-Referer: https://modelport.example\nX-Title: ModelDock'}
+                  placeholder={'HTTP-Referer: https://modelport.example\nX-Title: AetherGateway'}
                   aria-invalid={providerSubmitAttempted && Boolean(providerValidation.errors.staticHeaders)}
                 />
               </Field>
@@ -1714,7 +1714,7 @@ export function ModelsPage() {
           <DialogHeader>
             <DialogTitle>{selectedTemplate?.displayName}</DialogTitle>
             <DialogDescription>
-              复制到 config.toml 或 .env，重启 ModelDock 后生效。密钥仍建议放在环境变量里。
+              复制到 config.toml 或 .env，重启 AetherGateway 后生效。密钥仍建议放在环境变量里。
             </DialogDescription>
           </DialogHeader>
           {selectedTemplate && (
@@ -2111,7 +2111,7 @@ function ProviderCard({
         {!credentialReady && (
           <div className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>控制面只保存 Secret 引用。请在部署环境注入 {provider.apiKeyEnv || '供应商 API Key'} 并重启 ModelDock；当前进程解析成功后才能测试上游。</span>
+              <span>控制面只保存 Secret 引用。请在部署环境注入 {provider.apiKeyEnv || '供应商 API Key'} 并重启 AetherGateway；当前进程解析成功后才能测试上游。</span>
           </div>
         )}
 

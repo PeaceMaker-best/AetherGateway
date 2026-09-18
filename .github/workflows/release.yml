@@ -327,7 +327,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           release_flags=()
-          release_title="ModelDock $GITHUB_REF_NAME"
+          release_title="AetherGateway $GITHUB_REF_NAME"
           if [[ "${GITHUB_REF_NAME#v}" == 0.* ]]; then
             release_flags+=(--prerelease)
             release_title="$release_title Small-Team Beta"

@@ -1,6 +1,6 @@
 # Runtime Adapter Contracts
 
-ModelDock publishes versioned, read-only discovery and Compute Node/GPU
+AetherGateway publishes versioned, read-only discovery and Compute Node/GPU
 observation contracts for external inference runtimes. The shipped v1alpha1
 artifacts include wire contracts, offline validators, and a reusable
 authenticated collection client. They do not expose a persisted inventory API,
@@ -87,7 +87,7 @@ byte counts.
 
 Node/device `health` reports the state observed at `observedAt`; it does not
 report snapshot freshness. The document cannot contain `fresh` or `stale`.
-ModelDock will derive `fresh`, `stale`, or `unavailable` from the accepted
+AetherGateway will derive `fresh`, `stale`, or `unavailable` from the accepted
 observation time and server-owned policy when persistence is implemented.
 Extensions are limited to bounded primitive values or bounded primitive arrays
 so they cannot become an unreviewed nested protocol.

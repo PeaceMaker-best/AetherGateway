@@ -93,7 +93,7 @@ describe('enterprise service', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/admin/enterprise/budget')
     expect(fetchMock.mock.calls[1]?.[0]).toBe('/admin/enterprise/budget/adjustments')
     for (const [, init] of fetchMock.mock.calls as Array<[string, RequestInit]>) {
-      expect(new Headers(init.headers).get('X-ModelDock-CSRF')).toBe('1')
+      expect(new Headers(init.headers).get('X-AetherGateway-CSRF')).toBe('1')
     }
     expect(JSON.parse(String((fetchMock.mock.calls[1]?.[1] as RequestInit).body))).toMatchObject({
       deltaMicrounits: -250_000,

@@ -1,6 +1,6 @@
 # Upgrading And Rollback
 
-ModelDock v0.1.x is a single-instance beta. It promises a predictable,
+AetherGateway v0.1.x is a single-instance beta. It promises a predictable,
 evidence-preserving maintenance window, not zero-downtime or rolling upgrades.
 Application and database rollback are separate decisions and may need to be
 performed together.
@@ -23,12 +23,12 @@ GitHub Release. Verify the release before editing deployment state:
 ```bash
 sha256sum --check SHA256SUMS
 gh attestation verify model-port-v0.1.1-linux-amd64.tar.gz \
-  --repo PeaceMaker-best/ModelDock
+  --repo PeaceMaker-best/AetherGateway
 gh attestation verify \
   oci://ghcr.io/peacemaker-best/modelport@sha256:<backend-digest> \
-  --repo PeaceMaker-best/ModelDock
+  --repo PeaceMaker-best/AetherGateway
 cosign verify \
-  --certificate-identity-regexp='https://github.com/PeaceMaker-best/ModelDock/.github/workflows/release.yml@refs/tags/v0[.]1[.]1' \
+  --certificate-identity-regexp='https://github.com/PeaceMaker-best/AetherGateway/.github/workflows/release.yml@refs/tags/v0[.]1[.]1' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
   ghcr.io/peacemaker-best/modelport@sha256:<backend-digest>
 ```
@@ -106,7 +106,7 @@ Then:
    docker compose -f "$MODELPORT_COMPOSE_FILE" stop modelport
    ```
 
-   Compose sends SIGTERM. ModelDock stops accepting new connections, waits for
+   Compose sends SIGTERM. AetherGateway stops accepting new connections, waits for
    active HTTP bodies, then drains ledger finalizers. The default
    `stop_grace_period` is 11 minutes: the 600-second request timeout plus the
    30-second finalizer drain and margin. An operator may choose a different

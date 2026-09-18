@@ -1,6 +1,6 @@
-# Releasing ModelDock
+# Releasing AetherGateway
 
-ModelDock uses semantic versions shared by the Rust backend and dashboard. A
+AetherGateway uses semantic versions shared by the Rust backend and dashboard. A
 release tag is `v<version>`, matching `Cargo.toml` and
 `dashboard/package.json`. SemVer prerelease suffixes such as `-rc.1` are
 supported. Build-metadata suffixes such as `+build.1` are intentionally rejected
@@ -46,7 +46,7 @@ Then run:
 ```bash
 scripts/check-all.sh
 git diff --check
-git tag -s vX.Y.Z -m "ModelDock vX.Y.Z"
+git tag -s vX.Y.Z -m "AetherGateway vX.Y.Z"
 git push origin main vX.Y.Z
 ```
 
@@ -97,10 +97,10 @@ Consumers should verify checksums and GitHub attestations:
 ```bash
 sha256sum --check SHA256SUMS
 gh attestation verify model-port-vX.Y.Z-linux-amd64.tar.gz \
-  --repo PeaceMaker-best/ModelDock
+  --repo PeaceMaker-best/AetherGateway
 docker pull ghcr.io/peacemaker-best/modelport:X.Y.Z
 cosign verify \
-  --certificate-identity-regexp='https://github.com/PeaceMaker-best/ModelDock/.github/workflows/release.yml@refs/tags/vX[.]Y[.]Z' \
+  --certificate-identity-regexp='https://github.com/PeaceMaker-best/AetherGateway/.github/workflows/release.yml@refs/tags/vX[.]Y[.]Z' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
   ghcr.io/peacemaker-best/modelport@sha256:<digest>
 ```

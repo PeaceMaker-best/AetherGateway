@@ -7,7 +7,7 @@ Last reviewed: 2026-09-06.
 
 ## Decision
 
-ModelDock will mature as a governed, self-hosted hybrid AI gateway and model/GPU
+AetherGateway will mature as a governed, self-hosted hybrid AI gateway and model/GPU
 control plane. It will pursue parity in the capability families that make a
 small team's routes safe, operable, and explainable, not parity by feature or
 Provider count. The v0.1.x Small-Team Beta contract and single-process Rust data
@@ -35,13 +35,13 @@ Official documentation from [LiteLLM](https://docs.litellm.ai/docs/simple_proxy)
 ingress, centralized upstream credentials and models, routing/retries/fallback,
 usage governance, observability, caching, and policy extensions. These sources
 are comparison inputs, not compatibility claims. Product names, breadth, and
-deployment models differ, and ModelDock does not embed or depend on them.
+deployment models differ, and AetherGateway does not embed or depend on them.
 
 Two standards constrain the direction. OpenTelemetry's
 [generative AI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
 provide an interoperable vocabulary, while the
 [W3C Trace Context recommendation](https://www.w3.org/TR/trace-context/)
-defines propagation. Neither permits ModelDock to export prompt, response, tool,
+defines propagation. Neither permits AetherGateway to export prompt, response, tool,
 credential, or unbounded attribute content by default.
 
 ## Capability parity map
@@ -59,7 +59,7 @@ credential, or unbounded attribute content by default.
 
 ## Identity boundaries
 
-A **Client/Harness profile** explains how a caller reaches ModelDock: base URL,
+A **Client/Harness profile** explains how a caller reaches AetherGateway: base URL,
 supported ingress protocol, key placement, logical model, and known compatibility.
 Claude Code, Codex CLI, Qwen Code, and SDK snippets belong here. Profiles do not
 own upstream credentials, health, billing, or route eligibility.
@@ -159,15 +159,15 @@ Each proposal must define:
 No cache may make a stale policy decision reusable. No asynchronous guardrail
 may be described as enforcement. Semantic cache additionally requires a threat
 model for embeddings, similarity thresholds, poisoning, nondeterminism, and
-false-match measurement. Until those contracts and evidence exist, ModelDock
+false-match measurement. Until those contracts and evidence exist, AetherGateway
 does not claim either capability ships.
 
 ## Deliberate non-goals
 
 - Public relay/reseller billing, channel resale, recharge codes, payment
-  processing, opaque group/model multipliers, or presenting ModelDock estimates
+  processing, opaque group/model multipliers, or presenting AetherGateway estimates
   as a Provider invoice.
-- A ModelDock-hosted service, public multi-tenancy, enterprise/HA readiness, or
+- A AetherGateway-hosted service, public multi-tenancy, enterprise/HA readiness, or
   competition based on Provider count.
 - Conflating Client/Harness profiles, Providers, credentials, Models, Runtime
   Adapters, Compute, Deployments, or Routes.

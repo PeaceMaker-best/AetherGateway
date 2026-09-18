@@ -16,7 +16,7 @@ usage() {
   cat <<'USAGE'
 Usage: scripts/provider-matrix.sh [options]
 
-Runs real compatibility checks through the local ModelDock gateway.
+Runs real compatibility checks through the local AetherGateway gateway.
 Secrets are read from .env but never printed.
 
 Options:
@@ -308,7 +308,7 @@ if [[ "${#models[@]}" -eq 0 ]]; then
 fi
 
 if ! health_ok; then
-  die "ModelDock is not healthy at $(base_url). Run scripts/start.sh first."
+  die "AetherGateway is not healthy at $(base_url). Run scripts/start.sh first."
 fi
 
 log "checking provider compatibility through $(base_url)"
@@ -390,8 +390,8 @@ NODE
 fi
 
 if [[ "$failures" -gt 0 ]]; then
-  printf '\nModelDock provider matrix failed: %d failed check(s).\n' "$failures" >&2
+  printf '\nAetherGateway provider matrix failed: %d failed check(s).\n' "$failures" >&2
   exit 1
 fi
 
-printf '\nModelDock provider matrix passed for %d model(s).\n' "${#models[@]}"
+printf '\nAetherGateway provider matrix passed for %d model(s).\n' "${#models[@]}"

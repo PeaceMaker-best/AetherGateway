@@ -3,7 +3,7 @@
     {
       "name": "DS_PROMETHEUS",
       "label": "Prometheus",
-      "description": "Prometheus data source containing ModelDock metrics",
+      "description": "Prometheus data source containing AetherGateway metrics",
       "type": "datasource",
       "pluginId": "prometheus",
       "pluginName": "Prometheus"
@@ -25,7 +25,7 @@
       }
     ]
   },
-  "description": "ModelDock v0.1.x Small-Team Beta official operational dashboard. No prompt or response content is queried.",
+  "description": "AetherGateway v0.1.x Small-Team Beta official operational dashboard. No prompt or response content is queried.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -39,9 +39,9 @@
       "tags": [],
       "targetBlank": true,
       "title": "Alert runbook",
-      "tooltip": "ModelDock observability runbook",
+      "tooltip": "AetherGateway observability runbook",
       "type": "link",
-      "url": "https://github.com/PeaceMaker-best/ModelDock/blob/main/docs/OBSERVABILITY_RUNBOOK.md"
+      "url": "https://github.com/PeaceMaker-best/AetherGateway/blob/main/docs/OBSERVABILITY_RUNBOOK.md"
     }
   ],
   "panels": [
@@ -1169,7 +1169,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "ModelDock 小团队运维总览",
+  "title": "AetherGateway 小团队运维总览",
   "uid": "modelport-small-team-beta",
   "version": 1,
   "weekStart": "monday"

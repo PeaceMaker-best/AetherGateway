@@ -1,4 +1,4 @@
--- Authoritative incident ledger for the optional, read-only ModelDock
+-- Authoritative incident ledger for the optional, read-only AetherGateway
 -- operations agent. The agent never connects to this database directly;
 -- observations arrive through the versioned internal API.
 CREATE TABLE modelport_ops_incidents (

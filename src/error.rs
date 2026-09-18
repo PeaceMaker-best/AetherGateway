@@ -337,8 +337,8 @@ impl IntoResponse for AppError {
 fn client_safe_message(error: &AppError) -> String {
     match error {
         AppError::Auth => "client authentication failed".to_owned(),
-        AppError::Config(_) => "ModelDock configuration is unavailable".to_owned(),
-        AppError::Database(_) => "ModelDock storage is unavailable".to_owned(),
+        AppError::Config(_) => "AetherGateway configuration is unavailable".to_owned(),
+        AppError::Database(_) => "AetherGateway storage is unavailable".to_owned(),
         AppError::Forbidden(message) => format!("request forbidden: {message}"),
         AppError::IdempotencyConflict(message) => format!("idempotency conflict: {message}"),
         AppError::StateConflict(_) => "management state changed; reload and retry".to_owned(),
@@ -349,7 +349,7 @@ fn client_safe_message(error: &AppError) -> String {
         AppError::RateLimited { message, .. } => format!("rate limited: {message}"),
         AppError::InvalidRequest(message) => format!("invalid request: {message}"),
         AppError::MissingSecret(_) => "a required provider credential is unavailable".to_owned(),
-        AppError::NotReady(_) => "ModelDock is not ready to serve requests".to_owned(),
+        AppError::NotReady(_) => "AetherGateway is not ready to serve requests".to_owned(),
         AppError::NotFound(message) => format!("not found: {message}"),
         AppError::ProviderNotFound(_) => "no approved provider can serve this model".to_owned(),
         AppError::Transport(message) if message.to_ascii_lowercase().contains("timed out") => {
@@ -451,7 +451,7 @@ fn error_hint(error: &AppError) -> &'static str {
     match error {
         AppError::Auth => "请重新登录控制台，或确认请求携带有效的 API Key。",
         AppError::Config(_) | AppError::MissingSecret(_) => {
-            "检查环境变量、配置文件和供应商 API Key 后重启 ModelDock。"
+            "检查环境变量、配置文件和供应商 API Key 后重启 AetherGateway。"
         }
         AppError::Database(_) => {
             "检查 MODELPORT_DATABASE_URL、PostgreSQL 容器健康状态和数据库权限。"

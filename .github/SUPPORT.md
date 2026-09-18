@@ -30,10 +30,10 @@ Community support is best effort and has no response-time, availability, or
 resolution SLA. Provider outages, account billing, model availability, and
 third-party API behavior remain the responsibility of the Provider.
 
-ModelDock is free, self-hosted MIT software. This project provides no paid
-edition, paid support plan, hosted ModelDock service, response SLA, or LTS line.
+AetherGateway is free, self-hosted MIT software. This project provides no paid
+edition, paid support plan, hosted AetherGateway service, response SLA, or LTS line.
 A third-party reseller, host, or consultant cannot create obligations for the
-ModelDock maintainers.
+AetherGateway maintainers.
 
 ## Security
 

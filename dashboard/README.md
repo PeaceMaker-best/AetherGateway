@@ -1,6 +1,6 @@
-# ModelDock Dashboard
+# AetherGateway Dashboard
 
-The dashboard is ModelDock's browser control plane. It is built with React,
+The dashboard is AetherGateway's browser control plane. It is built with React,
 TypeScript, Vite, Tailwind CSS, local shadcn-style primitives, TanStack Query,
 Table and Virtual, Recharts, Zustand, and Playwright.
 
@@ -13,7 +13,7 @@ responses, and it is not a chat interface.
 ## Requirements
 
 - Node.js 24 and npm (matching CI).
-- A running ModelDock backend for real mode.
+- A running AetherGateway backend for real mode.
 - Playwright Chromium and host dependencies for E2E tests.
 
 Install reproducibly:

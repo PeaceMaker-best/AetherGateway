@@ -253,7 +253,7 @@ impl Metrics {
         let inner = self.inner.lock().expect("metrics lock poisoned");
         let mut output = String::new();
 
-        output.push_str("# HELP modelport_uptime_seconds Seconds since ModelDock started.\n");
+        output.push_str("# HELP modelport_uptime_seconds Seconds since AetherGateway started.\n");
         output.push_str("# TYPE modelport_uptime_seconds gauge\n");
         output.push_str(&format!(
             "modelport_uptime_seconds {}\n\n",
@@ -269,12 +269,12 @@ impl Metrics {
         ));
 
         output.push_str(
-            "# HELP modelport_route_requests_total Total route requests handled by ModelDock.\n",
+            "# HELP modelport_route_requests_total Total route requests handled by AetherGateway.\n",
         );
         output.push_str("# TYPE modelport_route_requests_total counter\n");
-        output.push_str("# HELP modelport_route_successes_total Total successful route requests handled by ModelDock.\n");
+        output.push_str("# HELP modelport_route_successes_total Total successful route requests handled by AetherGateway.\n");
         output.push_str("# TYPE modelport_route_successes_total counter\n");
-        output.push_str("# HELP modelport_route_failures_total Total failed route requests handled by ModelDock.\n");
+        output.push_str("# HELP modelport_route_failures_total Total failed route requests handled by AetherGateway.\n");
         output.push_str("# TYPE modelport_route_failures_total counter\n");
         output.push_str("# HELP modelport_route_duration_ms_total Total route handling duration in milliseconds.\n");
         output.push_str("# TYPE modelport_route_duration_ms_total counter\n");

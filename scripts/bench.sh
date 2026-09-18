@@ -12,7 +12,7 @@ usage() {
   cat <<'USAGE'
 Usage: scripts/bench.sh [--upstream] [-n iterations]
 
-Measures local ModelDock endpoints without printing secrets.
+Measures local AetherGateway endpoints without printing secrets.
 Default iterations: 30 for gateway endpoints, 3 for --upstream.
 USAGE
 }

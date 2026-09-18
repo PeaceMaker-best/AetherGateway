@@ -95,7 +95,7 @@ describe('model feature data', () => {
 
   it('serializes safe headers, provider timeouts, and bounded retry policy', () => {
     const form = providerToForm(provider())
-    form.staticHeaders = 'HTTP-Referer: https://modelport.example\nX-Title: ModelDock'
+    form.staticHeaders = 'HTTP-Referer: https://modelport.example\nX-Title: AetherGateway'
     form.requestTimeoutMs = '120000'
     form.streamIdleTimeoutMs = '30000'
     form.retryMaxAttempts = '2'
@@ -103,7 +103,7 @@ describe('model feature data', () => {
     expect(providerPayloadFromForm(form, false)).toMatchObject({
       staticHeaders: {
         'HTTP-Referer': 'https://modelport.example',
-        'X-Title': 'ModelDock',
+        'X-Title': 'AetherGateway',
       },
       requestTimeoutMs: 120000,
       streamIdleTimeoutMs: 30000,

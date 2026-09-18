@@ -5,7 +5,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [advisories]
 unmaintained = "workspace"
 ignore = [
-  # `openidconnect` verifies public signatures here; ModelDock performs no RSA
+  # `openidconnect` verifies public signatures here; AetherGateway performs no RSA
   # private-key operations. Remove when the transitive `rsa` advisory is fixed.
   "RUSTSEC-2023-0071",
 ]
@@ -15,9 +15,9 @@ multiple-versions = "warn"
 wildcards = "deny"
 highlight = "all"
 deny = [
-  { name = "native-tls", reason = "ModelDock standardizes on rustls" },
-  { name = "openssl", reason = "ModelDock standardizes on rustls" },
-  { name = "openssl-sys", reason = "ModelDock standardizes on rustls" },
+  { name = "native-tls", reason = "AetherGateway standardizes on rustls" },
+  { name = "openssl", reason = "AetherGateway standardizes on rustls" },
+  { name = "openssl-sys", reason = "AetherGateway standardizes on rustls" },
 ]
 
 [sources]

@@ -12,7 +12,7 @@ the release sequence; the strategy is the decision framework for parity work.
 
 ## Product Contract
 
-ModelDock is free, MIT-licensed, self-hosted software for a 20–50 person
+AetherGateway is free, MIT-licensed, self-hosted software for a 20–50 person
 Chinese internal development team that uses local models and approved cloud
 Providers. The platform administrator is the primary operator; developers get
 scoped keys, stable logical models, their own request evidence, and copyable
@@ -26,7 +26,7 @@ The core user outcome is:
 
 Success is the first governed request within 30 minutes and sustained weekly
 team use without policy bypass—not Provider count, raw request volume, GitHub
-stars, or revenue. ModelDock has no paid edition, hosted service, or feature
+stars, or revenue. AetherGateway has no paid edition, hosted service, or feature
 tier.
 
 This is the current release contract, not the ceiling of the product. The
@@ -72,11 +72,11 @@ These are sequential product boundaries, not one large implementation PR.
 Hosted-only installations remain supported throughout.
 
 The deferred dependency chain after the adapter wire contracts is snapshot
-persistence ([#25](https://github.com/PeaceMaker-best/ModelDock/issues/25) and
-[#26](https://github.com/PeaceMaker-best/ModelDock/issues/26)), bounded collection
-([#29](https://github.com/PeaceMaker-best/ModelDock/issues/29)), a read-only admin API
-([#30](https://github.com/PeaceMaker-best/ModelDock/issues/30)), and the Compute/GPU
-dashboard ([#31](https://github.com/PeaceMaker-best/ModelDock/issues/31)). Deployment
+persistence ([#25](https://github.com/PeaceMaker-best/AetherGateway/issues/25) and
+[#26](https://github.com/PeaceMaker-best/AetherGateway/issues/26)), bounded collection
+([#29](https://github.com/PeaceMaker-best/AetherGateway/issues/29)), a read-only admin API
+([#30](https://github.com/PeaceMaker-best/AetherGateway/issues/30)), and the Compute/GPU
+dashboard ([#31](https://github.com/PeaceMaker-best/AetherGateway/issues/31)). Deployment
 desired/observed lifecycle follows; policy-bounded placement comes only after
 reconciliation evidence. In product terms, those slices:
 

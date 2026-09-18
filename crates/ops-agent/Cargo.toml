@@ -3,7 +3,7 @@ name = "modelport-ops-agent"
 version = "0.1.3"
 edition = "2024"
 rust-version = "1.96"
-description = "Deterministic, read-only operations agent for ModelDock."
+description = "Deterministic, read-only operations agent for AetherGateway."
 license = "MIT"
 publish = false
 

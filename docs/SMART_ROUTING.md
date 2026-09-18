@@ -1,6 +1,6 @@
 # Smart Routing
 
-ModelDock implements an opt-in, policy-aware router for logical model aliases.
+AetherGateway implements an opt-in, policy-aware router for logical model aliases.
 It adds adaptive candidate selection without changing the contract for explicit
 `provider:model`, static aliases, exact models, or prefix routing.
 
@@ -71,12 +71,12 @@ MODELPORT_SMART_ROUTING_ACTIVATION_PERCENT=0
 Smart aliases work on both inference edges. Clients may optionally send:
 
 ```http
-X-ModelDock-Routing-Profile: quality
-X-ModelDock-Session-Id: application-session-reference
+X-AetherGateway-Routing-Profile: quality
+X-AetherGateway-Session-Id: application-session-reference
 ```
 
 Profiles are `quality`, `balanced`, `economy`, and `latency`. The session value
-is limited to 128 ASCII non-control bytes. ModelDock hashes it together with
+is limited to 128 ASCII non-control bytes. AetherGateway hashes it together with
 the authenticated principal before routing; raw session values are neither
 logged nor stored. Reusing it keeps affinity and canary assignment stable for
 that principal. Without it, active-mode bucketing uses a principal-scoped

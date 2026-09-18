@@ -160,7 +160,7 @@ export function LoginPage() {
                   <Zap className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-slate-950">ModelDock</p>
+                  <p className="text-lg font-semibold text-slate-950">AetherGateway</p>
                   <p className="text-sm text-slate-600">Self-hosted AI Gateway</p>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export function LoginPage() {
                 <Zap className="h-5 w-5" />
               </div>
               <div className="space-y-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">ModelDock Console</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">AetherGateway Console</p>
                 <h1 className="text-2xl font-semibold tracking-[-0.025em] text-slate-950">登录控制台</h1>
                 <p className="text-sm text-slate-500">使用组织账户进入受治理网关</p>
               </div>

@@ -6,12 +6,12 @@
 
 ## Context
 
-ModelDock is being prepared for a trusted organization of approximately forty
+AetherGateway is being prepared for a trusted organization of approximately forty
 people. One local Qwen runtime on a single NVIDIA GPU cannot provide forty
 simultaneous interactive generations, while sending every request to a hosted
 Provider would violate privacy, cost, and operator-control goals.
 
-The first production phase still has one ModelDock process. Active-active
+The first production phase still has one AetherGateway process. Active-active
 gateway operation is a later availability milestone and must not be implied by
 the current Compose deployment, OIDC session implementation, in-memory health,
 or rate-limit state.
@@ -20,17 +20,17 @@ or rate-limit state.
 
 ### Product and deployment boundary
 
-- ModelDock is the only client-facing gateway and policy decision point.
-- The current phase deploys one ModelDock instance on Linux.
+- AetherGateway is the only client-facing gateway and policy decision point.
+- The current phase deploys one AetherGateway instance on Linux.
 - Production state moves to an operator-managed high-availability PostgreSQL
   service. The PostgreSQL service in the root Compose file remains a local
   development and migration-drill dependency.
-- ModelDock owns the desired state, inventory, policy, and evidence for local
+- AetherGateway owns the desired state, inventory, policy, and evidence for local
   models, Runtime Adapters, Compute Nodes/GPUs, and Deployments. External
   inference runtimes own execution mechanics. The independent boundary and
   migration from the original `local-inference-stack` integration are defined
   by [ADR-0007](0007-independent-model-and-gpu-control-plane.md).
-- A later phase may run two stateless ModelDock instances. That phase requires
+- A later phase may run two stateless AetherGateway instances. That phase requires
   distributed sessions, limits, health, and failover evidence before it can be
   described as available.
 
@@ -77,7 +77,7 @@ limits and must not claim per-user fairness.
   model, Provider, usage, latency, cost, and bounded failure classification.
 - Content diagnostics require explicit project-scoped approval, encryption,
   visible status, and automatic expiry no later than twenty-four hours.
-- ModelDock validates and translates Tool Use but never executes arbitrary
+- AetherGateway validates and translates Tool Use but never executes arbitrary
   tools. Applications or a separately isolated tool runner own execution,
   approval, sandboxing, egress, and business credentials.
 - Automatic retry or Provider fallback is permitted only before any response
@@ -112,7 +112,7 @@ limits and must not claim per-user fairness.
 3. Add hybrid scheduling, budget enforcement, approved Provider governance,
    and circuit breakers.
 4. Move the production database and secrets to managed dependencies and add
-   standard telemetry. Validate a second ModelDock instance only after shared
+   standard telemetry. Validate a second AetherGateway instance only after shared
    state is complete.
 5. Roll out to five, then fifteen, then forty people. Add a local GPU node when
    cloud overflow exceeds 30 percent, `local_strict` 429 responses exceed 1
@@ -123,7 +123,7 @@ must pass its migration, recovery, privacy, and protocol acceptance gates.
 
 ## Consequences
 
-- One ModelDock instance is an explicit availability limitation in the first
+- One AetherGateway instance is an explicit availability limitation in the first
   phase, not an accidental claim of high availability.
 - Hybrid routing is policy-controlled and auditable rather than a silent
   availability shortcut.
@@ -135,7 +135,7 @@ must pass its migration, recovery, privacy, and protocol acceptance gates.
 
 ## Rejected alternatives
 
-- Forty people sharing one ModelDock API key: prevents identity, quota,
+- Forty people sharing one AetherGateway API key: prevents identity, quota,
   revocation, fairness, and useful audit evidence.
 - Always-cloud fallback: violates the default-local data boundary.
 - Silent post-token fallback or parallel real-request shadowing: can duplicate

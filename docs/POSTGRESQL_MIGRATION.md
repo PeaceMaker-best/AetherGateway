@@ -1,13 +1,13 @@
 # PostgreSQL Migration And Cutover
 
-This runbook covers the phase-one single-ModelDock deployment. It is designed
+This runbook covers the phase-one single-AetherGateway deployment. It is designed
 for a controlled move from the local Compose PostgreSQL database to a managed
 PostgreSQL service, and for a local PostgreSQL major-version change. It does
 not perform a migration automatically.
 
 Never point PostgreSQL 18 directly at a PostgreSQL 16 data directory. Major
 versions require a reviewed logical dump/restore or a separately designed
-`pg_upgrade` workflow. ModelDock uses logical dump/restore because it also
+`pg_upgrade` workflow. AetherGateway uses logical dump/restore because it also
 works with a managed target and keeps the source database available for
 rollback.
 
@@ -35,7 +35,7 @@ For the forty-user target, prefer an operator-managed PostgreSQL service with:
 - TLS hostname verification and an explicitly trusted CA;
 - point-in-time recovery with RPO no greater than five minutes;
 - a tested RTO no greater than thirty minutes;
-- restricted ModelDock and migration identities;
+- restricted AetherGateway and migration identities;
 - encrypted backups in a different failure domain;
 - connection, storage, backup, and replication alerts.
 
@@ -44,7 +44,7 @@ database, and do not reuse the source database credentials.
 
 ## Rehearsal
 
-1. Record the source ModelDock revision, image digest, PostgreSQL version,
+1. Record the source AetherGateway revision, image digest, PostgreSQL version,
    migration list, database size, and incident contacts.
 2. Create a new schema-v2 backup:
 
@@ -59,12 +59,12 @@ database, and do not reuse the source database credentials.
    no `.env` or `config.toml`. Recover configuration from a reviewed Git
    revision and credentials from the secret manager.
    `upgrade-drill` requires an isolated PostgreSQL 18 target and reports the
-   source and target versions; it never connects ModelDock to the target and
+   source and target versions; it never connects AetherGateway to the target and
    never changes the live source database.
 3. Restore the dump into an isolated target database with the target
    PostgreSQL `pg_restore`, `--exit-on-error`, `--no-owner`, and
    `--no-privileges`.
-4. Start the candidate ModelDock revision against only that isolated target.
+4. Start the candidate AetherGateway revision against only that isolated target.
    Let embedded SQLx migrations finish before sending requests.
 5. Compare source and target counts for `_sqlx_migrations`,
    `modelport_state`, `modelport_gateway_requests`,
@@ -78,13 +78,13 @@ database, and do not reuse the source database credentials.
 
 ## Single-instance cutover
 
-The current phase has one ModelDock instance, so cutover requires a maintenance
+The current phase has one AetherGateway instance, so cutover requires a maintenance
 window:
 
 1. Announce the window and stop new client traffic at the reverse proxy.
 2. Wait for active streams and tool conversations to finish; do not replay a
    started stream on another Provider.
-3. Stop only ModelDock and the dashboard. Keep the source PostgreSQL database
+3. Stop only AetherGateway and the dashboard. Keep the source PostgreSQL database
    running and unchanged.
 4. Create and verify the final schema-v2 backup.
 5. Restore the final dump to a new empty target database and repeat the row,
@@ -99,13 +99,13 @@ window:
 
 ## Rollback
 
-Keep the source database and previous ModelDock image immutable through the
+Keep the source database and previous AetherGateway image immutable through the
 rollback window. If validation fails:
 
 1. stop client traffic;
-2. stop the candidate ModelDock instance;
+2. stop the candidate AetherGateway instance;
 3. restore the previous secret reference and database endpoint;
-4. start the previous digest-pinned ModelDock image against the untouched
+4. start the previous digest-pinned AetherGateway image against the untouched
    source database;
 5. run readiness and a synthetic request before reopening traffic.
 

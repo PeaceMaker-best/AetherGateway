@@ -312,7 +312,7 @@ pub(crate) struct RetentionPolicy {
     pub(crate) user_usage_days: u64,
     pub(crate) audit_days: u64,
     pub(crate) legal_hold: bool,
-    /// ModelDock never persists prompts, responses, or tool arguments in its
+    /// AetherGateway never persists prompts, responses, or tool arguments in its
     /// operational ledger. This explicit flag makes that invariant visible to
     /// retention previews and diagnostics.
     pub(crate) content_persistence: bool,
@@ -897,7 +897,7 @@ impl EnterpriseLedger {
         let (lease_ttl, reconcile_interval) = lease_config()?;
         if control_database_url().is_none() {
             return Err(AppError::Config(
-                "MODELPORT_DATABASE_URL is required; current ModelDock releases use PostgreSQL as the only runtime request ledger"
+                "MODELPORT_DATABASE_URL is required; current AetherGateway releases use PostgreSQL as the only runtime request ledger"
                     .to_owned(),
             ));
         }
