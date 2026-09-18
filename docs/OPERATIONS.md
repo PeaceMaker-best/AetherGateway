@@ -1,6 +1,6 @@
 # Operations
 
-This guide covers a running ModelPort instance. Docker-specific storage and
+This guide covers a running ModelDock instance. Docker-specific storage and
 network commands are in [Docker Compose](DOCKER.md); systemd is covered in
 [systemd deployment](SYSTEMD.md).
 
@@ -114,7 +114,7 @@ An HTTP-successful request is not automatically counted as a model tool call.
 `tool_called` means a validated response contained at least one tool call;
 `final_answer` means a request containing prior tool results completed without
 another call. `answered_without_tool` is a successful initial tool-enabled turn
-that returned text instead. These are request-level observations; ModelPort
+that returned text instead. These are request-level observations; ModelDock
 does not execute business tools and therefore cannot by itself certify the
 application's end-to-end task result.
 
@@ -164,7 +164,7 @@ are finalized at response-body completion, failure, timeout, or drop. Their
 outcome even though an SSE error cannot rewrite the HTTP 200 already sent to the
 client. Inspect the event stream and terminal log together.
 
-The row's `statusCode` is ModelPort's effective client-facing HTTP status for
+The row's `statusCode` is ModelDock's effective client-facing HTTP status for
 the pre-response result, not an independent raw-provider field. Valid upstream
 statuses can be retained (such as 401); transport failures map to 502. This
 makes request and provider-outcome diagnostics reflect the error contract the
@@ -172,12 +172,12 @@ client actually encountered.
 
 Token and cost values have separate reconciliation tracks. `costEstimate` is an
 operational estimate used for routing and reservations. `actualCost` exists only
-when ModelPort receives a trusted Provider-reported amount or applies an exact,
+when ModelDock receives a trusted Provider-reported amount or applies an exact,
 versioned card to Provider-reported usage. `billableCost` is the governed amount
 used for settlement and is null when evidence is insufficient. Inspect
 `reconciliationStatus` and `pricingEvidence` before treating a row as spend.
 `billingMode` still describes token provenance: `upstream-returned` means the
-adapter exposed Provider usage, while `local-estimate` means ModelPort used its
+adapter exposed Provider usage, while `local-estimate` means ModelDock used its
 request heuristic. Provider usage alone does not make an amount billable.
 `firstByteLatencyMs` is null for non-stream requests. For live streams it starts
 at the upstream attempt and stops at the first non-empty text delta or tool-call
@@ -189,7 +189,7 @@ completes the non-stream upstream response before local SSE and can also use
 reported usage, while downstream delivery completion or cancellation is
 recorded separately.
 
-A request is chargeable only after ModelPort actually starts an upstream
+A request is chargeable only after ModelDock actually starts an upstream
 attempt. Attempt-level credential, policy/quota/capability, URL, or
 Provider-rate rejection before `send()` can create a zero-usage log row without
 incrementing user quota or API-key/team spend. Earlier authentication,
@@ -219,7 +219,7 @@ Use the response metadata when interpreting a chart:
 - `rangeDataAtRetentionLimit=false` confirms there is no document-ring limit.
 
 The query reads only the selected window and current UTC day. Retention is an
-explicit preview/apply operation; ModelPort does not silently evict rows from
+explicit preview/apply operation; ModelDock does not silently evict rows from
 an in-document ring.
 
 ## Data Lifecycle And Retention
@@ -235,10 +235,10 @@ Treat persisted data by ownership class:
 | Sessions and transient login/rate-limit state | Expire through the built-in lifecycle rather than manual table deletion. |
 | Acceptance objects | Scripts remove temporary control objects; request-ledger evidence can remain. |
 
-ModelPort never intentionally persists prompt, response, tool name, tool
+ModelDock never intentionally persists prompt, response, tool name, tool
 arguments, tool results, or raw Provider bodies. Retention controls metadata;
 it cannot remove content captured by a client, Provider, reverse proxy, custom
-logging integration, crash dump, or host outside ModelPort's ledger.
+logging integration, crash dump, or host outside ModelDock's ledger.
 
 The default policy is:
 
@@ -261,7 +261,7 @@ Administrators can run the same preview-first workflow from **Dashboard → 运�
 
 ```http
 POST /admin/retention/run
-X-ModelPort-CSRF: 1
+X-ModelDock-CSRF: 1
 Content-Type: application/json
 
 {"dryRun":true}
@@ -301,7 +301,7 @@ Set `MODELPORT_RETENTION_LEGAL_HOLD=1` during an approved hold and restart. A
 preview still works; an apply returns `applied=false` and
 `skippedReason="legal_hold"`. When no hold is active, `skippedReason` is null.
 Ordinary users and viewers receive 403. The endpoint requires an administrator
-console session, `X-ModelPort-CSRF: 1`, and the normal same-origin check.
+console session, `X-ModelDock-CSRF: 1`, and the normal same-origin check.
 
 Budget foreign keys and append-only controls intentionally preserve required
 attempt IDs, usage/cost/billing fields, reservations, and budget events. Do not
@@ -314,7 +314,7 @@ or raw session ID. Test migrations against a restored database before every
 production upgrade.
 
 Acceptance scripts modify control state and can leave request evidence. For a
-zero-residue test, use an isolated ModelPort database, export the result, and
+zero-residue test, use an isolated ModelDock database, export the result, and
 remove that isolated environment. Never point destructive test cleanup at a
 shared or production database.
 
@@ -395,7 +395,7 @@ dependencies instead of inventing proxy precision.
 
 ## Performance And Benchmarking
 
-ModelPort targets single-host personal and small-team traffic. Upstream
+ModelDock targets single-host personal and small-team traffic. Upstream
 queueing and generation usually dominate latency, but authentication, routing,
 policy, protocol conversion, streaming, metrics, and PostgreSQL evidence add
 local work. The project does not claim a universal throughput or latency target
@@ -443,7 +443,7 @@ it inherits the effective `MODELPORT_MAX_CONCURRENT_REQUESTS`. The stream permit
 is retained by the returned response body and is released only when that body
 finishes or is dropped, so slow readers and abandoned clients remain counted.
 
-If no permit is immediately available, ModelPort returns HTTP 429
+If no permit is immediately available, ModelDock returns HTTP 429
 `rate_limit_error` with `Retry-After: 1` before an upstream attempt. It does not
 consume quota/spend and may return before a persisted usage row is created.
 Clients should back off; operators should inspect client cancellation, idle timeout,
@@ -556,7 +556,7 @@ process-local and loses claims on restart; enterprise mode requires PostgreSQL.
 Every active relational request owns a lease, renewed every one-third of
 `MODELPORT_LEDGER_LEASE_TTL_SECS`. The guard remains alive through the complete
 stream body, including slow delivery. At startup and every
-`MODELPORT_LEDGER_RECONCILE_INTERVAL_SECS`, ModelPort terminalizes expired
+`MODELPORT_LEDGER_RECONCILE_INTERVAL_SECS`, ModelDock terminalizes expired
 request and attempt rows with:
 
 - `state=failed` and `status_code=500`;
@@ -587,8 +587,8 @@ pause and the reconciliation interval below the TTL.
 | SSE ends at `MODELPORT_HTTP_REQUEST_TIMEOUT_SECS` | Expected total upstream lifecycle limit. Check the configured total and idle timeouts before increasing either; post-header failure is reported in the event stream. |
 | Provider is cooling down | Recent retryable/account failures; ordinary non-retryable 4xx responses do not trigger cooldown. Verify key, rate limit, and balance. |
 | Provider pool has no usable credential | `failover`/`round_robin` fail closed when every credential is disabled, cooling down, or missing its environment value; repair the pool or verify the next Provider candidate. |
-| CPA request shows excessive attempts or latency | Verify CPA `request-retry: 0` and a bounded `max-retry-credentials`; ModelPort already owns retry/fallback and records each ModelPort attempt. |
-| CPA returns 401 | Check the CPA client key in `CPA_CODEX_API_KEY`/`CPA_CLAUDE_API_KEY`, not the upstream OAuth token; then inspect CPA auth state without copying auth files into ModelPort. |
+| CPA request shows excessive attempts or latency | Verify CPA `request-retry: 0` and a bounded `max-retry-credentials`; ModelDock already owns retry/fallback and records each ModelDock attempt. |
+| CPA returns 401 | Check the CPA client key in `CPA_CODEX_API_KEY`/`CPA_CLAUDE_API_KEY`, not the upstream OAuth token; then inspect CPA auth state without copying auth files into ModelDock. |
 | CPA Claude sends requests to `/v1/v1/messages` | Remove `/v1` from `CPA_CLAUDE_BASE_URL`; only `CPA_CODEX_BASE_URL` ends in `/v1`. |
 | CPA model is visible but calls fail | Catalog discovery is availability metadata, not entitlement. Call the provider-qualified model and verify the exact account, protocol, stream, and Tool Use path. |
 | Dashboard cross-origin failure | Use a same-origin reverse proxy; `MODELPORT_ALLOWED_ORIGINS` is not a CORS switch. |

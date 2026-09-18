@@ -1,11 +1,11 @@
 name: modelport-production
 
-# Phase-one production profile: one ModelPort instance, an external managed
+# Phase-one production profile: one ModelDock instance, an external managed
 # PostgreSQL database, and secret-manager-rendered runtime environment. This
 # file deliberately has no PostgreSQL service and no repository .env mount.
 services:
   modelport:
-    image: ${MODELPORT_IMAGE:?set a digest-pinned ModelPort image}
+    image: ${MODELPORT_IMAGE:?set a digest-pinned ModelDock image}
     init: true
     read_only: true
     cap_drop:

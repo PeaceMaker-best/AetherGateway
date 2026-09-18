@@ -112,7 +112,7 @@ async fn main() -> Result<()> {
         .route("/readyz", get(readyz))
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(config.bind).await?;
-    info!(bind = %config.bind, mode = %config.mode, "ModelPort operations agent started");
+    info!(bind = %config.bind, mode = %config.mode, "ModelDock operations agent started");
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await?;
@@ -387,7 +387,7 @@ async fn request_model_analysis(
             "messages": [
                 {
                     "role": "system",
-                    "content": "你是 ModelPort 只读运维诊断助手。只能依据给定的脱敏事实回答，不得臆测密钥、提示词或用户内容，不得声称已执行操作。用简洁中文给出：可能原因、验证步骤、建议动作和风险；明确区分事实与推断。"
+                    "content": "你是 ModelDock 只读运维诊断助手。只能依据给定的脱敏事实回答，不得臆测密钥、提示词或用户内容，不得声称已执行操作。用简洁中文给出：可能原因、验证步骤、建议动作和风险；明确区分事实与推断。"
                 },
                 {
                     "role": "user",

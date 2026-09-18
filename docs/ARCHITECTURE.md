@@ -1,6 +1,6 @@
 # Architecture
 
-ModelPort is a single-process Rust gateway with a separate React dashboard. Its
+ModelDock is a single-process Rust gateway with a separate React dashboard. Its
 Anthropic Messages and scoped OpenAI Chat Completions client edges route to
 Anthropic-compatible or OpenAI-compatible Providers through one governance
 pipeline. It is designed for one trusted host or a small trusted network, not
@@ -13,7 +13,7 @@ Claude Code / OpenAI SDK / API client
                     |
        Anthropic Messages or OpenAI Chat
                     v
-              ModelPort (Axum)
+              ModelDock (Axum)
        edge parse -> typed Exchange IR
         -> auth -> validation -> model resolution
         -> rate/policy/quota -> credential selection
@@ -28,14 +28,14 @@ Claude Code / OpenAI SDK / API client
       response/SSE mapping, metrics, usage log
 
 React dashboard -> local password or OIDC Authorization Code + PKCE
-                -> /admin/* ModelPort cookie-session control plane
+                -> /admin/* ModelDock cookie-session control plane
 PostgreSQL -> request, attempt, usage, quota/spend, budget, and audit facts
 JSON/PostgreSQL document -> low-frequency auth and control configuration
 ```
 
 ## Product Boundary: Current Gateway And Target Control Plane
 
-The diagram above is the implemented v0.1.x data plane. ModelPort is evolving
+The diagram above is the implemented v0.1.x data plane. ModelDock is evolving
 from that governed gateway into an independent hybrid model and GPU control
 plane, but documentation and APIs must not present target resources as shipped
 behavior. [ADR-0007](adr/0007-independent-model-and-gpu-control-plane.md)
@@ -44,13 +44,13 @@ The [Post-Beta AI Gateway Strategy](AI_GATEWAY_STRATEGY.md) maps gateway parity,
 control/data-plane ownership, evidence gates, and cache/guardrail boundaries
 onto that resource model.
 
-The target keeps inference engines outside ModelPort:
+The target keeps inference engines outside ModelDock:
 
 ```text
 Client/Harness
       |
       v
-ModelPort protocol, policy, routing, ledger, and control APIs
+ModelDock protocol, policy, routing, ledger, and control APIs
       |
       +---------------- Hosted Provider API
       |
@@ -59,16 +59,16 @@ ModelPort protocol, policy, routing, ledger, and control APIs
                        Compute Node / GPU
 ```
 
-ModelPort owns desired state, observed inventory, governance, reconciliation,
+ModelDock owns desired state, observed inventory, governance, reconciliation,
 and durable evidence. An external runtime owns device-specific execution and
-runtime-native caches. The Dashboard calls ModelPort control APIs; it never
+runtime-native caches. The Dashboard calls ModelDock control APIs; it never
 talks directly to a runtime or becomes another source of desired state.
 
 ### Stable resource model
 
 | Resource | Owner and relationship |
 | --- | --- |
-| Client/Harness | Calls a supported ModelPort protocol edge. Claude Code, Codex CLI, Qwen Code, SDKs, and internal applications are clients, not Provider types. DeepSeek remains a Provider/model family unless a distinct caller contract is introduced and verified. |
+| Client/Harness | Calls a supported ModelDock protocol edge. Claude Code, Codex CLI, Qwen Code, SDKs, and internal applications are clients, not Provider types. DeepSeek remains a Provider/model family unless a distinct caller contract is introduced and verified. |
 | Provider | Governs an upstream connectivity, credential, trust, and commercial boundary. It can reference a hosted API or a Deployment-backed endpoint. |
 | Model | Describes a catalog identity, capabilities, limits, compatibility, and optional pricing. Catalog presence does not imply deployment or route eligibility. |
 | Runtime Adapter | Implements a versioned contract for inventory and bounded lifecycle operations against an external inference runtime. |
@@ -80,7 +80,7 @@ Hosted and local execution share Model, Provider, Route, policy, health, and
 evidence concepts, but keep distinct operational facts. Hosted APIs have
 remote credentials, rate limits, regions, and Provider-reported usage. Local
 Deployments have artifacts, runtime versions, GPU allocation, endpoint
-lifecycle, and locally observed capacity. ModelPort remains useful without a
+lifecycle, and locally observed capacity. ModelDock remains useful without a
 managed GPU.
 
 The current local Qwen path is a reference compatibility example only.
@@ -119,15 +119,15 @@ replacement.
 CLIProxyAPI (CPA) can be inserted only as an internal Provider boundary:
 
 ```text
-clients -> ModelPort -> cpa_codex  -> CPA -> Codex OAuth accounts
+clients -> ModelDock -> cpa_codex  -> CPA -> Codex OAuth accounts
                     -> cpa_claude -> CPA -> Claude OAuth accounts
                     -> other hosted/local Providers
 ```
 
-ModelPort remains the only public client endpoint and owns authentication,
+ModelDock remains the only public client endpoint and owns authentication,
 policy, routing, quota, retry/fallback, health, and durable evidence. CPA owns
 OAuth material and bounded account selection. Its management API is outside
-ModelPort's data plane. LiteLLM is not linked or deployed; only independently
+ModelDock's data plane. LiteLLM is not linked or deployed; only independently
 useful design patterns may be adopted. This boundary is recorded in
 [ADR-0004](adr/0004-modelport-gateway-and-cpa-provider-boundary.md).
 
@@ -157,7 +157,7 @@ operator must still account for.
 | Identity, policy, and budget | Human console sign-in supports local Argon2 credentials and an optional single-host OIDC Authorization Code + PKCE preview. A verified OIDC issuer/subject is bound to a local user, and both methods issue the same first-party console session. The data plane separately accepts a control-plane API key or the explicitly allowed shared token. API-key model/Provider/IP policy is configured in the control store. Before egress, PostgreSQL atomically admits the tenant budget and reserves user/API-key/team usage against settled plus open amounts in the attempt-creation transaction; terminal paths settle or release both forms of reservation. Only a sent attempt is chargeable. | OIDC authorization state and console sessions are process-local and do not provide multi-instance SSO continuity. OIDC does not authenticate `/v1/*` clients. PostgreSQL quota, spend, and tenant-budget reservations provide hard concurrent admission for their configured estimates. Rate limits and stream permits remain process-local. |
 | Credential and Provider lifecycle | Provider credentials are environment-backed. Pool selection supports manual, failover, and round-robin behavior; outcomes feed credential/Provider health and cooldown state; unusable managed pools fail closed. | Health is operational state, not an external SLA. A configured credential or successful synthetic test does not establish every model, Tool Use, or stream path as verified. |
 | Persistence and ledger | A running server requires PostgreSQL. SQLx/rustls, bounded pools, embedded migrations, composite tenant foreign keys, normalized request/attempt/routing-decision rows, hashed idempotency claims, instance leases, heartbeats, and an expired-lease reconciler form the operational ledger. The request and its routing evidence are inserted in one transaction. Terminal request rows plus open usage reservations are the source for logs, Dashboard ranges, API-key/team usage, quota/spend admission, and price snapshots. Audit events are append-only relational rows. | Low-frequency auth, API-key/team definitions, Provider overrides, and credential-pool configuration still use control documents. Routing feedback has a normalized storage foundation but is not allowed to mutate production weights online. Response replay is not implemented, and reconciled rows remain explicitly unbilled. |
-| Security and observability | Browser writes require a ModelPort session and CSRF token, with Origin/Referer checks when present. The OIDC preview validates discovery metadata, signed ID-token claims, state, nonce, and PKCE before issuing that session. Trusted-proxy parsing, remote-Provider HTTPS defaults, URL and resolved-address guards, per-request DNS pinning, disabled redirects/proxies, bounded bodies/SSE, request/attempt IDs, terminal stream finalization, lease-expiry evidence, Prometheus metrics, retained logs, and source-labelled dashboard aggregation provide operational evidence. | OIDC is console authentication, not Provider or data-plane credential delegation, and its pending state is lost on restart. Private Provider URLs remain an explicit operator trust decision and outbound filtering remains defense in depth. `upstream-returned` identifies usage provenance, not invoice accuracy; `local-estimate` is heuristic, ordinary live streams may lack final Provider usage, and `unreconciled` requires external evidence before any financial adjustment. |
+| Security and observability | Browser writes require a ModelDock session and CSRF token, with Origin/Referer checks when present. The OIDC preview validates discovery metadata, signed ID-token claims, state, nonce, and PKCE before issuing that session. Trusted-proxy parsing, remote-Provider HTTPS defaults, URL and resolved-address guards, per-request DNS pinning, disabled redirects/proxies, bounded bodies/SSE, request/attempt IDs, terminal stream finalization, lease-expiry evidence, Prometheus metrics, retained logs, and source-labelled dashboard aggregation provide operational evidence. | OIDC is console authentication, not Provider or data-plane credential delegation, and its pending state is lost on restart. Private Provider URLs remain an explicit operator trust decision and outbound filtering remains defense in depth. `upstream-returned` identifies usage provenance, not invoice accuracy; `local-estimate` is heuristic, ordinary live streams may lack final Provider usage, and `unreconciled` requires external evidence before any financial adjustment. |
 
 The detailed lifecycle and failure semantics below are normative. Provider and
 Tool Use verification evidence is maintained separately in the
@@ -227,11 +227,11 @@ For `POST /v1/messages` and `POST /v1/chat/completions`, the current order is:
    before an upstream attempt. Then a route-attempt list is built;
    cooling-down providers are skipped while an eligible alternative exists; if
    every eligible route is cooling, the primary remains as the final attempt.
-7. ModelPort atomically creates the tenant-scoped request row. When an
+7. ModelDock atomically creates the tenant-scoped request row. When an
    `Idempotency-Key` is present, its hash is uniquely claimed alongside the
    protocol/body fingerprint; a duplicate returns 409 before Provider egress.
    A per-instance lease starts and remains owned through the response body.
-8. For each attempt, ModelPort selects a provider credential, checks API-key
+8. For each attempt, ModelDock selects a provider credential, checks API-key
    policy and quota, validates the provider URL and capability gate, then calls
    the protocol adapter. Immediately before the call it inserts a leased,
    tenant-scoped Provider-attempt row. `failover` and `round_robin` pools with no usable
@@ -355,9 +355,9 @@ revisions, and replaces auth and control together in one PostgreSQL transaction.
 
 Human console sign-in can use a local password or the optional
 [OIDC preview](OIDC.md). OIDC identity is bound by the verified issuer/subject
-pair to a local ModelPort user and produces the same HttpOnly console session;
+pair to a local ModelDock user and produces the same HttpOnly console session;
 automatic provisioning, when enabled, creates only an ordinary `user`. The
-identity-provider token and the ModelPort session cookie are never accepted as
+identity-provider token and the ModelDock session cookie are never accepted as
 data-plane credentials. Pending OIDC state and active console sessions are
 process-local, so a restart invalidates both and this slice does not provide
 multi-instance enterprise IAM.
@@ -414,7 +414,7 @@ separate: `fidelity_mode="stability"` alone does not rewrite output, so
 On the normal live-stream path, an upstream failure after local response headers
 can only be represented as an SSE `event: error`.
 
-ModelPort now establishes the upstream connection and checks its initial HTTP
+ModelDock now establishes the upstream connection and checks its initial HTTP
 status before returning the local SSE response, so connect and pre-header HTTP
 failures can participate in normal fallback. Completing the stream remains a
 separate phase: the request log, message metrics, and Provider health are not
@@ -434,7 +434,7 @@ response byte limit, the total request timeout, and the stream-idle timeout,
 then redacted before they become an error eligible for fallback.
 
 Native Anthropic streams must reach `message_stop`. OpenAI-compatible streams
-must reach `[DONE]` or a `finish_reason`, after which ModelPort emits
+must reach `[DONE]` or a `finish_reason`, after which ModelDock emits
 `message_stop`. EOF without the protocol's termination signal is an upstream
 protocol error rather than a successful partial response. Once local HTTP 200
 headers exist, this is represented by SSE `event: error` and cannot restart on
@@ -454,7 +454,7 @@ quota/spend charge. A dropped body records a 499 downstream-cancellation
 outcome. When upstream completion is already known, Provider health remains a
 success even though downstream delivery did not complete.
 
-`buffer_stream_text=true` is a distinct compatibility path. ModelPort sends a
+`buffer_stream_text=true` is a distinct compatibility path. ModelDock sends a
 non-stream OpenAI-compatible request, awaits and validates the complete
 response, converts it to an Anthropic message, and only then creates locally
 chunked SSE. Upstream HTTP/protocol failures therefore remain normal HTTP errors
@@ -471,7 +471,7 @@ upstream outcome.
 - Data-plane credentials and dashboard sessions are separate.
 - Optional OIDC uses Authorization Code flow with PKCE, state, nonce, and a
   short-lived HttpOnly browser-flow binding for human console authentication.
-  Verified identities resolve to local users and receive the normal ModelPort
+  Verified identities resolve to local users and receive the normal ModelDock
   session; identity-provider tokens are not forwarded to Providers or accepted
   by `/v1/*`.
 - Pending OIDC authorization state and console sessions are process-local. A
@@ -481,12 +481,12 @@ upstream outcome.
   process-local four-hash gate returns 429 after a five-second queue wait;
   unknown/disabled-user attempts remain in the expensive hash class, and the
   five-attempt/15-minute username lockout remains process-local.
-- Dashboard writes require a session, `X-ModelPort-CSRF`, and an allowed
+- Dashboard writes require a session, `X-ModelDock-CSRF`, and an allowed
   Origin/Referer when the browser sends one.
 - The backend does not currently provide general cross-origin CORS headers.
   Deploy the dashboard and API behind one origin.
 - Forwarded client IP headers are accepted only from configured trusted peers.
-  ModelPort walks `X-Forwarded-For` from the connected peer right-to-left,
+  ModelDock walks `X-Forwarded-For` from the connected peer right-to-left,
   discards only explicitly trusted proxy hops, and selects the first untrusted
   address. It never trusts an attacker-supplied leftmost value merely because
   the nearest peer is a proxy.
@@ -513,7 +513,7 @@ See [Security Policy](../.github/SECURITY.md) and [Operations](OPERATIONS.md).
 ## Deliberate Non-Goals
 
 - Model inference inside the gateway.
-- Treating one local runtime repository, engine, or Harness as the ModelPort
+- Treating one local runtime repository, engine, or Harness as the ModelDock
   product model.
 - A chat client or prompt-history product.
 - Complete enterprise IAM (SCIM, service accounts, organization lifecycle,

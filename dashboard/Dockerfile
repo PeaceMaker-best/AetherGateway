@@ -21,9 +21,9 @@ ARG MODELPORT_VERSION
 ARG MODELPORT_SOURCE_REVISION
 ARG MODELPORT_SOURCE_STATE
 ARG MODELPORT_BUILD_DATE
-LABEL org.opencontainers.image.title="ModelPort Dashboard" \
-      org.opencontainers.image.description="Same-origin administration dashboard for ModelPort" \
-      org.opencontainers.image.source="https://github.com/tiammomo/ModelPort" \
+LABEL org.opencontainers.image.title="ModelDock Dashboard" \
+      org.opencontainers.image.description="Same-origin administration dashboard for ModelDock" \
+      org.opencontainers.image.source="https://github.com/PeaceMaker-best/ModelDock" \
       org.opencontainers.image.revision="$MODELPORT_SOURCE_REVISION" \
       org.opencontainers.image.version="$MODELPORT_VERSION" \
       org.opencontainers.image.created="$MODELPORT_BUILD_DATE" \

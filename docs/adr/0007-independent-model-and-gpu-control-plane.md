@@ -9,7 +9,7 @@
 
 ## Context
 
-ModelPort v0.1.x ships a governed single-process gateway and a separate
+ModelDock v0.1.x ships a governed single-process gateway and a separate
 operations Dashboard. It already owns client authentication, Provider and
 model resolution, policy, routing, quota, cost evidence, health, and the
 operational ledger. Hosted API Providers and local OpenAI-compatible runtimes
@@ -20,19 +20,19 @@ GPU state, and acceptance evidence to a particular `local-inference-stack`
 checkout. That was useful for one deployment rehearsal, but it made an
 external repository layout look like a permanent architecture dependency. It
 also left model inventory, compute capacity, and deployment lifecycle without
-clear ModelPort resource ownership.
+clear ModelDock resource ownership.
 
-ModelPort needs to grow without turning one integration into the product
+ModelDock needs to grow without turning one integration into the product
 model. Hosted APIs will remain first-class, new API Providers will be added,
 and local inference engines must remain replaceable. Claude, Codex, DeepSeek,
-SDKs, and internal applications are clients of ModelPort; their names must not
+SDKs, and internal applications are clients of ModelDock; their names must not
 become Provider or deployment types.
 
 ## Decision
 
 ### Control-plane ownership
 
-ModelPort is an independent hybrid model and GPU control plane. It owns the
+ModelDock is an independent hybrid model and GPU control plane. It owns the
 desired state, observed inventory, policy, and evidence for the following
 resources:
 
@@ -42,18 +42,18 @@ resources:
 | Provider | A governed connectivity, credential, trust, and commercial boundary. A Provider may be a hosted API or an endpoint backed by a local Deployment. |
 | Model | A provider-independent catalog identity plus reviewed capabilities, limits, compatibility, and optional rate-card metadata. A model record does not prove that it is deployed or usable. |
 | Runtime Adapter | A versioned contract that discovers and controls an external inference runtime. It translates lifecycle and inventory operations; it is not the runtime itself. |
-| Compute Node/GPU | Observed capacity and health for a managed host and its devices. Desired labels and admission policy belong to ModelPort; driver and hardware facts remain observations. |
+| Compute Node/GPU | Observed capacity and health for a managed host and its devices. Desired labels and admission policy belong to ModelDock; driver and hardware facts remain observations. |
 | Deployment | The desired and observed binding among a Model, Runtime Adapter, Compute Node/GPU allocation, endpoint, and lifecycle state. |
 | Route | The client-facing logical selection policy that chooses eligible Provider/model or Deployment-backed candidates and records the decision. |
 
 The inference engine remains out of process. llama.cpp, vLLM, Ollama, and
 other runtimes own model execution, device-specific process mechanics, and
-runtime-native caches. ModelPort must not link their engines into its gateway
+runtime-native caches. ModelDock must not link their engines into its gateway
 process or make their repository directory layout part of a core contract.
 
 ### Adapter boundary
 
-A local integration enters ModelPort through an authenticated, versioned
+A local integration enters ModelDock through an authenticated, versioned
 Runtime Adapter contract. The contract must distinguish desired state,
 observed state, and immutable execution evidence. Mutating operations must be
 idempotent and bounded; inventory reads must not implicitly download a model,
@@ -61,7 +61,7 @@ start a runtime, or change GPU state.
 
 The current local Qwen configuration is one reference adapter and acceptance
 example. `local-inference-stack` is not a required dependency, authoritative
-inventory, release input, or cross-repository source of truth. No ModelPort
+inventory, release input, or cross-repository source of truth. No ModelDock
 feature may require that repository's checkout path, scripts, environment
 variables, or internal file formats. Existing compatibility helpers are
 temporary migration surfaces and will be generalized or removed in a focused
@@ -111,7 +111,7 @@ Each stage must be independently useful and keep hosted API Providers working.
 
 ## Consequences
 
-- ModelPort can manage local and remote capacity without depending on a second
+- ModelDock can manage local and remote capacity without depending on a second
   product repository.
 - Models, GPU devices, and running deployments become separate resources
   instead of fields inferred from a Provider URL.
@@ -129,7 +129,7 @@ Each stage must be independently useful and keep hosted API Providers working.
 - Keep `local-inference-stack` as the model/GPU source of truth: preserves a
   cross-repository dependency and prevents other runtime adapters from being
   first-class.
-- Embed a preferred inference engine in ModelPort: couples gateway releases to
+- Embed a preferred inference engine in ModelDock: couples gateway releases to
   GPU drivers and runtime internals and expands the trusted process boundary.
 - Treat a running Provider endpoint as a Deployment: loses desired state,
   compute allocation, lifecycle, and provenance.

@@ -1,4 +1,4 @@
--- Authoritative incident ledger for the optional, read-only ModelPort
+-- Authoritative incident ledger for the optional, read-only ModelDock
 -- operations agent. The agent never connects to this database directly;
 -- observations arrive through the versioned internal API.
 CREATE TABLE modelport_ops_incidents (

@@ -1,4 +1,4 @@
-# ModelPort Observability Pack
+# ModelDock Observability Pack
 
 This directory is the official minimum monitoring contract for the
 single-instance Small-Team Beta. Prometheus and Grafana remain operator-owned
@@ -17,7 +17,7 @@ dependencies and are not added to the default Compose stack.
   meaning, triage, and recovery checks.
 
 Copy the files into the operator's Prometheus/Grafana deployment. Store a
-dedicated scoped ModelPort key in the referenced secret files; do not place it
+dedicated scoped ModelDock key in the referenced secret files; do not place it
 in Git, the rule file, a dashboard variable, or an alert annotation. Prometheus
 can authenticate to `/metrics` with `Authorization: Bearer`; Blackbox Exporter
 uses its own secret file for `/readyz`.

@@ -1,6 +1,6 @@
 # Security Policy
 
-ModelPort holds upstream provider credentials and exposes a model-routing data
+ModelDock holds upstream provider credentials and exposes a model-routing data
 plane plus an administrative control plane. Its supported deployment boundary
 is one trusted host or a small trusted network behind a firewall or same-origin
 HTTPS reverse proxy. Do not expose the backend directly to the public internet.
@@ -48,7 +48,7 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
   audit, budget, and credential-variable metadata.
 - Logical CLI backups, which contain password and API-key hashes and can
   restore auth/control definitions but not the complete operational ledger.
-- Prompts and provider responses, even though ModelPort does not intentionally
+- Prompts and provider responses, even though ModelDock does not intentionally
   persist complete request/response bodies in its usage log.
 
 ## Authentication Boundaries
@@ -70,8 +70,8 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
   Startup requires an active administrator already linked to that issuer.
   `MODELPORT_OIDC_REQUIRED_ACR` additionally requires an exact signed `acr`
   claim and forbids password fallback. Configure the identity provider's MFA
-  policy for that class; ModelPort does not implement an MFA factor itself.
-- Dashboard writes require a session, `X-ModelPort-CSRF`, and an allowed
+  policy for that class; ModelDock does not implement an MFA factor itself.
+- Dashboard writes require a session, `X-ModelDock-CSRF`, and an allowed
   Origin/Referer when present. `MODELPORT_ALLOWED_ORIGINS` extends that write
   check; it does not enable browser CORS.
 - The backend has no general CORS response policy. Serve dashboard and API from
@@ -83,7 +83,7 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
   network or reverse proxy needs them.
 - Configure `MODELPORT_TRUSTED_PROXIES` with exact proxy IPs/CIDRs. Forwarded
   client-IP headers are security inputs for IP policy and rate limiting.
-  ModelPort walks XFF from the connected peer right-to-left and removes only
+  ModelDock walks XFF from the connected peer right-to-left and removes only
   explicitly trusted hops; a single-hop proxy should overwrite XFF with its
   observed client address. Preserve the original Host authority including its
   port so browser Origin/Host write checks remain aligned.
@@ -131,7 +131,7 @@ cost estimates, status, latency, retry/fallback, client IP, and a category-only
 error summary. Durable usage, request/attempt ledger, and Provider-health error
 fields remove request values, Tool validation paths, Provider bodies, URLs, and
 storage diagnostics. Startup migration also rewrites older retained error
-detail. ModelPort does not intentionally persist prompts, complete messages,
+detail. ModelDock does not intentionally persist prompts, complete messages,
 raw provider bodies, authorization headers, or plaintext keys.
 
 The current authenticated caller can receive a bounded upstream error whose

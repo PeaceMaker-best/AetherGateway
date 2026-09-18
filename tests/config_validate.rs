@@ -143,7 +143,7 @@ fn cli_deployment_preflight_enforces_the_enterprise_security_profile() {
     ]);
     let valid_text = output_text(&valid);
     assert!(valid.status.success(), "{valid_text}");
-    assert!(valid_text.contains("ModelPort configuration valid"));
+    assert!(valid_text.contains("ModelDock configuration valid"));
 }
 
 #[test]
@@ -151,7 +151,7 @@ fn cli_deployment_preflight_accepts_a_valid_local_environment() {
     let output = run_config_validate(&[]);
     let text = output_text(&output);
     assert!(output.status.success(), "{text}");
-    assert!(text.contains("ModelPort configuration valid"));
+    assert!(text.contains("ModelDock configuration valid"));
 }
 
 #[test]
@@ -198,7 +198,7 @@ fn modelport_openai_env_names_take_precedence_over_legacy_client_names() {
 
     assert!(output.status.success(), "{text}");
     assert!(!text.contains("legacy client-style environment fallback"));
-    assert!(!text.contains("points back to this ModelPort listener"));
+    assert!(!text.contains("points back to this ModelDock listener"));
 }
 
 #[test]
@@ -211,7 +211,7 @@ fn openai_upstream_base_url_cannot_point_back_to_modelport() {
     let text = output_text(&output);
 
     assert!(!output.status.success(), "{text}");
-    assert!(text.contains("points back to this ModelPort listener"));
+    assert!(text.contains("points back to this ModelDock listener"));
     assert!(text.contains("MODELPORT_OPENAI_BASE_URL"));
 
     let unspecified_host = run_env_default_config_validate(&[
@@ -224,7 +224,7 @@ fn openai_upstream_base_url_cannot_point_back_to_modelport() {
         !unspecified_host.status.success(),
         "{unspecified_host_text}"
     );
-    assert!(unspecified_host_text.contains("points back to this ModelPort listener"));
+    assert!(unspecified_host_text.contains("points back to this ModelDock listener"));
 }
 
 #[test]
@@ -312,5 +312,5 @@ fn oidc_static_preflight_is_fail_closed_and_does_not_contact_the_provider() {
     ]);
     let valid_text = output_text(&valid);
     assert!(valid.status.success(), "{valid_text}");
-    assert!(valid_text.contains("ModelPort configuration valid"));
+    assert!(valid_text.contains("ModelDock configuration valid"));
 }

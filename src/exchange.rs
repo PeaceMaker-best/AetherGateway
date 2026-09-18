@@ -939,7 +939,7 @@ fn validate_openai_request_shape(request: &OpenAiChatRequest) -> Result<(), AppE
         .is_some_and(|store| !store.is_null() && store.as_bool() != Some(false))
     {
         return Err(AppError::InvalidRequest(
-            "store must be false or null because ModelPort does not persist Chat Completions"
+            "store must be false or null because ModelDock does not persist Chat Completions"
                 .to_owned(),
         ));
     }

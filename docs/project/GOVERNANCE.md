@@ -1,10 +1,10 @@
 # Governance
 
-ModelPort is an open-source project maintained by `@tiammomo`.
+ModelDock is an open-source project maintained by `@PeaceMaker-best`.
 
 ## Roles
 
-- **Users** operate ModelPort and provide reproducible feedback.
+- **Users** operate ModelDock and provide reproducible feedback.
 - **Contributors** submit documentation, tests, code, or review.
 - **Maintainers** triage issues, review changes, manage security reports, and
   publish releases.

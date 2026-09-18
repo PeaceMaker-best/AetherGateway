@@ -37,9 +37,9 @@ ARG MODELPORT_SOURCE_REVISION
 ARG MODELPORT_SOURCE_STATE
 ARG MODELPORT_VERSION
 ARG MODELPORT_BUILD_DATE
-LABEL org.opencontainers.image.title="ModelPort Operations Agent" \
-      org.opencontainers.image.description="Deterministic read-only operations agent for ModelPort" \
-      org.opencontainers.image.source="https://github.com/tiammomo/ModelPort" \
+LABEL org.opencontainers.image.title="ModelDock Operations Agent" \
+      org.opencontainers.image.description="Deterministic read-only operations agent for ModelDock" \
+      org.opencontainers.image.source="https://github.com/PeaceMaker-best/ModelDock" \
       org.opencontainers.image.revision="$MODELPORT_SOURCE_REVISION" \
       org.opencontainers.image.version="$MODELPORT_VERSION" \
       org.opencontainers.image.created="$MODELPORT_BUILD_DATE" \

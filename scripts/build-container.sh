@@ -56,7 +56,7 @@ modelport_version="$(
 if [[ -z "$modelport_version" ]]; then
   die "could not read package version from Cargo.toml"
 fi
-log "building ModelPort images version=$modelport_version revision=$source_revision source_state=$source_state"
+log "building ModelDock images version=$modelport_version revision=$source_revision source_state=$source_state"
 common_args=(
   --build-arg "MODELPORT_VERSION=$modelport_version"
   --build-arg "MODELPORT_SOURCE_REVISION=$source_revision"

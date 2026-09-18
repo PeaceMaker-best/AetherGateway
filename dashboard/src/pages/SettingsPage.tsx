@@ -892,7 +892,7 @@ function RetentionCard({
       <CardHeader className="flex-col items-start justify-between gap-3 space-y-0 sm:flex-row">
         <div>
           <CardTitle className="flex items-center gap-2"><ShieldCheck className="h-4 w-4" />数据保留</CardTitle>
-          <CardDescription className="mt-2">先预览，再按 30 / 90 / 395 天策略处理运维元数据；ModelPort 不持久化提示词和响应正文。</CardDescription>
+          <CardDescription className="mt-2">先预览，再按 30 / 90 / 395 天策略处理运维元数据；ModelDock 不持久化提示词和响应正文。</CardDescription>
         </div>
         {result && (
           <Badge variant={result.policy.legalHold ? 'warning' : result.applied ? 'success' : 'secondary'}>

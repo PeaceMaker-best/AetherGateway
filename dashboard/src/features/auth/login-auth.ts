@@ -74,7 +74,7 @@ export function loginErrorMessage(error: unknown): string {
   }
 
   if (error instanceof TypeError || (error instanceof Error && /fetch|network|load failed/i.test(error.message))) {
-    return '无法连接 ModelPort 控制面；请检查网络、后端进程和反向代理配置。'
+    return '无法连接 ModelDock 控制面；请检查网络、后端进程和反向代理配置。'
   }
 
   return '登录请求未完成，请稍后重试；若持续失败，请检查控制面日志。'
@@ -93,7 +93,7 @@ export function authCapabilityErrorMessage(error: unknown): string {
     return `认证方式探测失败（HTTP ${error.status}）。`
   }
   if (error instanceof TypeError || (error instanceof Error && /fetch|network|load failed/i.test(error.message))) {
-    return '认证方式探测失败：浏览器无法连接 ModelPort 控制面。'
+    return '认证方式探测失败：浏览器无法连接 ModelDock 控制面。'
   }
   return '认证方式探测失败，当前实例支持的登录方式尚未确认。'
 }

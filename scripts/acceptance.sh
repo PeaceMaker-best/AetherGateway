@@ -55,17 +55,17 @@ created_team_id=""
 cleanup() {
   if [[ -n "$created_key_id" ]]; then
     curl_local -sS -m 10 -b "$cookie_file" \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       -X DELETE "$(base_url)/admin/api-keys/$created_key_id" >/dev/null 2>&1 || true
   fi
   if [[ -n "$created_user_id" ]]; then
     curl_local -sS -m 10 -b "$cookie_file" \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       -X DELETE "$(base_url)/admin/users/$created_user_id" >/dev/null 2>&1 || true
   fi
   if [[ -n "$created_team_id" ]]; then
     curl_local -sS -m 10 -b "$cookie_file" \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       -X DELETE "$(base_url)/admin/teams/$created_team_id" >/dev/null 2>&1 || true
   fi
   rm -f "${temp_files[@]}"
@@ -142,14 +142,14 @@ admin_json() {
       -o "$body_file" -w '%{http_code}' \
       -X "$method" \
       -H 'Content-Type: application/json' \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       "$(base_url)$path" \
       -d "$payload"
   else
     curl_local -sS -m 20 -b "$cookie_file" -c "$cookie_file" \
       -o "$body_file" -w '%{http_code}' \
       -X "$method" \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       "$(base_url)$path"
   fi
 }
@@ -162,7 +162,7 @@ message_payload() {
     process.stdout.write(JSON.stringify({
       model,
       max_tokens: maxTokens,
-      messages: [{ role: "user", content: "Reply with: ModelPort acceptance OK." }]
+      messages: [{ role: "user", content: "Reply with: ModelDock acceptance OK." }]
     }));
   ' "$acceptance_model" "$max_tokens"
 }
@@ -359,4 +359,4 @@ status="$(admin_json DELETE "/admin/teams/$created_team_id")"
 expect_status "$status" "200" "cleanup acceptance team"
 created_team_id=""
 
-printf '\nModelPort acceptance passed for personal/small-team deployment.\n'
+printf '\nModelDock acceptance passed for personal/small-team deployment.\n'

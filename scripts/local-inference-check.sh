@@ -16,12 +16,12 @@ Usage:
 Options:
   --stack-dir <path>  Deprecated external compatibility mode. May also be
                       supplied through LOCAL_INFERENCE_STACK_DIR.
-  --config <path>     ModelPort config for deprecated compatibility mode.
+  --config <path>     ModelDock config for deprecated compatibility mode.
   --release           Add release checks in deprecated compatibility mode.
   --json              Emit machine-readable JSON.
   -h, --help          Show this help.
 
-Without --stack-dir, this command validates ModelPort's repository-owned Qwen
+Without --stack-dir, this command validates ModelDock's repository-owned Qwen
 Runtime Adapter fixture. It does not connect to a runtime, download a model,
 or change GPU state. Prefer scripts/runtime-adapter-check.sh for new adapters.
 USAGE

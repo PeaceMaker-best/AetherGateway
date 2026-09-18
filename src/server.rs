@@ -96,7 +96,7 @@ pub(crate) async fn serve() -> Result<(), AppError> {
         version = version::VERSION,
         revision = version::REVISION,
         source_state = version::SOURCE_STATE,
-        "ModelPort listening"
+        "ModelDock listening"
     );
 
     axum::serve(

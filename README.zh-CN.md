@@ -1,17 +1,17 @@
-# ModelPort
+# ModelDock
 
-[![CI](https://github.com/tiammomo/ModelPort/actions/workflows/ci.yml/badge.svg)](https://github.com/tiammomo/ModelPort/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/tiammomo/ModelPort/actions/workflows/codeql.yml/badge.svg)](https://github.com/tiammomo/ModelPort/actions/workflows/codeql.yml)
-[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/tiammomo/ModelPort/badge)](https://scorecard.dev/viewer/?uri=github.com/tiammomo/ModelPort)
+[![CI](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/ci.yml/badge.svg)](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/codeql.yml/badge.svg)](https://github.com/PeaceMaker-best/ModelDock/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/PeaceMaker-best/ModelDock/badge)](https://scorecard.dev/viewer/?uri=github.com/PeaceMaker-best/ModelDock)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [English](README.md) | **简体中文**
 
-ModelPort 是面向 20–50 人研发团队的免费、自托管模型网关。管理员接好本地或
+ModelDock 是面向 20–50 人研发团队的免费、自托管模型网关。管理员接好本地或
 云端模型、设好使用边界，开发者复制配置即可接入；出现问题时，可以按请求
 查看权限、路由、用量和计费证据。项目采用 MIT 许可证。
 
-![ModelPort architecture overview](docs/assets/modelport-overview.svg)
+![ModelDock architecture overview](docs/assets/modelport-overview.svg)
 
 ## 主要能力
 
@@ -31,8 +31,8 @@ v0.1.x 为 Small-Team Beta，正式支持 Linux x86_64 单实例。协议与部�
 需要 Linux x86_64、Git、Docker Compose v2 和 Provider 凭证；本机无需 Rust 或 Node。
 
 ```bash
-git clone https://github.com/tiammomo/ModelPort.git
-cd ModelPort
+git clone https://github.com/PeaceMaker-best/ModelDock.git
+cd ModelDock
 scripts/setup.sh
 # 编辑 .env，填写 DEEPSEEK_ANTHROPIC_AUTH_TOKEN
 scripts/doctor.sh --setup
@@ -75,7 +75,7 @@ CIDR、安全 Cookie、CSRF 防护和控制台 API Key。不要提交 `.env`、P
 密钥、备份、Prompt、响应或原始敏感日志。
 
 请阅读[安全策略](.github/SECURITY.md)、[隐私说明](docs/project/PRIVACY.md)、
-[支持政策](.github/SUPPORT.md)和[项目治理](docs/project/GOVERNANCE.md)。ModelPort 是免费自托管
+[支持政策](.github/SUPPORT.md)和[项目治理](docs/project/GOVERNANCE.md)。ModelDock 是免费自托管
 软件；本项目不提供付费版本、托管服务或社区支持 SLA。
 
 ## 本地开发

@@ -1,6 +1,6 @@
-# Contributing To ModelPort
+# Contributing To ModelDock
 
-ModelPort prioritizes a reliable Anthropic-compatible text path, explicit
+ModelDock prioritizes a reliable Anthropic-compatible text path, explicit
 security boundaries, and low operational cost for a single host or small team.
 Changes should preserve that scope and distinguish implemented behavior from
 provider-specific verification or future proposals.

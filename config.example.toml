@@ -1,4 +1,4 @@
-# Minimal, self-contained ModelPort configuration.
+# Minimal, self-contained ModelDock configuration.
 #
 # Copy this file to `config.toml`, set the referenced secrets in the process
 # environment, then run `model-port config validate`. In TOML mode, add every

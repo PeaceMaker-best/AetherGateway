@@ -1,6 +1,6 @@
 # Upgrading And Rollback
 
-ModelPort v0.1.x is a single-instance beta. It promises a predictable,
+ModelDock v0.1.x is a single-instance beta. It promises a predictable,
 evidence-preserving maintenance window, not zero-downtime or rolling upgrades.
 Application and database rollback are separate decisions and may need to be
 performed together.
@@ -23,14 +23,14 @@ GitHub Release. Verify the release before editing deployment state:
 ```bash
 sha256sum --check SHA256SUMS
 gh attestation verify model-port-v0.1.1-linux-amd64.tar.gz \
-  --repo tiammomo/ModelPort
+  --repo PeaceMaker-best/ModelDock
 gh attestation verify \
-  oci://ghcr.io/tiammomo/modelport@sha256:<backend-digest> \
-  --repo tiammomo/ModelPort
+  oci://ghcr.io/peacemaker-best/modelport@sha256:<backend-digest> \
+  --repo PeaceMaker-best/ModelDock
 cosign verify \
-  --certificate-identity-regexp='https://github.com/tiammomo/ModelPort/.github/workflows/release.yml@refs/tags/v0[.]1[.]1' \
+  --certificate-identity-regexp='https://github.com/PeaceMaker-best/ModelDock/.github/workflows/release.yml@refs/tags/v0[.]1[.]1' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-  ghcr.io/tiammomo/modelport@sha256:<backend-digest>
+  ghcr.io/peacemaker-best/modelport@sha256:<backend-digest>
 ```
 
 The binary archive includes `Cargo.lock`; its SBOM inventories locked workspace
@@ -89,10 +89,10 @@ Set the target images to the exact release digests in the shell or the
 operator-owned deployment environment:
 
 ```bash
-export MODELPORT_IMAGE='ghcr.io/tiammomo/modelport@sha256:<backend-digest>'
-export MODELPORT_DASHBOARD_IMAGE='ghcr.io/tiammomo/modelport-dashboard@sha256:<dashboard-digest>'
+export MODELPORT_IMAGE='ghcr.io/peacemaker-best/modelport@sha256:<backend-digest>'
+export MODELPORT_DASHBOARD_IMAGE='ghcr.io/peacemaker-best/modelport-dashboard@sha256:<dashboard-digest>'
 # Required only when the optional Compose profile is enabled.
-export MODELPORT_OPS_AGENT_IMAGE='ghcr.io/tiammomo/modelport-ops-agent@sha256:<agent-digest>'
+export MODELPORT_OPS_AGENT_IMAGE='ghcr.io/peacemaker-best/modelport-ops-agent@sha256:<agent-digest>'
 export MODELPORT_PULL_POLICY=always
 ```
 
@@ -106,7 +106,7 @@ Then:
    docker compose -f "$MODELPORT_COMPOSE_FILE" stop modelport
    ```
 
-   Compose sends SIGTERM. ModelPort stops accepting new connections, waits for
+   Compose sends SIGTERM. ModelDock stops accepting new connections, waits for
    active HTTP bodies, then drains ledger finalizers. The default
    `stop_grace_period` is 11 minutes: the 600-second request timeout plus the
    30-second finalizer drain and margin. An operator may choose a different

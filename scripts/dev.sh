@@ -13,7 +13,7 @@ Usage: scripts/dev.sh [COMMAND]
 Local source development (PostgreSQL must already be available):
   run                 Run in the foreground (default).
   start               Build when needed, then start in the background.
-  stop                Stop only native ModelPort processes from this checkout.
+  stop                Stop only native ModelDock processes from this checkout.
   restart             Stop, then start this checkout's native gateway.
   status              Show owned processes, liveness and Provider account state.
   logs                Show the last 80 lines of the native gateway log.
@@ -42,7 +42,7 @@ start_gateway() {
   pid="$(pid_from_file || true)"
   if owned_pid "$pid" || [[ -n "$(project_pids)" ]]; then
     if health_ok; then
-      log "ModelPort is already running at $(base_url)"
+      log "ModelDock is already running at $(base_url)"
       return
     fi
     die "this checkout already has a running gateway that is not healthy; run scripts/dev.sh doctor or scripts/dev.sh restart"
@@ -54,7 +54,7 @@ start_gateway() {
   if ! release_is_fresh || [[ "${MODELPORT_FORCE_BUILD:-0}" == "1" ]]; then
     "$SCRIPT_DIR/build-release.sh"
   fi
-  log "starting ModelPort in background at $(base_url)"
+  log "starting ModelDock in background at $(base_url)"
   log "log file: $LOG_FILE"
   if command -v setsid >/dev/null 2>&1; then
     setsid "$RELEASE_BIN" >> "$LOG_FILE" 2>&1 < /dev/null &
@@ -64,10 +64,10 @@ start_gateway() {
   pid="$!"
   echo "$pid" > "$PID_FILE"
   if wait_for_health 30 1; then
-    log "ModelPort started, pid $pid"
+    log "ModelDock started, pid $pid"
     status_gateway
   else
-    log "ModelPort failed to become healthy"
+    log "ModelDock failed to become healthy"
     tail -n 80 "$LOG_FILE" >&2 || true
     return 1
   fi
@@ -97,7 +97,7 @@ stop_gateway() {
     rm -f "$PID_FILE"
     return
   fi
-  log "stopping ModelPort pids: ${pids[*]}"
+  log "stopping ModelDock pids: ${pids[*]}"
   for pid in "${pids[@]}"; do
     if owned_pid "$pid"; then
       kill -- "$pid" >/dev/null 2>&1 || true
@@ -187,7 +187,7 @@ case "$command_name" in
   run)
     load_env
     setup_cc_fallback
-    log "starting ModelPort in foreground at $(base_url)"
+    log "starting ModelDock in foreground at $(base_url)"
     exec cargo run --locked --bin model-port
     ;;
   start) start_gateway ;;

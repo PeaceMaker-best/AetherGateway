@@ -42,9 +42,9 @@ ARG MODELPORT_SOURCE_REVISION
 ARG MODELPORT_SOURCE_STATE
 ARG MODELPORT_VERSION
 ARG MODELPORT_BUILD_DATE
-LABEL org.opencontainers.image.title="ModelPort" \
+LABEL org.opencontainers.image.title="ModelDock" \
       org.opencontainers.image.description="Self-hosted multi-protocol model gateway" \
-      org.opencontainers.image.source="https://github.com/tiammomo/ModelPort" \
+      org.opencontainers.image.source="https://github.com/PeaceMaker-best/ModelDock" \
       org.opencontainers.image.revision="$MODELPORT_SOURCE_REVISION" \
       org.opencontainers.image.version="$MODELPORT_VERSION" \
       org.opencontainers.image.created="$MODELPORT_BUILD_DATE" \

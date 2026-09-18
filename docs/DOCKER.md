@@ -4,7 +4,7 @@ The versioned `deploy/release/compose.yml` is the normal Small-Team Beta
 installation after a GitHub Release exists; it pulls prebuilt Linux x86_64
 images. The root Compose file remains the current-main contributor/source-build
 path. Both start the backend, a same-origin Dashboard proxy, and PostgreSQL. The
-phase-one production profile uses one ModelPort
+phase-one production profile uses one ModelDock
 instance but an external managed PostgreSQL database and secret-manager-rendered
 runtime environment; see [Single-instance production](#single-instance-production).
 
@@ -249,7 +249,7 @@ parent `/var/lib/postgresql` as required by the official image. Prefer
 ## Single-instance Production
 
 [`deploy/production/compose.single.yml`](../deploy/production/compose.single.yml)
-is the accepted phase-one topology. It intentionally contains one ModelPort
+is the accepted phase-one topology. It intentionally contains one ModelDock
 instance and no PostgreSQL service. It requires:
 
 - digest-pinned backend and dashboard images;
@@ -291,7 +291,7 @@ It verifies digest-pinned images, file ownership/permissions, repository-externa
 secret placement, strict database TLS, and every Provider credential reference
 without printing values.
 
-This profile is not active-active. A second ModelPort instance remains a later
+This profile is not active-active. A second ModelDock instance remains a later
 milestone governed by
 [ADR-0005](adr/0005-forty-user-hybrid-routing-baseline.md).
 
@@ -371,7 +371,7 @@ inputs.
 
 The bundled Nginx proxy deliberately sets `X-Forwarded-For` to its observed
 `$remote_addr` instead of appending an incoming client-controlled chain.
-ModelPort then walks forwarded hops from right to left and removes only peers
+ModelDock then walks forwarded hops from right to left and removes only peers
 covered by `MODELPORT_TRUSTED_PROXIES`. If another reverse proxy is added in
 front, list only its exact addresses/subnets and verify the complete hop chain.
 

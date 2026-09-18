@@ -60,7 +60,7 @@ describe('buildClientProfiles', () => {
   it('uses placeholders when no one-time key or selectable model exists', () => {
     const supported = buildClientProfiles({ gatewayOrigin: 'http://localhost/' })
       .filter((profile) => profile.status === 'supported')
-    expect(supported.every((profile) => profile.configuration.includes('<你的 ModelPort API Key>'))).toBe(true)
+    expect(supported.every((profile) => profile.configuration.includes('<你的 ModelDock API Key>'))).toBe(true)
     expect(supported.every((profile) => profile.configuration.includes('<先选择可用模型>'))).toBe(true)
   })
 })

@@ -29,7 +29,7 @@ describe('api client', () => {
     const [, options] = fetchMock.mock.calls[0] as [string, RequestInit]
     const headers = new Headers(options.headers)
     expect(headers.get('Content-Type')).toBe('application/json')
-    expect(headers.get('X-ModelPort-CSRF')).toBe('1')
+    expect(headers.get('X-ModelDock-CSRF')).toBe('1')
   })
 
   it('preserves valid falsy JSON request bodies', async () => {

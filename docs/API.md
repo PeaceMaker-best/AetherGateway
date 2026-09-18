@@ -1,6 +1,6 @@
 # API Reference
 
-ModelPort exposes Anthropic Messages and a scoped OpenAI Chat Completions data
+ModelDock exposes Anthropic Messages and a scoped OpenAI Chat Completions data
 plane plus a dashboard control plane. The default backend origin is
 `http://127.0.0.1:38082`.
 
@@ -12,7 +12,7 @@ plane plus a dashboard control plane. The default backend origin is
 | `GET /health` | optional | Minimal public body; router authentication adds provider and storage diagnostics. |
 | `GET /admin/auth/methods` | none | Advertises password availability and the optional OIDC console sign-in label/start path. It does not establish a session. |
 | `GET /admin/auth/oidc/start` | none | Creates single-use OIDC state, nonce, PKCE values, and an HttpOnly browser-flow cookie, then redirects to the configured identity provider. |
-| `GET /admin/auth/oidc/callback` | none | Requires the matching browser-flow cookie, validates and consumes the OIDC callback, resolves the local user, issues the ModelPort console cookie, and redirects to a local return path. |
+| `GET /admin/auth/oidc/callback` | none | Requires the matching browser-flow cookie, validates and consumes the OIDC callback, resolves the local user, issues the ModelDock console cookie, and redirects to a local return path. |
 | `GET /readyz` | router/API key | Auth/control and normalized-ledger readiness plus detailed diagnostics; Provider degradation does not fail it. |
 | `GET /v1/models` | router/API key | Configured, visible model and alias catalog. Visibility does not prove upstream health. |
 | `GET /v1/effective-policy` | API key | Effective project routing/egress policy and current local scheduler counters. |
@@ -105,12 +105,12 @@ curl -sS http://127.0.0.1:38082/v1/messages/count_tokens \
   }'
 ```
 
-The response is `{"input_tokens":N}`. ModelPort validates the same Anthropic
+The response is `{"input_tokens":N}`. ModelDock validates the same Anthropic
 input and Tool Use guardrails as Messages, resolves aliases, applies API-key and
 team model/Provider/IP policy with zero estimated usage, selects the active
 Provider credential, and forwards the body only when that Provider explicitly
 configures `token_counting.mode="anthropic"`. The count comes from the selected
-upstream tokenizer and chat template; ModelPort does not use its characters/4
+upstream tokenizer and chat template; ModelDock does not use its characters/4
 usage estimate here. There is deliberately no cross-provider fallback because
 a count from another tokenizer would be misleading.
 
@@ -130,14 +130,14 @@ This compatibility surface currently accepts text-only `system`, `developer`,
 `user`, `assistant`, and `tool` messages; OpenAI function tools and tool calls;
 `temperature`, `top_p`, penalties, `seed`, `stop`, `tool_choice`,
 `parallel_tool_calls`, text `response_format`, `stream_options.include_usage`,
-`store=false` or `null`, and `n=1`. ModelPort removes `store` before Provider
+`store=false` or `null`, and `n=1`. ModelDock removes `store` before Provider
 egress because it does not persist Chat Completions. `store=true` is rejected.
 Assistant messages may carry string or null `reasoning_content` when the
-selected Provider is OpenAI-compatible; ModelPort validates and forwards it so
+selected Provider is OpenAI-compatible; ModelDock validates and forwards it so
 reasoning-model conversations can continue across turns. Anthropic Provider
 routes reject that extension because they cannot preserve it faithfully.
 `max_completion_tokens` or legacy `max_tokens` is optional; when neither is
-supplied, ModelPort uses 4096 only for local estimation and for an Anthropic
+supplied, ModelDock uses 4096 only for local estimation and for an Anthropic
 Provider that requires an explicit output limit.
 
 The endpoint deliberately rejects fields outside this documented slice,
@@ -193,7 +193,7 @@ error
 
 For `/v1/chat/completions`, `"stream": true` returns OpenAI
 `chat.completion.chunk` data events followed by `data: [DONE]`. When
-`stream_options.include_usage=true`, ModelPort preserves an OpenAI-compatible
+`stream_options.include_usage=true`, ModelDock preserves an OpenAI-compatible
 final empty-`choices` usage chunk or synthesizes it from Anthropic stream usage.
 If the stream is interrupted, that final usage chunk may be unavailable; the
 terminal request log then retains the best evidence available.
@@ -234,13 +234,13 @@ is redacted and returned. These failures occur before downstream headers and
 can participate in fallback.
 
 A native Anthropic stream is complete only after `message_stop`. An
-OpenAI-compatible stream must provide `[DONE]` or a `finish_reason`; ModelPort
+OpenAI-compatible stream must provide `[DONE]` or a `finish_reason`; ModelDock
 then renders the terminal signal required by the originating client protocol.
 EOF without a required termination signal is an upstream-protocol failure. If
 local HTTP 200 headers have already been sent, that failure is delivered inside
 SSE and cannot trigger cross-provider fallback.
 
-For an OpenAI-compatible provider with `buffer_stream_text=true`, ModelPort
+For an OpenAI-compatible provider with `buffer_stream_text=true`, ModelDock
 instead waits for a complete non-stream upstream response and converts it before
 returning locally chunked SSE. Upstream HTTP or conversion failures are normal
 HTTP errors rather than post-200 SSE errors, and reported upstream usage is
@@ -257,19 +257,19 @@ mapped back to Anthropic blocks. Validation and known provider limits are in
 
 ## Request IDs
 
-ModelPort accepts `x-request-id`; otherwise middleware assigns one. The response
+ModelDock accepts `x-request-id`; otherwise middleware assigns one. The response
 propagates it and completed usage records retain it for dashboard correlation.
 Both built-in protocol adapters forward it to the upstream request, although an
 upstream may ignore, replace, or omit it from its own logs. Treat it as an opaque
 diagnostic identifier, not an authorization token or a complete distributed
-trace; ModelPort does not attach trace/span-parent semantics.
+trace; ModelDock does not attach trace/span-parent semantics.
 
 ## Idempotent Retry Claims
 
 Both inference endpoints accept an optional `Idempotency-Key` header containing
 1–200 visible ASCII characters without whitespace. The claim is scoped by
 organization, project, and environment and is written atomically before any
-Provider attempt. ModelPort stores only SHA-256 of the key plus a protocol/body
+Provider attempt. ModelDock stores only SHA-256 of the key plus a protocol/body
 fingerprint; do not put credentials or personal data in the key.
 
 Reusing a key has these outcomes:
@@ -323,15 +323,15 @@ reviewing them.
 Password login is `POST /admin/auth/login`. The three public OIDC/capability
 entry points are `GET /admin/auth/methods`, `GET /admin/auth/oidc/start`, and
 `GET /admin/auth/oidc/callback`, as listed above. All successful human sign-in
-methods issue the same HttpOnly, SameSite=Lax ModelPort console cookie. Use
+methods issue the same HttpOnly, SameSite=Lax ModelDock console cookie. Use
 `MODELPORT_ADMIN_COOKIE_SECURE=1` behind HTTPS; other normal administrator
 routes require that session.
 
 This console identity boundary is separate from the data plane. Neither an
 OIDC token nor the console cookie authenticates `/v1/messages` or
-`/v1/chat/completions`; clients use a ModelPort API key (or the explicitly
+`/v1/chat/completions`; clients use a ModelDock API key (or the explicitly
 enabled legacy router token), while upstream Provider credentials remain on
-the ModelPort server. See [OIDC Console Sign-In](OIDC.md).
+the ModelDock server. See [OIDC Console Sign-In](OIDC.md).
 
 Route groups include:
 
@@ -362,7 +362,7 @@ Route groups include:
 - `GET /admin/audit`, `POST /admin/backup`: audit events and a redacted,
   non-restorable diagnostic snapshot.
 - `POST /admin/retention/run`: administrator-only metadata-retention preview or
-  apply. It requires the console session, `X-ModelPort-CSRF: 1`, and normal
+  apply. It requires the console session, `X-ModelDock-CSRF: 1`, and normal
 same-origin checks; omission of `dryRun` defaults to preview.
 
 The optional operations Agent uses three versioned internal endpoints:
@@ -423,8 +423,8 @@ views. Non-admin catalog ownership and redaction remain enforced.
 operation. Its JSON body must contain a complete `organizationId`, `projectId`,
 and `environmentId` tuple. The tuple is persisted on the authenticated client
 key and becomes the authoritative ledger scope for both protocol edges.
-Data-plane `X-ModelPort-Organization-Id`, `X-ModelPort-Project-Id`, and
-`X-ModelPort-Environment-Id` headers are optional assertions: a partial tuple is
+Data-plane `X-ModelDock-Organization-Id`, `X-ModelDock-Project-Id`, and
+`X-ModelDock-Environment-Id` headers are optional assertions: a partial tuple is
 400 and a tuple different from the key binding is 403. They never grant access
 or auto-select another project. See the complete procedure in
 [API Key tenant binding](CONFIGURATION.md#api-key-tenant-binding).
@@ -461,9 +461,9 @@ recent evidence events. Supply `organizationId`, `projectId`, and
 `org_local/prj_default/env_default`. Partial scope is rejected.
 
 `PUT /admin/enterprise/budget` sets the hard limit. It requires an administrator
-session and `X-ModelPort-CSRF`. Enterprise mode or
+session and `X-ModelDock-CSRF`. Enterprise mode or
 `MODELPORT_REQUIRE_DUAL_APPROVAL=1` additionally requires an approved matching
-`X-ModelPort-Change-Request-Id`; otherwise a reviewed change request is optional:
+`X-ModelDock-Change-Request-Id`; otherwise a reviewed change request is optional:
 
 ```json
 {
@@ -548,7 +548,7 @@ writes so a one-admin first install remains operable. Enterprise mode or
 Project policy and budget changes can use the generic
 `POST /admin/governance/change-requests/{id}/apply`; dedicated Provider,
 identity, model, egress, migration, and secret operations carry an approved ID
-as `X-ModelPort-Change-Request-Id` when dual approval is required or voluntarily
+as `X-ModelDock-Change-Request-Id` when dual approval is required or voluntarily
 used. The server rejects a supplied ID unless its action, target, and payload
 digest exactly match the attempted operation; an applied ID cannot be reused.
 
@@ -600,7 +600,7 @@ endpoint using the active server-side provider credential. The response
 contains `isAvailable`, CNY/USD `balanceInfos`, `checkedAt`,
 `managementScope=read-monitor-alert`, and
 `billingAuthority=deepseek-console`. It never returns the upstream API key.
-ModelPort may display and alert on the balance, but recharge, refunds, invoices,
+ModelDock may display and alert on the balance, but recharge, refunds, invoices,
 and authoritative settlement remain in the DeepSeek console. Local token-cost
 and transactional-budget ledgers remain independent estimates/evidence and do
 not overwrite the provider invoice.
@@ -618,7 +618,7 @@ closed and routing may continue to another Provider candidate. It does not fall
 back to a disabled, cooling-down, or missing-environment credential.
 
 `POST /admin/backup` is intentionally not a safe GET: it creates an audit event
-and requires an admin session plus `X-ModelPort-CSRF`. Likewise,
+and requires an admin session plus `X-ModelDock-CSRF`. Likewise,
 `POST /admin/providers/{provider_id}/models` performs upstream model discovery
 and persists provider-test/audit state. Its former side-effecting GET alias is
 not supported. Provider model create/update/delete operations share the path
@@ -677,8 +677,8 @@ workflow counts.
 
 Each row's `billingMode` records usage provenance. `upstream-returned` means a
 completed adapter path exposed Provider-reported token usage; `local-estimate`
-means ModelPort used its request-based estimate. Both remain operational cost
-estimates because ModelPort applies its local pricing table. When an
+means ModelDock used its request-based estimate. Both remain operational cost
+estimates because ModelDock applies its local pricing table. When an
 attempt-level preflight rejection produces a row, it has `local-estimate`
 provenance but zero tokens/cost and is not charged to relational quota/spend
 totals.
@@ -724,7 +724,7 @@ diagnostics are removed before usage, ledger, and Provider-health persistence.
 
 `toolUseRequested` is true when the request declares or selects tools, or
 continues an existing tool call/result exchange. It does not prove that the
-model emitted a new call, and ModelPort still does not retain tool names,
+model emitted a new call, and ModelDock still does not retain tool names,
 arguments, results, messages, or Provider bodies in the usage log.
 
 `toolOutcome` is an aggregate-only workflow classification:
@@ -764,7 +764,7 @@ nearest-rank percentiles from retained usage rows when available and marks
 metrics-derived estimate with `sampleCount=0` and
 `percentilesEstimated=true`.
 
-Write requests require `X-ModelPort-CSRF: 1` plus a valid session. When the
+Write requests require `X-ModelDock-CSRF: 1` plus a valid session. When the
 browser supplies Origin or Referer, it must be same-origin or listed in
 `MODELPORT_ALLOWED_ORIGINS`.
 

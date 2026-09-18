@@ -1,9 +1,9 @@
-# ModelPort Documentation
+# ModelDock Documentation
 
 The root [README](../README.md) is the product entry point. You do not need to
 read every document: choose the path that matches your task.
 
-## I Want To Run ModelPort
+## I Want To Run ModelDock
 
 1. [Learning Path](LEARNING_PATH.md) — choose a short operator, integration,
    operations, or contributor track. A
@@ -12,7 +12,7 @@ read every document: choose the path that matches your task.
    authenticated request.
 3. [Local Qwen reference adapter](LOCAL_INFERENCE_STACK.md) — optionally
    reproduce the original Linux/WSL2 integration without treating the external
-   repository as a ModelPort dependency.
+   repository as a ModelDock dependency.
 4. [Deployment](DEPLOYMENT.md) — choose Docker Compose or systemd.
 5. [Production](PRODUCTION.md) — harden and accept a shared deployment.
 6. [Operations](OPERATIONS.md) — monitor, back up, troubleshoot, and upgrade it.
@@ -20,7 +20,7 @@ read every document: choose the path that matches your task.
    major-version or managed-database migration without reusing an old data
    directory.
 8. [40 人团队第一阶段生产基线](PRODUCTION_BASELINE_40_USERS.zh-CN.md) — 单
-   ModelPort 现状下的数据库、备份、密钥和投产检查清单。
+   ModelDock 现状下的数据库、备份、密钥和投产检查清单。
 9. [Compatibility matrix](COMPATIBILITY.md) — Tier 1 platform and explicit
    experimental/unsupported boundaries.
 10. [Observability runbook](OBSERVABILITY_RUNBOOK.md) — official alerts,
@@ -42,7 +42,7 @@ read every document: choose the path that matches your task.
 - [Smart Routing](SMART_ROUTING.md) — define smart aliases and roll them out
   through shadow and canary modes.
 
-## I Want To Configure ModelPort
+## I Want To Configure ModelDock
 
 - [Configuration](CONFIGURATION.md) is the single reference for environment
   variables, TOML, precedence, security guardrails, and reload scope.

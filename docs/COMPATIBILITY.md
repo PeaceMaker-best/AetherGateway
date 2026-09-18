@@ -1,6 +1,6 @@
 # Small-Team Beta Compatibility Matrix
 
-This matrix is the support boundary for ModelPort v0.1.x. “Tier 1” means the
+This matrix is the support boundary for ModelDock v0.1.x. “Tier 1” means the
 project's release gate exercises install, startup, migration, smoke,
 backup/restore, upgrade, and rollback for that combination. It is not an
 availability SLA or certification.
@@ -24,13 +24,13 @@ Client/Harness profiles describe callers, not upstream Providers. Claude Code
 uses the Anthropic Messages edge. The OpenAI SDK and a
 [Qwen Code](https://qwenlm.github.io/qwen-code-docs/en/users/configuration/model-providers/)
 setup profile use the scoped OpenAI-compatible Chat Completions edge; Qwen Code
-references its ModelPort client key through an environment variable rather than
+references its ModelDock client key through an environment variable rather than
 storing the key in `settings.json`. The shipped setup profile does not replace
 dated Provider/model/stream/Tool Use acceptance evidence for the selected
 route.
 
 [Codex CLI](https://developers.openai.com/codex/config-reference/) custom
-Providers require the Responses wire API. ModelPort does not ship
+Providers require the Responses wire API. ModelDock does not ship
 `POST /v1/responses`, so the Dashboard reports Codex CLI as blocked and does not
 offer a copyable configuration. Adding the scoped Responses ingress is a
 separate future change, not part of the current compatibility profile.
@@ -65,7 +65,7 @@ experimental path must never become a silent production fallback.
 
 - Native Windows or macOS service installation.
 - Public Internet multi-tenancy, untrusted tenant isolation, or a maintainer-
-  hosted ModelPort service.
+  hosted ModelDock service.
 - Multiple active backend replicas, zero-downtime/rolling upgrades, automatic
   failover, or distributed sessions/rate limits/stream permits.
 - OpenAI Responses, realtime, embeddings, image/audio APIs, a chat UI, model

@@ -1964,7 +1964,7 @@ async fn probe_anthropic_provider(
                 provider.endpoint("/v1/messages/count_tokens"),
                 json!({
                     "model": provider.default_model,
-                    "messages": [{ "role": "user", "content": "ModelPort connectivity probe" }],
+                    "messages": [{ "role": "user", "content": "ModelDock connectivity probe" }],
                 }),
                 true,
             )

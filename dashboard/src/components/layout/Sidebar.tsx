@@ -78,7 +78,7 @@ export function Sidebar({ onNavigate, mobile = false }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <div className="min-w-0">
-              <span className="block text-lg font-bold leading-5 tracking-tight">ModelPort</span>
+              <span className="block text-lg font-bold leading-5 tracking-tight">ModelDock</span>
               <span
                 className="block text-[9px] font-semibold uppercase tracking-[0.12em] text-sidebar-foreground/45"
                 title="v0.1.x Small-Team Beta：单实例、自托管，不承诺高可用或公网多租户"

@@ -16,7 +16,7 @@ Usage:
 
 Options:
   --document <path>  Capability or Compute inventory document to validate.
-                     Relative paths resolve from the ModelPort checkout.
+                     Relative paths resolve from the ModelDock checkout.
   --json             Emit a machine-readable validation result.
   -h, --help         Show this help.
 

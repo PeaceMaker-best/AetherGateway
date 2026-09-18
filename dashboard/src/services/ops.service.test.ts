@@ -37,7 +37,7 @@ describe('operations service', () => {
     expect(fetchMock.mock.calls[1]?.[0]).toBe('/admin/ops/configuration')
     const update = fetchMock.mock.calls[1]?.[1] as RequestInit
     expect(update.method).toBe('PUT')
-    expect(new Headers(update.headers).get('X-ModelPort-CSRF')).toBe('1')
+    expect(new Headers(update.headers).get('X-ModelDock-CSRF')).toBe('1')
   })
 
   it('uses encoded incident ids and CSRF-protected workflow writes', async () => {
@@ -58,7 +58,7 @@ describe('operations service', () => {
     expect(fetchMock.mock.calls[1]?.[0]).toBe('/admin/ops/incidents/opi%2Fone%20two/status')
     expect(fetchMock.mock.calls[2]?.[0]).toBe('/admin/ops/incidents/opi%2Fone%20two/feedback')
     for (const [, init] of fetchMock.mock.calls.slice(1) as Array<[string, RequestInit]>) {
-      expect(new Headers(init.headers).get('X-ModelPort-CSRF')).toBe('1')
+      expect(new Headers(init.headers).get('X-ModelDock-CSRF')).toBe('1')
       expect(init.method).toBe('POST')
     }
   })

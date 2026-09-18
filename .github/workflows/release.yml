@@ -48,9 +48,9 @@ jobs:
           [[ "$cargo_version" == "$version" ]]
           [[ "$dashboard_version" == "$version" ]]
           [[ "$dashboard_lock_version" == "$version" ]]
-          grep -F "ghcr.io/tiammomo/modelport:${version}" deploy/release/compose.yml
-          grep -F "ghcr.io/tiammomo/modelport-dashboard:${version}" deploy/release/compose.yml
-          grep -F "ghcr.io/tiammomo/modelport-ops-agent:${version}" deploy/release/compose.yml
+          grep -F "ghcr.io/peacemaker-best/modelport:${version}" deploy/release/compose.yml
+          grep -F "ghcr.io/peacemaker-best/modelport-dashboard:${version}" deploy/release/compose.yml
+          grep -F "ghcr.io/peacemaker-best/modelport-ops-agent:${version}" deploy/release/compose.yml
 
   verification:
     name: Verify release candidate
@@ -327,7 +327,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           release_flags=()
-          release_title="ModelPort $GITHUB_REF_NAME"
+          release_title="ModelDock $GITHUB_REF_NAME"
           if [[ "${GITHUB_REF_NAME#v}" == 0.* ]]; then
             release_flags+=(--prerelease)
             release_title="$release_title Small-Team Beta"

@@ -13,7 +13,7 @@ usage() {
   cat <<'USAGE'
 Usage: scripts/tool-use-acceptance.sh [options]
 
-Runs Tool Use compatibility checks through the local ModelPort gateway.
+Runs Tool Use compatibility checks through the local ModelDock gateway.
 Default mode uses a temporary local OpenAI-compatible mock provider and does not consume upstream quota.
 
 Options:
@@ -77,7 +77,7 @@ for command_name in curl node; do
 done
 
 if ! health_ok; then
-  die "ModelPort is not healthy at $(base_url). Run scripts/start.sh or docker compose up first."
+  die "ModelDock is not healthy at $(base_url). Run scripts/start.sh or docker compose up first."
 fi
 
 cookie_file="$(mktemp)"
@@ -98,7 +98,7 @@ test_model=""
 cleanup() {
   if [[ -n "$provider_id" ]]; then
     curl_local -sS -m 10 -b "$cookie_file" \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       -X DELETE "$(base_url)/admin/providers/$provider_id?force=true" >/dev/null 2>&1 || true
   fi
   if [[ -n "$mock_pid" ]]; then
@@ -151,14 +151,14 @@ admin_json() {
       -o "$body_file" -w '%{http_code}' \
       -X "$method" \
       -H 'Content-Type: application/json' \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       "$(base_url)$path" \
       -d "$payload"
   else
     curl_local -sS -m 20 -b "$cookie_file" -c "$cookie_file" \
       -o "$body_file" -w '%{http_code}' \
       -X "$method" \
-      -H 'X-ModelPort-CSRF: 1' \
+      -H 'X-ModelDock-CSRF: 1' \
       "$(base_url)$path"
   fi
 }
@@ -964,4 +964,4 @@ if [[ "$mode" == "mock" ]]; then
   assert_mock_received_parallel_false
 fi
 
-printf '\nModelPort Tool Use acceptance passed in %s mode.\n' "$mode"
+printf '\nModelDock Tool Use acceptance passed in %s mode.\n' "$mode"

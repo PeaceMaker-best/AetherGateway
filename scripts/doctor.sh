@@ -99,7 +99,7 @@ check_linux_platform() {
       ok "Linux environment detected (architecture=$architecture)"
     fi
   else
-    fail "ModelPort development and maintained scripts require Linux; detected ${kernel:-unknown}"
+    fail "ModelDock development and maintained scripts require Linux; detected ${kernel:-unknown}"
   fi
 
   case "$architecture" in
@@ -255,7 +255,7 @@ check_provider_env() {
   fi
 
   if [[ "${ANTHROPIC_BASE_URL:-}" == "$(base_url)" ]]; then
-    ok "ANTHROPIC_BASE_URL points to ModelPort"
+    ok "ANTHROPIC_BASE_URL points to ModelDock"
   else
     warn "ANTHROPIC_BASE_URL is '${ANTHROPIC_BASE_URL:-unset}', expected '$(base_url)' for local VS Code"
   fi
@@ -526,7 +526,7 @@ check_vscode_settings_text() {
   fi
 
   if grep -Fq '"ANTHROPIC_BASE_URL"' "$settings_file" && grep -Fq "$(base_url)" "$settings_file"; then
-    ok "VS Code settings points ANTHROPIC_BASE_URL to ModelPort"
+    ok "VS Code settings points ANTHROPIC_BASE_URL to ModelDock"
   else
     warn "VS Code settings may not point ANTHROPIC_BASE_URL to $(base_url)"
   fi
@@ -593,7 +593,7 @@ check_upstream_message() {
       -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
       -H 'Content-Type: application/json' \
       "$(base_url)/v1/messages" \
-      -d "$(printf '{"model":"%s","max_tokens":128,"messages":[{"role":"user","content":"用一句话回复：ModelPort doctor OK。"}]}' "$model")" || true
+      -d "$(printf '{"model":"%s","max_tokens":128,"messages":[{"role":"user","content":"用一句话回复：ModelDock doctor OK。"}]}' "$model")" || true
   )"
 
   if [[ "$status" =~ ^[0-9]+$ && "$status" -ge 200 && "$status" -lt 300 ]]; then
@@ -631,9 +631,9 @@ case "$mode" in
 esac
 
 if [[ "$failures" -gt 0 ]]; then
-  printf '\nModelPort doctor (%s) failed: %d failure(s), %d warning(s).\n' \
+  printf '\nModelDock doctor (%s) failed: %d failure(s), %d warning(s).\n' \
     "$mode" "$failures" "$warnings" >&2
   exit 1
 fi
 
-printf '\nModelPort doctor (%s) passed: %d warning(s).\n' "$mode" "$warnings"
+printf '\nModelDock doctor (%s) passed: %d warning(s).\n' "$mode" "$warnings"

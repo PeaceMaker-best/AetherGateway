@@ -103,7 +103,7 @@ fn validate_config() -> Result<(), AppError> {
         .filter(|issue| issue.severity == ConfigIssueSeverity::Warning)
         .count();
 
-    println!("ModelPort configuration");
+    println!("ModelDock configuration");
     println!("  bind: {}", config.bind_addr);
     println!("  default_provider: {}", config.default_provider);
     println!("  providers: {}", config.provider_order.join(", "));
@@ -130,7 +130,7 @@ fn validate_config() -> Result<(), AppError> {
         )));
     }
 
-    println!("ModelPort configuration valid: {warnings} warning(s).");
+    println!("ModelDock configuration valid: {warnings} warning(s).");
     Ok(())
 }
 
@@ -217,7 +217,7 @@ fn export_backup(path: &str) -> Result<(), AppError> {
             .unwrap_or_else(default_control_json),
     };
     write_json_file(Path::new(path), &serde_json::to_value(backup)?)?;
-    println!("ModelPort backup written to {path}");
+    println!("ModelDock backup written to {path}");
     Ok(())
 }
 
@@ -236,7 +236,7 @@ fn validate_backup(path: &str) -> Result<(), AppError> {
         .map(Vec::len)
         .unwrap_or(0);
     println!(
-        "ModelPort backup valid: {user_count} user(s), {api_key_count} API key record(s), contains_secrets={}",
+        "ModelDock backup valid: {user_count} user(s), {api_key_count} API key record(s), contains_secrets={}",
         backup.contains_secrets
     );
     Ok(())
@@ -255,7 +255,7 @@ fn restore_backup(path: &str) -> Result<(), AppError> {
         (&control_store, control_current.revision, &backup.control),
     )?;
     println!(
-        "ModelPort backup restored to {} and {}",
+        "ModelDock backup restored to {} and {}",
         auth_store.location(),
         control_store.location()
     );
@@ -267,7 +267,7 @@ fn load_backup(path: &str) -> Result<LocalBackupFile, AppError> {
     let backup: LocalBackupFile = serde_json::from_str(&raw)?;
     if backup.schema_version != 1 || backup.service != "model-port" {
         return Err(AppError::InvalidRequest(
-            "not a supported ModelPort backup".to_owned(),
+            "not a supported ModelDock backup".to_owned(),
         ));
     }
     if !backup.auth.get("users").is_some_and(Value::is_array) {

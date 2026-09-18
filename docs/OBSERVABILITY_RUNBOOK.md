@@ -30,9 +30,9 @@ persistence and recent ledger operations but does not require every Provider to
 be available. A Provider failure can therefore coexist with successful
 readiness.
 
-## ModelPortMetricsTargetDown
+## ModelDockMetricsTargetDown
 
-1. Request `/livez` directly from the ModelPort host. If it succeeds, inspect
+1. Request `/livez` directly from the ModelDock host. If it succeeds, inspect
    Prometheus network reachability, DNS, the scoped metrics key, and whether
    `/metrics` returns 401.
 2. If liveness fails, run
@@ -47,7 +47,7 @@ The static Dashboard may remain available while the backend is down. In that
 state its proxied API routes intentionally return HTTP 502; this does not mean
 the Nginx container itself is unhealthy.
 
-## ModelPortNotReady
+## ModelDockNotReady
 
 1. Confirm `/livez` succeeds and run authenticated `/readyz` directly. A 401
    means the probe key is absent, expired, revoked, or outside the allowed
@@ -65,7 +65,7 @@ The optional Blackbox Exporter probe independently confirms that `/readyz` can
 be reached with a scoped credential; if `probe_success` is absent, only the
 in-process readiness gauge is available.
 
-## ModelPortDirtyBuildRunning
+## ModelDockDirtyBuildRunning
 
 1. Compare `modelport_build_info` with the intended release and deployment
    record.
@@ -74,7 +74,7 @@ in-process readiness gauge is available.
 3. If the build is an intentional development instance, route this alert away
    from production paging instead of weakening production provenance checks.
 
-## ModelPortLedgerOperationDegraded
+## ModelDockLedgerOperationDegraded
 
 1. Identify the `operation` label and inspect its failure counter.
 2. For finalization or lease operations, stop new inference traffic and check
@@ -92,7 +92,7 @@ in-process readiness gauge is available.
 gauges report application-pool pressure. Acquire latency is not yet exported;
 use database-native wait/session metrics as the second source of evidence.
 
-## ModelPortDatabasePoolSaturated
+## ModelDockDatabasePoolSaturated
 
 1. Compare `in_use`, `idle`, and the configured maximum; do not raise the pool
    limit before checking PostgreSQL `max_connections` and other clients.
@@ -101,7 +101,7 @@ use database-native wait/session metrics as the second source of evidence.
 3. Reduce admission or long-running operational queries first, then change the
    pool limit only with measured headroom and a rollback value.
 
-## ModelPortPendingFinalizersStuck
+## ModelDockPendingFinalizersStuck
 
 1. Compare the finalizer count with active traffic and stream completion. A
    brief non-zero value is normal while terminal evidence commits.
@@ -114,7 +114,7 @@ use database-native wait/session metrics as the second source of evidence.
    terminal reason. Never invent cost for a request whose Provider outcome is
    unknown.
 
-## ModelPortExpiredLeasesReconciled
+## ModelDockExpiredLeasesReconciled
 
 1. Correlate the increase with deploys, host suspension, process crashes,
    PostgreSQL outages, and scheduler stalls.
@@ -125,7 +125,7 @@ use database-native wait/session metrics as the second source of evidence.
 4. Treat repeated increases without a planned restart as a reliability
    incident even when current readiness is green.
 
-## ModelPortInferenceErrorRateHigh
+## ModelDockInferenceErrorRateHigh
 
 1. Split failures by Provider, model, stream flag, and traffic class in the
    Grafana dashboard.
@@ -138,7 +138,7 @@ use database-native wait/session metrics as the second source of evidence.
    when the configured local/cloud policy permits the alternative. Never
    silently enable cloud fallback during an incident.
 
-## ModelPortInferenceP95LatencyHigh
+## ModelDockInferenceP95LatencyHigh
 
 1. Compare end-to-end latency with Provider generation latency, queue symptoms,
    streaming duration, model size, and client backpressure.
@@ -155,7 +155,7 @@ use database-native wait/session metrics as the second source of evidence.
 4. The current histogram is global. Do not claim a Provider-specific p95 until
    a bounded Provider-labelled histogram is shipped.
 
-## ModelPortAdmissionOrStreamPressure
+## ModelDockAdmissionOrStreamPressure
 
 1. Use the `phase` and `reason` labels to separate context/output admission from
    concurrent-stream exhaustion.
@@ -170,7 +170,7 @@ use database-native wait/session metrics as the second source of evidence.
    permits do not by themselves reveal configured capacity; correlate zero
    permits with concurrency rejections before declaring exhaustion.
 
-## ModelPortQuotaRejectionsDetected
+## ModelDockQuotaRejectionsDetected
 
 1. Identify the affected user, API key, team/project, and UTC or rolling spend
    window in the authenticated Dashboard. Never expose those identities as
@@ -183,7 +183,7 @@ use database-native wait/session metrics as the second source of evidence.
    v0.1.x does not expose remaining budget as a bounded Prometheus gauge; the
    relational budget view remains authoritative for remaining amounts.
 
-## ModelPortProviderErrorRateHigh
+## ModelDockProviderErrorRateHigh
 
 1. Confirm the Provider has at least ten completed requests in the alert
    window; low-volume one-off failures should be triaged without changing

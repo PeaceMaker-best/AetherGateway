@@ -1402,13 +1402,13 @@ fn request_tenant_scope(
                 let value = value.trim();
                 if !crate::domain::valid_tenant_identifier(value) {
                     return Err(AppError::InvalidRequest(
-                        "ModelPort tenant scope headers contain an invalid identifier".to_owned(),
+                        "ModelDock tenant scope headers contain an invalid identifier".to_owned(),
                     ));
                 }
                 Ok(Some(value))
             }
             Some(Err(_)) => Err(AppError::InvalidRequest(
-                "ModelPort tenant scope headers must be ASCII".to_owned(),
+                "ModelDock tenant scope headers must be ASCII".to_owned(),
             )),
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -1422,7 +1422,7 @@ fn request_tenant_scope(
             Ok(bound_tenant.clone())
         }
         [Some(_), Some(_), Some(_)] => Err(AppError::Forbidden(
-            "requested ModelPort tenant scope is not bound to this API key".to_owned(),
+            "requested ModelDock tenant scope is not bound to this API key".to_owned(),
         )),
         _ => Err(AppError::InvalidRequest(
             "x-modelport-organization-id, x-modelport-project-id, and x-modelport-environment-id must be supplied together"

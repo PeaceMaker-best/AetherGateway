@@ -52,7 +52,7 @@ fn readiness(snapshot: &OpsSnapshot) -> OpsObservation {
         } else {
             OpsSeverity::Sev1
         },
-        "ModelPort 无法接收受治理请求",
+        "ModelDock 无法接收受治理请求",
         if active {
             "至少一个 fail-closed 依赖未就绪，网关当前不可安全接单。".to_owned()
         } else {

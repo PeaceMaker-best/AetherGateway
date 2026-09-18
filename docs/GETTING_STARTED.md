@@ -13,14 +13,14 @@ example. Published release images are an optional path below. Use
 - A Provider account and API key.
 - Free local ports `33002` and `38082`.
 
-ModelPort stores all runtime state in PostgreSQL. The Compose stack supplies it;
+ModelDock stores all runtime state in PostgreSQL. The Compose stack supplies it;
 you do not need to install PostgreSQL on the host.
 
 ## 2. Create Local Configuration
 
 ```bash
-git clone --depth 1 https://github.com/tiammomo/ModelPort.git
-cd ModelPort
+git clone --depth 1 https://github.com/PeaceMaker-best/ModelDock.git
+cd ModelDock
 scripts/setup.sh
 ```
 
@@ -31,7 +31,7 @@ Provider, follow [Providers](PROVIDERS.md). Advanced environment options remain
 in the [Docker reference](../deploy/docker/modelport.env.example).
 
 Do not commit `.env` or `config.toml`. Provider credentials stay on the server;
-client applications use a scoped ModelPort API key.
+client applications use a scoped ModelDock API key.
 
 The sample model is `deepseek-v4-flash`. If the Provider account exposes a
 different ID, update `DEEPSEEK_MODEL`, the `config.toml` model list/default, and
@@ -83,7 +83,7 @@ attestations, and SBOMs through
 [Upgrading and Rollback](UPGRADING.md#release-inputs).
 
 Use this path only after the matching tag and all required images appear in
-[GitHub Releases](https://github.com/tiammomo/ModelPort/releases). Source builds
+[GitHub Releases](https://github.com/PeaceMaker-best/ModelDock/releases). Source builds
 remain available for unreleased changes.
 
 Expected services:
@@ -137,7 +137,7 @@ the four-step flow; saved configuration restores progress after a reload. The ba
 
 ## 6. Authorize The First Governed Request
 
-ModelPort fails closed for cloud egress when a project has no policy. Before
+ModelDock fails closed for cloud egress when a project has no policy. Before
 calling the DeepSeek example, open **Governance (治理与变更审批)** in the
 Dashboard under **团队与策略 → 治理与审批**. Choose the project routing policy,
 select DeepSeek and its exact model, explicitly allow approved cloud execution,

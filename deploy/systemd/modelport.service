@@ -1,6 +1,6 @@
 [Unit]
-Description=ModelPort local Claude model gateway
-Documentation=https://github.com/tiammomo/ModelPort
+Description=ModelDock local Claude model gateway
+Documentation=https://github.com/PeaceMaker-best/ModelDock
 After=network-online.target
 Wants=network-online.target
 

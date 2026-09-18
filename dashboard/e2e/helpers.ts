@@ -4,13 +4,13 @@ import { expect, type Page } from '@playwright/test'
 
 type EnvMap = Record<string, string>
 
-export interface ModelPortE2EEnv {
+export interface ModelDockE2EEnv {
   adminUsername: string
   adminPassword: string
   authToken: string
 }
 
-export function modelPortEnv(): ModelPortE2EEnv {
+export function modelPortEnv(): ModelDockE2EEnv {
   const fileEnv = readEnvFile(process.env.MODELPORT_ENV_FILE || path.resolve(process.cwd(), '..', '.env'))
   const env = { ...fileEnv, ...process.env }
   return {
@@ -20,7 +20,7 @@ export function modelPortEnv(): ModelPortE2EEnv {
   }
 }
 
-export function requireE2EEnv(): ModelPortE2EEnv {
+export function requireE2EEnv(): ModelDockE2EEnv {
   const env = modelPortEnv()
   if (!env.adminPassword) {
     throw new Error('MODELPORT_ADMIN_PASSWORD is required for dashboard E2E tests')
@@ -50,7 +50,7 @@ export async function seedFailedGatewayRequest(page: Page, env = requireE2EEnv()
     },
     data: {
       model: 'custom:ci-model',
-      messages: [{ role: 'user', content: 'ModelPort isolated E2E ledger seed' }],
+      messages: [{ role: 'user', content: 'ModelDock isolated E2E ledger seed' }],
     },
   })
   expect(response.status()).toBeGreaterThanOrEqual(500)
@@ -58,7 +58,7 @@ export async function seedFailedGatewayRequest(page: Page, env = requireE2EEnv()
 }
 
 export function csrfHeaders() {
-  return { 'X-ModelPort-CSRF': '1' }
+  return { 'X-ModelDock-CSRF': '1' }
 }
 
 export function dateTimeLocal(timestamp: number): string {

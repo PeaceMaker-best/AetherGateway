@@ -48,7 +48,7 @@ describe('settings service retention contract', () => {
     expect(path).toBe('/admin/retention/run')
     expect(options.method).toBe('POST')
     expect(JSON.parse(String(options.body))).toEqual({ dryRun: true })
-    expect(new Headers(options.headers).get('X-ModelPort-CSRF')).toBe('1')
+    expect(new Headers(options.headers).get('X-ModelDock-CSRF')).toBe('1')
   })
 
   it('binds apply to the server-issued preview token', async () => {

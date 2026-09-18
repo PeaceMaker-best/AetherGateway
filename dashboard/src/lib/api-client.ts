@@ -21,14 +21,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (options.body != null && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
-  if (!['GET', 'HEAD'].includes(method) && !headers.has('X-ModelPort-CSRF')) {
-    headers.set('X-ModelPort-CSRF', '1')
+  if (!['GET', 'HEAD'].includes(method) && !headers.has('X-ModelDock-CSRF')) {
+    headers.set('X-ModelDock-CSRF', '1')
   }
-  if (!['GET', 'HEAD'].includes(method) && !headers.has('X-ModelPort-Change-Request-Id')) {
+  if (!['GET', 'HEAD'].includes(method) && !headers.has('X-ModelDock-Change-Request-Id')) {
     const approvedChange = typeof window === 'undefined'
       ? ''
       : window.sessionStorage.getItem(CHANGE_REQUEST_STORAGE_KEY)?.trim() || ''
-    if (approvedChange) headers.set('X-ModelPort-Change-Request-Id', approvedChange)
+    if (approvedChange) headers.set('X-ModelDock-Change-Request-Id', approvedChange)
   }
 
   const response = await fetch(`${BASE_URL}${path}`, {

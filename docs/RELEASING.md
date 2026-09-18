@@ -1,6 +1,6 @@
-# Releasing ModelPort
+# Releasing ModelDock
 
-ModelPort uses semantic versions shared by the Rust backend and dashboard. A
+ModelDock uses semantic versions shared by the Rust backend and dashboard. A
 release tag is `v<version>`, matching `Cargo.toml` and
 `dashboard/package.json`. SemVer prerelease suffixes such as `-rc.1` are
 supported. Build-metadata suffixes such as `+build.1` are intentionally rejected
@@ -46,7 +46,7 @@ Then run:
 ```bash
 scripts/check-all.sh
 git diff --check
-git tag -s vX.Y.Z -m "ModelPort vX.Y.Z"
+git tag -s vX.Y.Z -m "ModelDock vX.Y.Z"
 git push origin main vX.Y.Z
 ```
 
@@ -97,12 +97,12 @@ Consumers should verify checksums and GitHub attestations:
 ```bash
 sha256sum --check SHA256SUMS
 gh attestation verify model-port-vX.Y.Z-linux-amd64.tar.gz \
-  --repo tiammomo/ModelPort
-docker pull ghcr.io/tiammomo/modelport:X.Y.Z
+  --repo PeaceMaker-best/ModelDock
+docker pull ghcr.io/peacemaker-best/modelport:X.Y.Z
 cosign verify \
-  --certificate-identity-regexp='https://github.com/tiammomo/ModelPort/.github/workflows/release.yml@refs/tags/vX[.]Y[.]Z' \
+  --certificate-identity-regexp='https://github.com/PeaceMaker-best/ModelDock/.github/workflows/release.yml@refs/tags/vX[.]Y[.]Z' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-  ghcr.io/tiammomo/modelport@sha256:<digest>
+  ghcr.io/peacemaker-best/modelport@sha256:<digest>
 ```
 
 For container provenance, verify the immutable digest rather than relying only

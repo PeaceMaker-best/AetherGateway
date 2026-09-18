@@ -1,16 +1,16 @@
 # OIDC Console Sign-In
 
-ModelPort can use an external OpenID Connect (OIDC) provider for human console
-sign-in. OIDC authenticates a person to the ModelPort control plane. It does not
+ModelDock can use an external OpenID Connect (OIDC) provider for human console
+sign-in. OIDC authenticates a person to the ModelDock control plane. It does not
 turn a ChatGPT browser subscription, cookie, or session into an OpenAI API
 credential.
 
 The data plane and Provider credential remain separate:
 
 ```text
-browser -> OIDC provider -> ModelPort console session
-SDK/BFF -> ModelPort API key -> ModelPort data plane
-ModelPort -> server-side Provider credential -> OpenAI or another Provider
+browser -> OIDC provider -> ModelDock console session
+SDK/BFF -> ModelDock API key -> ModelDock data plane
+ModelDock -> server-side Provider credential -> OpenAI or another Provider
 ```
 
 ## Prerequisites
@@ -41,7 +41,7 @@ MODELPORT_OIDC_USERNAME_CLAIM=preferred_username
 MODELPORT_OIDC_EMAIL_CLAIM=email
 
 # Disabled by default. When disabled, an administrator must create the user in
-# ModelPort before the first OIDC sign-in. Enabling it creates ordinary `user`
+# ModelDock before the first OIDC sign-in. Enabling it creates ordinary `user`
 # identities only; it never grants administrator access.
 MODELPORT_OIDC_AUTO_PROVISION=0
 
@@ -76,10 +76,10 @@ preview.
    identity provider.
 3. The provider redirects to `GET /admin/auth/oidc/callback` with an
    authorization code.
-4. ModelPort requires the callback to carry both the state and the browser-flow
+4. ModelDock requires the callback to carry both the state and the browser-flow
    cookie, consumes them once, exchanges the code, validates the ID token
    issuer, audience, signature, expiry, and nonce, then creates the normal
-   HttpOnly ModelPort console session. Binding state to the initiating browser
+   HttpOnly ModelDock console session. Binding state to the initiating browser
    prevents login CSRF in which another user is tricked into completing an
    attacker's sign-in.
 
@@ -90,7 +90,7 @@ open redirect.
 ## Account Linking And Provisioning
 
 An OIDC identity is permanently identified by the `(issuer, subject)` pair.
-ModelPort first looks for that binding. For a previously unbound local,
+ModelDock first looks for that binding. For a previously unbound local,
 non-administrator user it can bind only a unique matching email address when
 the provider explicitly marks that address as verified. A username claim is
 never used for implicit account linking. A subject already bound to one user
@@ -103,9 +103,9 @@ the recommended initial deployment mode. Automatic provisioning, when
 explicitly enabled, requires a verified email and a valid, globally unique
 username claim and creates only an ordinary `user` role. Username/email
 collisions fail closed instead of creating a shadow account. Administrator
-access remains a separate, audited ModelPort operation.
+access remains a separate, audited ModelDock operation.
 
-OIDC users still need a ModelPort data-plane API key for SDK or API requests.
+OIDC users still need a ModelDock data-plane API key for SDK or API requests.
 The console session cookie is intentionally not accepted by `/v1/messages` or
 `/v1/chat/completions`. An administrator can issue a scoped API key and apply
 team, model, Provider, IP, expiry, quota, and spend policy before handing it to
@@ -144,22 +144,22 @@ failure; the backend still enforces the configured policy.
 
 ### Session And Provider Boundaries
 
-- OIDC authorization state and ModelPort console sessions are process-local in
+- OIDC authorization state and ModelDock console sessions are process-local in
   the current release. A restart invalidates in-progress login flows and active
   sessions.
 - Starting a second OIDC flow in the same browser replaces its short-lived flow
   cookie; finish the newest flow or start again.
-- ModelPort logout clears only the local console session. RP-initiated logout
+- ModelDock logout clears only the local console session. RP-initiated logout
   and identity-provider single logout are not implemented in this preview.
-- Rotate the OIDC client secret at the identity provider and in the ModelPort
+- Rotate the OIDC client secret at the identity provider and in the ModelDock
   process environment together, then restart the service.
 - OIDC settings are startup configuration; the dashboard config-reload action
   does not replace the active issuer, client, metadata cache, or pending flows.
 - Do not log authorization codes, ID tokens, access tokens, client secrets, or
   full callback query strings. Configure every reverse proxy and load balancer
-  in front of ModelPort to log only the callback path, not the raw request
+  in front of ModelDock to log only the callback path, not the raw request
   target or Referer. The bundled Nginx configuration already does this.
-- Keep Provider API keys in the ModelPort server environment or an external
+- Keep Provider API keys in the ModelDock server environment or an external
   secret manager. Never expose them to the browser.
 
 ### Automated And Real-Provider Acceptance

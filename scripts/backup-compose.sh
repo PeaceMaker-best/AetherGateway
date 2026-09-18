@@ -206,7 +206,7 @@ create_backup() {
   container_id="$(
     docker compose -f "$COMPOSE_FILE" ps -q modelport
   )"
-  [[ -n "$container_id" ]] || die "Compose ModelPort service is not running"
+  [[ -n "$container_id" ]] || die "Compose ModelDock service is not running"
   image_id="$(docker inspect "$container_id" --format '{{.Image}}')"
   revision="$(docker image inspect "$image_id" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null || true)"
   source_state="$(docker image inspect "$image_id" --format '{{index .Config.Labels "io.modelport.source-state"}}' 2>/dev/null || true)"

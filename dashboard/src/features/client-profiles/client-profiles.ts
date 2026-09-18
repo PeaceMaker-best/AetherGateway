@@ -29,7 +29,7 @@ export interface BuildClientProfilesInput {
   oneTimeClientKey?: string
 }
 
-const CLIENT_KEY_PLACEHOLDER = '<你的 ModelPort API Key>'
+const CLIENT_KEY_PLACEHOLDER = '<你的 ModelDock API Key>'
 const MODEL_PLACEHOLDER = '<先选择可用模型>'
 
 function normalizeOrigin(origin: string) {
@@ -51,7 +51,7 @@ export function buildClientProfiles({
       name: 'Claude Code / Anthropic SDK',
       protocol: 'anthropic-messages',
       status: 'supported',
-      description: 'Anthropic Messages 客户端直接连接 ModelPort。',
+      description: 'Anthropic Messages 客户端直接连接 ModelDock。',
       configuration: `ANTHROPIC_BASE_URL=${origin}\nANTHROPIC_AUTH_TOKEN=${clientKey}\nANTHROPIC_MODEL=${model}`,
     },
     {
@@ -65,7 +65,7 @@ export function buildClientProfiles({
           openai: [{
             id: model,
             name: model,
-            description: 'ModelPort governed route',
+            description: 'ModelDock governed route',
             baseUrl: `${origin}/v1`,
             envKey: 'MODELPORT_API_KEY',
           }],
@@ -79,7 +79,7 @@ export function buildClientProfiles({
       name: 'OpenAI SDK',
       protocol: 'openai-chat-completions',
       status: 'supported',
-      description: 'OpenAI-compatible Chat Completions 客户端连接 ModelPort。',
+      description: 'OpenAI-compatible Chat Completions 客户端连接 ModelDock。',
       configuration: `OPENAI_BASE_URL=${origin}/v1\nOPENAI_API_KEY=${clientKey}\nOPENAI_MODEL=${model}`,
     },
     {
@@ -87,8 +87,8 @@ export function buildClientProfiles({
       name: 'Codex CLI',
       protocol: 'openai-responses',
       status: 'blocked',
-      description: '客户端兼容性状态；Codex CLI 不是 ModelPort Provider。',
-      reason: 'Codex CLI 自定义 Provider 需要 Responses wire API，而 ModelPort 尚未提供 POST /v1/responses。',
+      description: '客户端兼容性状态；Codex CLI 不是 ModelDock Provider。',
+      reason: 'Codex CLI 自定义 Provider 需要 Responses wire API，而 ModelDock 尚未提供 POST /v1/responses。',
       followUp: '待独立、限定范围的 Responses ingress 实现并验证后再提供配置。',
     },
   ]
