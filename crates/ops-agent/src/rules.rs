@@ -1,4 +1,4 @@
-use modelport_ops_protocol::{OpsObservation, OpsSeverity, OpsSnapshot};
+use aethergateway_ops_protocol::{OpsObservation, OpsSeverity, OpsSnapshot};
 use serde_json::{Value, json};
 
 pub const RULE_SET_VERSION: &str = "ops-rules-v1";
@@ -254,7 +254,7 @@ fn post_change(snapshot: &OpsSnapshot) -> OpsObservation {
 mod tests {
     use std::collections::BTreeMap;
 
-    use modelport_ops_protocol::{OpsAgentConfiguration, OpsLedgerHealth, OpsRequestWindow};
+    use aethergateway_ops_protocol::{OpsAgentConfiguration, OpsLedgerHealth, OpsRequestWindow};
 
     use super::*;
 

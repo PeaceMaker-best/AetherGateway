@@ -11,10 +11,10 @@ runtime environment; see [Single-instance production](#single-instance-productio
 | Service/volume | Purpose |
 | --- | --- |
 | `postgres` | PostgreSQL 18.4 for all durable runtime state; no host port by default. |
-| `modelport` | Rust data plane, control API, routing, metrics, and CLI. |
+| `aethergateway` | Rust data plane, control API, routing, metrics, and CLI. |
 | `dashboard` | Static React UI plus same-origin proxy to backend routes. |
-| `modelport-postgres-18` | Persistent PostgreSQL 18 data. |
-| `modelport-data` | Backend working directory and explicit backup files. |
+| `aethergateway-postgres-18` | Persistent PostgreSQL 18 data. |
+| `aethergateway-data` | Backend working directory and explicit backup files. |
 
 Redis, queues, Prometheus, Caddy, and an inference runtime are not part of the
 default stack.
@@ -27,18 +27,18 @@ dashboard builder uses Node.js 24 and `npm ci --no-audit --no-fund`; disabling
 the install-time audit and funding messages does not replace dependency review
 or vulnerability scanning.
 
-The Compose backend runs as the image's unprivileged `modelport` user with an
+The Compose backend runs as the image's unprivileged `aethergateway` user with an
 init process, a read-only root filesystem, all Linux capabilities dropped, and
 `no-new-privileges`. Only these paths are writable at runtime:
 
-- `/data`, backed by the `modelport-data` named volume, for explicit CLI
+- `/data`, backed by the `aethergateway-data` named volume, for explicit CLI
   backup files and bounded runtime working data;
 - `/tmp`, backed by a `noexec,nosuid` 64 MiB tmpfs for temporary runtime files.
 
 `/config/.env` is a read-only bind mount. The read-only root filesystem does
 not make the `/data` named volume read-only; persistence and backup commands
 depend on that volume remaining writable. PostgreSQL data is independently
-stored in `modelport-postgres-18`.
+stored in `aethergateway-postgres-18`.
 
 The dashboard Nginx process runs as its unprivileged `nginx` user on internal
 port 8080. Compose also gives it an init process, a read-only root filesystem,
@@ -55,19 +55,19 @@ the release profile:
 ```bash
 scripts/setup.sh
 # replace every required placeholder
-export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
-docker compose -f "$MODELPORT_COMPOSE_FILE" pull
+export AETHERGATEWAY_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" pull
 scripts/compose-up.sh
-docker compose -f "$MODELPORT_COMPOSE_FILE" ps
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" ps
 ```
 
 Before the first external Release, or when contributing changes on `main`, build
 locally instead:
 
 ```bash
-export MODELPORT_COMPOSE_FILE="$PWD/docker-compose.yml"
+export AETHERGATEWAY_COMPOSE_FILE="$PWD/docker-compose.yml"
 scripts/build-container.sh
-MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
+AETHERGATEWAY_LOCAL_BUILD=1 scripts/compose-up.sh
 ```
 
 `compose-up.sh` runs a read-only database alignment check before updating an
@@ -76,7 +76,7 @@ follow [the PostgreSQL migration runbook](POSTGRESQL_MIGRATION.md) instead of
 using raw `docker compose up` to bypass it.
 
 The contributor build helper refuses a dirty worktree and embeds the Git revision plus
-`io.modelport.source-state=clean` in the backend image. For local-only testing
+`io.aethergateway.source-state=clean` in the backend image. For local-only testing
 of uncommitted changes, `scripts/build-container.sh --allow-dirty` produces an
 explicitly dirty-labeled image that must not be promoted as a release.
 
@@ -84,9 +84,9 @@ Compose normally injects and mounts the root `.env`. For manifest validation or
 an intentionally different deployment file, point both uses at the same path:
 
 ```bash
-MODELPORT_COMPOSE_ENV_FILE=deploy/docker/modelport.env.example \
-  docker compose --env-file deploy/docker/modelport.env.example \
-    -f "$MODELPORT_COMPOSE_FILE" config --quiet
+AETHERGATEWAY_COMPOSE_ENV_FILE=deploy/docker/aethergateway.env.example \
+  docker compose --env-file deploy/docker/aethergateway.env.example \
+    -f "$AETHERGATEWAY_COMPOSE_FILE" config --quiet
 ```
 
 The example contains placeholders and is for validation only; do not start a
@@ -103,7 +103,7 @@ Claude Code uses the host-published backend:
 
 ```env
 ANTHROPIC_BASE_URL=http://127.0.0.1:38082
-ANTHROPIC_AUTH_TOKEN=<same-as-MODELPORT_AUTH_TOKEN>
+ANTHROPIC_AUTH_TOKEN=<same-as-AETHERGATEWAY_AUTH_TOKEN>
 ANTHROPIC_MODEL=<configured-model-id>
 ```
 
@@ -112,25 +112,25 @@ Run [Production](PRODUCTION.md) checks after startup.
 ## Daily Commands
 
 ```bash
-docker compose -f "$MODELPORT_COMPOSE_FILE" ps
-docker compose -f "$MODELPORT_COMPOSE_FILE" logs -f modelport
-docker compose -f "$MODELPORT_COMPOSE_FILE" logs -f dashboard
-docker compose -f "$MODELPORT_COMPOSE_FILE" restart modelport
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" ps
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" logs -f aethergateway
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" logs -f dashboard
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" restart aethergateway
 scripts/build-container.sh
-MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
-docker compose -f "$MODELPORT_COMPOSE_FILE" down
+AETHERGATEWAY_LOCAL_BUILD=1 scripts/compose-up.sh
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" down
 ```
 
-`docker compose -f "$MODELPORT_COMPOSE_FILE" down` preserves named volumes;
+`docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" down` preserves named volumes;
 adding `-v` deletes PostgreSQL and backend data and is irreversible without a
 backup.
 
 ## Storage
 
-Unless `.env` explicitly sets `MODELPORT_DATABASE_URL`, Compose constructs it
+Unless `.env` explicitly sets `AETHERGATEWAY_DATABASE_URL`, Compose constructs it
 for the internal PostgreSQL service. An explicit complete URL overrides that
 default. The application stores low-frequency auth/control definitions as two
-`jsonb` documents in `modelport_state`:
+`jsonb` documents in `aethergateway_state`:
 
 | Namespace | Contents |
 | --- | --- |
@@ -144,13 +144,13 @@ debugging, add an explicit non-conflicting loopback mapping such as
 The application uses SQLx with rustls. Development mode defaults to TLS
 `prefer`, which allows the internal Compose database without provisioning a
 certificate. A remote production database must use `verify-full` plus a trusted
-root; enabling `MODELPORT_ENTERPRISE_MODE=1` enforces that boundary.
+root; enabling `AETHERGATEWAY_ENTERPRISE_MODE=1` enforces that boundary.
 
 Compose interpolation does not percent-encode
-`MODELPORT_POSTGRES_PASSWORD`. Use a long URL-safe value made from letters,
-digits, `_`, and `-`, or explicitly set a complete `MODELPORT_DATABASE_URL`
+`AETHERGATEWAY_POSTGRES_PASSWORD`. Use a long URL-safe value made from letters,
+digits, `_`, and `-`, or explicitly set a complete `AETHERGATEWAY_DATABASE_URL`
 whose password component is percent-encoded. Keep
-`MODELPORT_POSTGRES_PASSWORD` itself as PostgreSQL's raw password. Characters
+`AETHERGATEWAY_POSTGRES_PASSWORD` itself as PostgreSQL's raw password. Characters
 such as `@`, `:`, `/`, `%`, and `#` are unsafe in the constructed URL when left
 unencoded.
 
@@ -184,15 +184,15 @@ Git and credentials from the secret manager.
 
 ```bash
 ./scripts/backup-compose.sh create
-./scripts/backup-compose.sh verify backups/modelport-<UTC>.tar.gz
-./scripts/backup-compose.sh drill backups/modelport-<UTC>.tar.gz
+./scripts/backup-compose.sh verify backups/aethergateway-<UTC>.tar.gz
+./scripts/backup-compose.sh drill backups/aethergateway-<UTC>.tar.gz
 ```
 
 `drill` restores the dump into a new, unpublished, temporary PostgreSQL
 container, checks the required `auth` and `control` namespaces, and removes the
-container. It never connects `modelport` to the temporary database and never
+container. It never connects `aethergateway` to the temporary database and never
 writes to the production database. Completed archives older than
-`MODELPORT_BACKUP_RETENTION_DAYS` (14 by default) are pruned only from the
+`AETHERGATEWAY_BACKUP_RETENTION_DAYS` (14 by default) are pruned only from the
 configured backup directory.
 
 Legacy schema-v1 archives remain readable but contain plaintext runtime
@@ -203,10 +203,10 @@ changing a PostgreSQL major version or database endpoint.
 The CLI can export a logical auth/control backup from PostgreSQL:
 
 ```bash
-docker compose -f "$MODELPORT_COMPOSE_FILE" exec modelport \
-  model-port backup export /data/modelport-backup.json
-docker compose -f "$MODELPORT_COMPOSE_FILE" exec modelport \
-  model-port backup validate /data/modelport-backup.json
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" exec aethergateway \
+  model-port backup export /data/aethergateway-backup.json
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" exec aethergateway \
+  model-port backup validate /data/aethergateway-backup.json
 ```
 
 Validation and restore both deeply deserialize the auth/control payloads before
@@ -220,9 +220,9 @@ Copy it to encrypted storage and restrict access.
 Restore with writers stopped:
 
 ```bash
-docker compose -f "$MODELPORT_COMPOSE_FILE" stop modelport dashboard
-docker compose -f "$MODELPORT_COMPOSE_FILE" run --rm modelport \
-  model-port backup restore /data/modelport-backup.json --yes
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" stop aethergateway dashboard
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" run --rm aethergateway \
+  model-port backup restore /data/aethergateway-backup.json --yes
 scripts/compose-up.sh
 ```
 
@@ -234,14 +234,14 @@ service has passed smoke and login checks.
 Keep a database-native backup too:
 
 ```bash
-docker compose -f "$MODELPORT_COMPOSE_FILE" exec postgres \
-  pg_dump -U modelport modelport > modelport.sql
-docker compose -f "$MODELPORT_COMPOSE_FILE" exec -T postgres \
-  psql -U modelport modelport < modelport.sql
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" exec postgres \
+  pg_dump -U aethergateway aethergateway > aethergateway.sql
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" exec -T postgres \
+  psql -U aethergateway aethergateway < aethergateway.sql
 ```
 
-The Compose project has `name: modelport`; a physical volume backup therefore
-uses volume `modelport_modelport-postgres-18`. PostgreSQL 18 stores data below
+The Compose project has `name: aethergateway`; a physical volume backup therefore
+uses volume `aethergateway_aethergateway-postgres-18`. PostgreSQL 18 stores data below
 the versioned `PGDATA=/var/lib/postgresql/18/docker`, while Compose mounts the
 parent `/var/lib/postgresql` as required by the official image. Prefer
 `pg_dump` for portable restore instead of copying a live database directory.
@@ -253,7 +253,7 @@ is the accepted phase-one topology. It intentionally contains one AetherGateway
 instance and no PostgreSQL service. It requires:
 
 - digest-pinned backend and dashboard images;
-- an external `modelport_default` network, shared with approved local inference
+- an external `aethergateway_default` network, shared with approved local inference
   Providers when present;
 - a reviewed non-secret `config.toml` whose Provider credentials use
   `token_env`/`api_key_env` references;
@@ -262,29 +262,29 @@ instance and no PostgreSQL service. It requires:
   contacts plus escalation channels;
 - a permission-`0600`, short-lived runtime env file rendered outside the
   repository by the production secret manager, including a dedicated scoped
-  `MODELPORT_HEALTHCHECK_API_KEY` for authenticated readiness.
+  `AETHERGATEWAY_HEALTHCHECK_API_KEY` for authenticated readiness.
 
 Do not run `docker compose config` with the real runtime env file in a log
 collection or CI job: Compose renders environment values. Validate with a
 synthetic file containing placeholders. The runtime database URL must use TLS
-`verify-full` and reference `/run/modelport/database-ca.pem` when an explicit
+`verify-full` and reference `/run/aethergateway/database-ca.pem` when an explicit
 root certificate is needed.
 
 Before rendering or starting the production profile, run the secret-safe,
 read-only preflight:
 
 ```bash
-export MODELPORT_COMPOSE_FILE="$PWD/deploy/production/compose.single.yml"
-export MODELPORT_IMAGE='registry/modelport@sha256:<digest>'
-export MODELPORT_DASHBOARD_IMAGE='registry/modelport-dashboard@sha256:<digest>'
-export MODELPORT_RUNTIME_ENV_FILE=/run/modelport/runtime.env
-export MODELPORT_CONFIG_FILE=/etc/modelport/config.toml
-export MODELPORT_DATABASE_CA_FILE=/etc/modelport/database-ca.pem
-export MODELPORT_OWNERSHIP_FILE=/etc/modelport/ownership.toml
+export AETHERGATEWAY_COMPOSE_FILE="$PWD/deploy/production/compose.single.yml"
+export AETHERGATEWAY_IMAGE='registry/aethergateway@sha256:<digest>'
+export AETHERGATEWAY_DASHBOARD_IMAGE='registry/aethergateway-dashboard@sha256:<digest>'
+export AETHERGATEWAY_RUNTIME_ENV_FILE=/run/aethergateway/runtime.env
+export AETHERGATEWAY_CONFIG_FILE=/etc/aethergateway/config.toml
+export AETHERGATEWAY_DATABASE_CA_FILE=/etc/aethergateway/database-ca.pem
+export AETHERGATEWAY_OWNERSHIP_FILE=/etc/aethergateway/ownership.toml
 
 ./scripts/production-preflight.sh
 ./scripts/compose-up.sh
-docker compose -f "$MODELPORT_COMPOSE_FILE" ps
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" ps
 ```
 
 It verifies digest-pinned images, file ownership/permissions, repository-external
@@ -296,17 +296,17 @@ milestone governed by
 [ADR-0005](adr/0005-forty-user-hybrid-routing-baseline.md).
 
 The Compose services use bounded `json-file` logging: 10 MiB per file and five
-files by default. Override `MODELPORT_LOG_MAX_SIZE` or
-`MODELPORT_LOG_MAX_FILES` only after checking host disk capacity.
+files by default. Override `AETHERGATEWAY_LOG_MAX_SIZE` or
+`AETHERGATEWAY_LOG_MAX_FILES` only after checking host disk capacity.
 
 ## Reload And Restart
 
 Compose mounts `.env` read-only at `/config/.env` and sets
-`MODELPORT_ENV_FILE=/config/.env`. The dashboard can reload mounted TOML and
+`AETHERGATEWAY_ENV_FILE=/config/.env`. The dashboard can reload mounted TOML and
 env-file-only values for new requests, but process environment values take
 precedence over the mounted file.
 
-Restart or recreate `modelport` for:
+Restart or recreate `aethergateway` for:
 
 - bind/body/request-concurrency/stream-concurrency layers;
 - HTTP client timeout, redirect, response/SSE settings;
@@ -322,7 +322,7 @@ the old process value. Dashboard credential profiles also read process variables
 directly. Recreate after `.env` changes through the checked helper:
 
 ```bash
-scripts/compose-up.sh modelport
+scripts/compose-up.sh aethergateway
 ```
 
 See the exact [reload matrix](CONFIGURATION.md#reload-versus-restart).
@@ -332,8 +332,8 @@ See the exact [reload matrix](CONFIGURATION.md#reload-versus-restart).
 Default publishing is loopback-only:
 
 ```env
-MODELPORT_API_PUBLISH=127.0.0.1:38082
-MODELPORT_DASHBOARD_PUBLISH=127.0.0.1:33002
+AETHERGATEWAY_API_PUBLISH=127.0.0.1:38082
+AETHERGATEWAY_DASHBOARD_PUBLISH=127.0.0.1:33002
 ```
 
 For a trusted LAN, bind deliberately and enforce a host firewall. For remote or
@@ -348,12 +348,12 @@ must target the dashboard's published host port instead.
 Behind HTTPS set:
 
 ```env
-MODELPORT_ADMIN_COOKIE_SECURE=1
-MODELPORT_ALLOWED_ORIGINS=https://modelport.example.com
-MODELPORT_TRUSTED_PROXIES=<exact-proxy-ip-or-cidr>
+AETHERGATEWAY_ADMIN_COOKIE_SECURE=1
+AETHERGATEWAY_ALLOWED_ORIGINS=https://aethergateway.example.com
+AETHERGATEWAY_TRUSTED_PROXIES=<exact-proxy-ip-or-cidr>
 ```
 
-`MODELPORT_ALLOWED_ORIGINS` is an admin-write check, not browser CORS. Keep the
+`AETHERGATEWAY_ALLOWED_ORIGINS` is an admin-write check, not browser CORS. Keep the
 dashboard and backend routes same-origin.
 
 ## Trusted Client IP
@@ -362,7 +362,7 @@ The Compose template includes the Docker bridge range so Nginx can forward the
 real client IP:
 
 ```env
-MODELPORT_TRUSTED_PROXIES=127.0.0.1,::1,172.16.0.0/12
+AETHERGATEWAY_TRUSTED_PROXIES=127.0.0.1,::1,172.16.0.0/12
 ```
 
 This is broad. In a controlled network, replace it with the actual proxy subnet
@@ -372,7 +372,7 @@ inputs.
 The bundled Nginx proxy deliberately sets `X-Forwarded-For` to its observed
 `$remote_addr` instead of appending an incoming client-controlled chain.
 AetherGateway then walks forwarded hops from right to left and removes only peers
-covered by `MODELPORT_TRUSTED_PROXIES`. If another reverse proxy is added in
+covered by `AETHERGATEWAY_TRUSTED_PROXIES`. If another reverse proxy is added in
 front, list only its exact addresses/subnets and verify the complete hop chain.
 
 Nginx also forwards `Host $http_host`, not `$host`. `$http_host` preserves the
@@ -387,11 +387,11 @@ Inside a container, `127.0.0.1` is the container itself. Use the configured
 host gateway for a runtime on the Docker host:
 
 ```env
-MODELPORT_ENABLE_OLLAMA=1
+AETHERGATEWAY_ENABLE_OLLAMA=1
 OLLAMA_BASE_URL=http://host.docker.internal:11434/v1
 OLLAMA_MODEL=llama3.1
 
-MODELPORT_ENABLE_CUSTOM=1
+AETHERGATEWAY_ENABLE_CUSTOM=1
 CUSTOM_OPENAI_BASE_URL=http://host.docker.internal:8000/v1
 CUSTOM_OPENAI_MODEL=default
 ```
@@ -402,7 +402,7 @@ its resolved IP. Only use it for a runtime you trust. See
 
 Local/custom Provider classes may use HTTP for these controlled runtime paths.
 Other Providers require HTTPS unless
-`MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP=1` is set. That override sends Provider
+`AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP=1` is set. That override sends Provider
 API keys and prompt/response content in plaintext across the Docker/network
 path, so do not use it for an Internet endpoint or an untrusted LAN.
 

@@ -1034,7 +1034,7 @@ mod tests {
             static_headers: std::collections::BTreeMap::from([
                 (
                     "HTTP-Referer".to_owned(),
-                    "https://modelport.example".to_owned(),
+                    "https://aethergateway.example".to_owned(),
                 ),
                 ("authorization".to_owned(), "unsafe".to_owned()),
             ]),
@@ -1050,7 +1050,7 @@ mod tests {
         let rendered = headers(&provider, &HeaderMap::new()).unwrap();
         assert!(rendered.contains(&(
             "http-referer".to_owned(),
-            "https://modelport.example".to_owned()
+            "https://aethergateway.example".to_owned()
         )));
         assert!(rendered.contains(&("authorization".to_owned(), "Bearer secret".to_owned())));
         provider.static_headers.clear();

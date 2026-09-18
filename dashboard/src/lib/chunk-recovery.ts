@@ -1,4 +1,4 @@
-const CHUNK_RELOAD_AT_KEY = 'modelport_chunk_reload_at'
+const CHUNK_RELOAD_AT_KEY = 'aethergateway_chunk_reload_at'
 const CHUNK_RELOAD_GUARD_MS = 30_000
 
 const CHUNK_LOAD_ERROR_PATTERNS = [
@@ -17,7 +17,7 @@ export function isChunkLoadError(error: unknown): boolean {
 export function reloadWithFreshAssets(): void {
   if (typeof window === 'undefined') return
   const url = new URL(window.location.href)
-  url.searchParams.set('__modelport_reload', Date.now().toString(36))
+  url.searchParams.set('__aethergateway_reload', Date.now().toString(36))
   window.location.replace(url.toString())
 }
 

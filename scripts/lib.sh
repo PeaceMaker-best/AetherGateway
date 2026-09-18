@@ -2,23 +2,23 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
-ENV_FILE="${MODELPORT_ENV_FILE:-$ROOT_DIR/.env}"
-RUNTIME_DIR="${MODELPORT_RUNTIME_DIR:-$ROOT_DIR/.modelport}"
-PID_FILE="${MODELPORT_PID_FILE:-$RUNTIME_DIR/model-port.pid}"
+ENV_FILE="${AETHERGATEWAY_ENV_FILE:-$ROOT_DIR/.env}"
+RUNTIME_DIR="${AETHERGATEWAY_RUNTIME_DIR:-$ROOT_DIR/.aethergateway}"
+PID_FILE="${AETHERGATEWAY_PID_FILE:-$RUNTIME_DIR/model-port.pid}"
 # Used by lifecycle scripts that source this library.
 # shellcheck disable=SC2034
-LOG_FILE="${MODELPORT_LOG_FILE:-$RUNTIME_DIR/model-port.log}"
+LOG_FILE="${AETHERGATEWAY_LOG_FILE:-$RUNTIME_DIR/model-port.log}"
 RELEASE_BIN="$ROOT_DIR/target/release/model-port"
 # Used by lifecycle scripts that source this library.
 # shellcheck disable=SC2034
 DEBUG_BIN="$ROOT_DIR/target/debug/model-port"
 
 log() {
-  printf '[modelport] %s\n' "$*"
+  printf '[aethergateway] %s\n' "$*"
 }
 
 die() {
-  printf '[modelport] ERROR: %s\n' "$*" >&2
+  printf '[aethergateway] ERROR: %s\n' "$*" >&2
   exit 1
 }
 
@@ -32,9 +32,9 @@ load_env() {
   source "$ENV_FILE"
   set +a
 
-  MODELPORT_BIND="${MODELPORT_BIND:-127.0.0.1:38082}"
-  MODELPORT_AUTH_TOKEN="${MODELPORT_AUTH_TOKEN:-${ANTHROPIC_AUTH_TOKEN:-}}"
-  export MODELPORT_BIND MODELPORT_AUTH_TOKEN MODELPORT_ENV_FILE="$ENV_FILE"
+  AETHERGATEWAY_BIND="${AETHERGATEWAY_BIND:-127.0.0.1:38082}"
+  AETHERGATEWAY_AUTH_TOKEN="${AETHERGATEWAY_AUTH_TOKEN:-${ANTHROPIC_AUTH_TOKEN:-}}"
+  export AETHERGATEWAY_BIND AETHERGATEWAY_AUTH_TOKEN AETHERGATEWAY_ENV_FILE="$ENV_FILE"
 }
 
 require_runtime_dir() {
@@ -42,7 +42,7 @@ require_runtime_dir() {
 }
 
 base_url() {
-  printf 'http://%s' "$MODELPORT_BIND"
+  printf 'http://%s' "$AETHERGATEWAY_BIND"
 }
 
 curl_local() {
@@ -139,11 +139,11 @@ wait_for_health() {
 }
 
 auth_header_args() {
-  if [[ -z "${MODELPORT_AUTH_TOKEN:-}" ]]; then
-    die "MODELPORT_AUTH_TOKEN or ANTHROPIC_AUTH_TOKEN is required"
+  if [[ -z "${AETHERGATEWAY_AUTH_TOKEN:-}" ]]; then
+    die "AETHERGATEWAY_AUTH_TOKEN or ANTHROPIC_AUTH_TOKEN is required"
   fi
 
-  printf '%s\n' "-H" "x-api-key: $MODELPORT_AUTH_TOKEN"
+  printf '%s\n' "-H" "x-api-key: $AETHERGATEWAY_AUTH_TOKEN"
 }
 
 default_upstream_model() {

@@ -73,7 +73,7 @@ The release workflow:
 - creates the GitHub Release from the existing tag.
 
 Runtime images retain their locked application dependency metadata under
-`/usr/share/modelport/sbom/`, outside the dashboard's served directory. Container
+`/usr/share/aethergateway/sbom/`, outside the dashboard's served directory. Container
 SBOM verification requires Cargo or npm package entries as well as the scanner's
 system package inventory. The pinned Syft scanner explicitly adds its Cargo/npm
 [lockfile catalogers](https://oss.anchore.com/docs/guides/sbom/catalogers/), which
@@ -98,11 +98,11 @@ Consumers should verify checksums and GitHub attestations:
 sha256sum --check SHA256SUMS
 gh attestation verify model-port-vX.Y.Z-linux-amd64.tar.gz \
   --repo PeaceMaker-best/AetherGateway
-docker pull ghcr.io/peacemaker-best/modelport:X.Y.Z
+docker pull ghcr.io/peacemaker-best/aethergateway:X.Y.Z
 cosign verify \
   --certificate-identity-regexp='https://github.com/PeaceMaker-best/AetherGateway/.github/workflows/release.yml@refs/tags/vX[.]Y[.]Z' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-  ghcr.io/peacemaker-best/modelport@sha256:<digest>
+  ghcr.io/peacemaker-best/aethergateway@sha256:<digest>
 ```
 
 For container provenance, verify the immutable digest rather than relying only
@@ -126,7 +126,7 @@ Application rollback and database rollback are separate decisions.
   snapshot and compatible application together; do not infer downgrade safety
   from a successful forward migration.
 - The PostgreSQL 18 Compose baseline uses a new
-  `modelport_modelport-postgres-18` volume and the versioned
+  `aethergateway_aethergateway-postgres-18` volume and the versioned
   `/var/lib/postgresql/18/docker` data directory. It intentionally does not
   reuse the old PostgreSQL 16 volume. Back up the old deployment before
   upgrading, follow [the migration runbook](POSTGRESQL_MIGRATION.md), and do not

@@ -14,8 +14,8 @@ test.describe('users and API keys', () => {
   test('admin can see, edit, and clean up a user and API key', async ({ page }) => {
     const suffix = Date.now()
     const username = `e2e_user_${suffix}`
-    const email = `${username}@modelport.local`
-    const updatedEmail = `${username}+updated@modelport.local`
+    const email = `${username}@aethergateway.local`
+    const updatedEmail = `${username}+updated@aethergateway.local`
     const password = 'e2e-password-12345'
 
     const createUserResponse = await page.request.post('/admin/users', {
@@ -84,7 +84,7 @@ test.describe('users and API keys', () => {
       headers: csrfHeaders(),
       data: {
         username,
-        email: `${username}@modelport.local`,
+        email: `${username}@aethergateway.local`,
         password: 'e2e-password-12345',
         role: 'user',
         status: 'active',

@@ -15,7 +15,7 @@ const message = { model, max_tokens: 32, messages: [{ role: 'user', content: 'Sy
 
 test('gateway protocol, bounded concurrent load, cancellation, database outage and restore', { skip: !databaseURL, timeout: 180_000 }, async t => {
   const mock = await upstream(t)
-  const app = await gateway(t, { CUSTOM_OPENAI_BASE_URL: `${mock.url}/v1`, MODELPORT_HTTP_STREAM_IDLE_TIMEOUT_SECS: '2', MODELPORT_DATABASE_ACQUIRE_TIMEOUT_SECS: '2' }, `
+  const app = await gateway(t, { CUSTOM_OPENAI_BASE_URL: `${mock.url}/v1`, AETHERGATEWAY_HTTP_STREAM_IDLE_TIMEOUT_SECS: '2', AETHERGATEWAY_DATABASE_ACQUIRE_TIMEOUT_SECS: '2' }, `
 [providers.custom]
 protocol = "openai-compat"
 base_url = "${mock.url}/v1"
@@ -31,14 +31,14 @@ response_validation = "strict"
   let activeDatabaseURL = databaseURL
   let cookie = await adminSession(app)
   const user = await createUser(app, cookie, 'protocol')
-  const response = await app.request('/admin/api-keys', { headers: { cookie, 'x-modelport-csrf': '1' },
+  const response = await app.request('/admin/api-keys', { headers: { cookie, 'x-aethergateway-csrf': '1' },
     data: { userId: user.id, name: 'assurance-client', allowedProviders: ['custom'], allowedModels: ['assurance-model'] } })
   assert.equal(response.status, 200)
   const key = await response.json()
   const apiKey = key.key
   assert.ok(apiKey, 'one-time API key must be returned')
-  const headers = { 'x-api-key': apiKey, 'x-modelport-traffic-class': 'synthetic' }
-  const writeHeaders = () => ({ cookie, 'x-modelport-csrf': '1' })
+  const headers = { 'x-api-key': apiKey, 'x-aethergateway-traffic-class': 'synthetic' }
+  const writeHeaders = () => ({ cookie, 'x-aethergateway-csrf': '1' })
   for (const path of ['/v1/messages', '/v1/chat/completions']) {
     await t.test(`${path}: text, live streaming and tool-result round trip`, async () => {
       let response = await app.request(path, { headers, data: message })
@@ -86,7 +86,7 @@ response_validation = "strict"
     assert.equal(mock.calls(), calls)
   })
   await t.test('40 distinct users sustain synthetic streaming load with bounded outcomes', async () => {
-    const durationSeconds = Number(process.env.MODELPORT_ASSURANCE_LOAD_SECONDS || 10)
+    const durationSeconds = Number(process.env.AETHERGATEWAY_ASSURANCE_LOAD_SECONDS || 10)
     assert.ok(Number.isInteger(durationSeconds) && durationSeconds >= 1 && durationSeconds <= 120)
     const clients = []
     for (let i = 0; i < 40; i++) {
@@ -152,13 +152,13 @@ response_validation = "strict"
     assert.equal((await app.request('/v1/models', { headers })).status, 200)
     cookie = await adminSession(app)
   })
-  const container = process.env.MODELPORT_RUNTIME_TEST_POSTGRES_CONTAINER
+  const container = process.env.AETHERGATEWAY_RUNTIME_TEST_POSTGRES_CONTAINER
   await t.test('database outage fails closed, then backup/restore recovers auth and ledger state', { skip: !container, timeout: 90_000 }, async () => {
-    assert.match(container, /^modelport-assurance-[0-9]+-[0-9]+$/)
-    const inspect = await execute('docker', ['inspect', '--format', '{{index .Config.Labels "io.modelport.test"}}', container])
+    assert.match(container, /^aethergateway-assurance-[0-9]+-[0-9]+$/)
+    const inspect = await execute('docker', ['inspect', '--format', '{{index .Config.Labels "io.aethergateway.test"}}', container])
     assert.equal(inspect.stdout.trim(), 'assurance')
     const docker = args => execute('docker', ['exec', container, ...args], { maxBuffer: 8 * 1024 * 1024 })
-    const sql = (query, database = 'modelport_assurance') => docker(['psql', '-U', 'modelport', '-d', database, '-Atc', query])
+    const sql = (query, database = 'aethergateway_assurance') => docker(['psql', '-U', 'aethergateway', '-d', database, '-Atc', query])
     const calls = mock.calls()
     await execute('docker', ['stop', '--time', '5', container])
     try {
@@ -172,32 +172,32 @@ response_validation = "strict"
     }
     assert.equal((await app.request('/readyz', { headers: { 'x-api-key': app.token } })).status, 200)
     await app.stop()
-    const fingerprintQuery = "SELECT namespace || ':' || md5(document::text) FROM modelport_state ORDER BY namespace"
+    const fingerprintQuery = "SELECT namespace || ':' || md5(document::text) FROM aethergateway_state ORDER BY namespace"
     const fingerprint = (await sql(fingerprintQuery)).stdout
-    const ledger = (await sql('SELECT count(*) FROM modelport_gateway_requests')).stdout
-    const dump = await execute('docker', ['exec', container, 'pg_dump', '-U', 'modelport', '-d', 'modelport_assurance', '-Fc', '--no-owner', '--no-privileges'], { encoding: 'buffer', maxBuffer: 16 * 1024 * 1024 })
-    const temporary = await mkdtemp(join(tmpdir(), 'modelport-restore-'))
+    const ledger = (await sql('SELECT count(*) FROM aethergateway_gateway_requests')).stdout
+    const dump = await execute('docker', ['exec', container, 'pg_dump', '-U', 'aethergateway', '-d', 'aethergateway_assurance', '-Fc', '--no-owner', '--no-privileges'], { encoding: 'buffer', maxBuffer: 16 * 1024 * 1024 })
+    const temporary = await mkdtemp(join(tmpdir(), 'aethergateway-restore-'))
     try {
       const archive = join(temporary, 'postgres.dump')
       await writeFile(archive, dump.stdout, { mode: 0o600 })
-      await docker(['createdb', '-U', 'modelport', 'modelport_assurance_restore'])
+      await docker(['createdb', '-U', 'aethergateway', 'aethergateway_assurance_restore'])
       await execute('docker', ['cp', archive, `${container}:/tmp/assurance.dump`])
-      await docker(['pg_restore', '-U', 'modelport', '-d', 'modelport_assurance_restore', '--exit-on-error', '--no-owner', '--no-privileges', '/tmp/assurance.dump'])
-      assert.equal((await sql(fingerprintQuery, 'modelport_assurance_restore')).stdout, fingerprint)
-      assert.equal((await sql('SELECT count(*) FROM modelport_gateway_requests', 'modelport_assurance_restore')).stdout, ledger)
-      const restored = new URL(databaseURL); restored.pathname = '/modelport_assurance_restore'
+      await docker(['pg_restore', '-U', 'aethergateway', '-d', 'aethergateway_assurance_restore', '--exit-on-error', '--no-owner', '--no-privileges', '/tmp/assurance.dump'])
+      assert.equal((await sql(fingerprintQuery, 'aethergateway_assurance_restore')).stdout, fingerprint)
+      assert.equal((await sql('SELECT count(*) FROM aethergateway_gateway_requests', 'aethergateway_assurance_restore')).stdout, ledger)
+      const restored = new URL(databaseURL); restored.pathname = '/aethergateway_assurance_restore'
       activeDatabaseURL = restored.href
-      await app.start({ MODELPORT_DATABASE_URL: restored.href })
+      await app.start({ AETHERGATEWAY_DATABASE_URL: restored.href })
       cookie = await adminSession(app)
       assert.equal((await app.request('/v1/models', { headers })).status, 200)
-      if (process.env.MODELPORT_ROLLBACK_TEST_BINARY) {
+      if (process.env.AETHERGATEWAY_ROLLBACK_TEST_BINARY) {
         await app.stop()
-        await app.start({ MODELPORT_DATABASE_URL: restored.href }, process.env.MODELPORT_ROLLBACK_TEST_BINARY)
+        await app.start({ AETHERGATEWAY_DATABASE_URL: restored.href }, process.env.AETHERGATEWAY_ROLLBACK_TEST_BINARY)
         assert.equal((await app.request('/readyz', { headers: { 'x-api-key': app.token } })).status, 200)
         assert.equal((await app.request('/v1/models', { headers })).status, 200)
       }
       await evidence('recovery', { databaseOutageRejectedBeforeEgress: true, stateFingerprintMatched: true, ledgerRows: Number(ledger.trim()), restoredLoginPassed: true,
-        rollbackBinaryPassed: Boolean(process.env.MODELPORT_ROLLBACK_TEST_BINARY), productionRtoRpoVerified: false })
+        rollbackBinaryPassed: Boolean(process.env.AETHERGATEWAY_ROLLBACK_TEST_BINARY), productionRtoRpoVerified: false })
     } finally { await rm(temporary, { recursive: true, force: true }) }
   })
   await t.test('revoking a client key remains effective after restart', async () => {
@@ -205,7 +205,7 @@ response_validation = "strict"
     const revoked = await app.request(`/admin/api-keys/${key.id}`, { method: 'DELETE', headers: writeHeaders() })
     assert.equal(revoked.status, 200)
     await app.stop()
-    await app.start({ MODELPORT_DATABASE_URL: activeDatabaseURL })
+    await app.start({ AETHERGATEWAY_DATABASE_URL: activeDatabaseURL })
     assert.equal((await app.request('/v1/models', { headers })).status, 401)
   })
 })

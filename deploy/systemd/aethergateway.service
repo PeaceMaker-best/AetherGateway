@@ -6,16 +6,16 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/modelport/modelport.env
+EnvironmentFile=/etc/aethergateway/aethergateway.env
 Environment=RUST_LOG=model_port=info,tower_http=info
-Environment=MODELPORT_STATE_DIR=/var/lib/modelport
+Environment=AETHERGATEWAY_STATE_DIR=/var/lib/aethergateway
 ExecStart=/usr/local/bin/model-port
-WorkingDirectory=/var/lib/modelport
+WorkingDirectory=/var/lib/aethergateway
 Restart=always
 RestartSec=3
 
 DynamicUser=true
-StateDirectory=modelport
+StateDirectory=aethergateway
 StateDirectoryMode=0700
 UMask=0077
 NoNewPrivileges=true

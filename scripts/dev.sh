@@ -31,7 +31,7 @@ load_optional_env() {
   if [[ -f "$ENV_FILE" ]]; then
     load_env
   else
-    MODELPORT_BIND="${MODELPORT_BIND:-127.0.0.1:38082}"
+    AETHERGATEWAY_BIND="${AETHERGATEWAY_BIND:-127.0.0.1:38082}"
   fi
 }
 
@@ -51,7 +51,7 @@ start_gateway() {
     die "$(base_url) already answers but is not managed by this checkout; inspect that deployment before starting another gateway"
   fi
   rm -f "$PID_FILE"
-  if ! release_is_fresh || [[ "${MODELPORT_FORCE_BUILD:-0}" == "1" ]]; then
+  if ! release_is_fresh || [[ "${AETHERGATEWAY_FORCE_BUILD:-0}" == "1" ]]; then
     "$SCRIPT_DIR/build-release.sh"
   fi
   log "starting AetherGateway in background at $(base_url)"
@@ -128,7 +128,7 @@ status_gateway() {
   load_optional_env
   local pid
   local owned
-  log "bind: $MODELPORT_BIND"
+  log "bind: $AETHERGATEWAY_BIND"
   log "pid file: $PID_FILE"
   log "log file: $LOG_FILE"
   pid="$(pid_from_file || true)"
@@ -148,10 +148,10 @@ status_gateway() {
   log "liveness: ok"
   curl_local -fsS -m 3 "$(base_url)/livez"
   printf '\n'
-  if [[ -n "${MODELPORT_AUTH_TOKEN:-}" ]] && command -v node >/dev/null 2>&1; then
+  if [[ -n "${AETHERGATEWAY_AUTH_TOKEN:-}" ]] && command -v node >/dev/null 2>&1; then
     # Parse through stdin so failed diagnostics need no temporary-file cleanup.
     # shellcheck disable=SC2016
-    curl_local -fsS -m 3 -H "x-api-key: $MODELPORT_AUTH_TOKEN" "$(base_url)/readyz" 2>/dev/null |
+    curl_local -fsS -m 3 -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" "$(base_url)/readyz" 2>/dev/null |
       node -e '
 let input = ""
 process.stdin.setEncoding("utf8").on("data", chunk => { input += chunk })
@@ -160,7 +160,7 @@ process.stdin.on("end", () => {
   const providers = Object.values(JSON.parse(input).providerHealth || {})
     .filter(provider => provider && provider.rechargeRequired)
     .map(provider => `${provider.providerId}${provider.rechargeBadge ? `/${provider.rechargeBadge}` : ""}`)
-  console.log(`[modelport] pending recharge: ${providers.length ? providers.join(", ") : "none"}`)
+  console.log(`[aethergateway] pending recharge: ${providers.length ? providers.join(", ") : "none"}`)
 })
       ' || true
   fi

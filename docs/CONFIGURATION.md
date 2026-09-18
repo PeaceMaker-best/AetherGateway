@@ -2,7 +2,7 @@
 
 This document is the maintained reference for AetherGateway configuration. Start
 from [`.env.example`](../.env.example) for local development or
-[`deploy/docker/modelport.env.example`](../deploy/docker/modelport.env.example)
+[`deploy/docker/aethergateway.env.example`](../deploy/docker/aethergateway.env.example)
 for Docker Compose.
 
 ## Sources
@@ -11,22 +11,22 @@ AetherGateway supports two base-configuration modes:
 
 1. **Environment defaults:** used when no TOML configuration file exists.
    Built-in provider templates are enabled by credentials, provider-specific
-   values, or an explicit `MODELPORT_ENABLE_*` flag.
-2. **TOML:** set `MODELPORT_CONFIG`, or place a file at
-   `~/.config/modelport/config.toml`. TOML defines provider records, order,
+   values, or an explicit `AETHERGATEWAY_ENABLE_*` flag.
+2. **TOML:** set `AETHERGATEWAY_CONFIG`, or place a file at
+   `~/.config/aethergateway/config.toml`. TOML defines provider records, order,
    aliases, server defaults, and the router-token environment variable.
 
-An environment file is read from `MODELPORT_ENV_FILE`, or from `.env` in the
+An environment file is read from `AETHERGATEWAY_ENV_FILE`, or from `.env` in the
 current working directory when present. Local scripts source `.env` into the
 process. Docker Compose both supplies it as `env_file` and mounts it read-only
 at `/config/.env`.
 
-The process environment takes precedence over `MODELPORT_ENV_FILE`/`.env` for
+The process environment takes precedence over `AETHERGATEWAY_ENV_FILE`/`.env` for
 the same key. Avoid defining conflicting values in both places. In Docker,
 remember that Compose copies `env_file` values into the process when the
 container is created.
 
-`MODELPORT_BIND` overrides `[server].bind` in TOML so the same provider
+`AETHERGATEWAY_BIND` overrides `[server].bind` in TOML so the same provider
 configuration works on a host and inside Docker. Without that environment
 value, the TOML address (or the loopback default) is used. Other TOML server
 fields keep their existing precedence over environment defaults.
@@ -46,7 +46,7 @@ reference adapter.
 [runtime_adapters.gpu_fleet]
 enabled = true
 base_url = "https://runtime-adapter.internal.example"
-bearer_token_env = "MODELPORT_RUNTIME_ADAPTER_GPU_FLEET_TOKEN"
+bearer_token_env = "AETHERGATEWAY_RUNTIME_ADAPTER_GPU_FLEET_TOKEN"
 poll_interval_seconds = 30
 stale_after_seconds = 90
 ```
@@ -71,10 +71,10 @@ separate reviewed work.
 ## Required Minimum: DeepSeek-Only Example
 
 ```env
-MODELPORT_AUTH_TOKEN=replace-with-a-long-random-local-token
-MODELPORT_ADMIN_USERNAME=admin
-MODELPORT_ADMIN_PASSWORD=replace-with-a-long-random-admin-password
-MODELPORT_DEFAULT_PROVIDER=deepseek
+AETHERGATEWAY_AUTH_TOKEN=replace-with-a-long-random-local-token
+AETHERGATEWAY_ADMIN_USERNAME=admin
+AETHERGATEWAY_ADMIN_PASSWORD=replace-with-a-long-random-admin-password
+AETHERGATEWAY_DEFAULT_PROVIDER=deepseek
 
 DEEPSEEK_ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
 DEEPSEEK_ANTHROPIC_AUTH_TOKEN=replace-with-a-real-provider-key
@@ -82,13 +82,13 @@ DEEPSEEK_MODEL=deepseek-v4-flash
 ```
 
 The client must send the effective router token. `ANTHROPIC_AUTH_TOKEN` is also
-accepted as the router-token fallback when `MODELPORT_AUTH_TOKEN` is absent,
+accepted as the router-token fallback when `AETHERGATEWAY_AUTH_TOKEN` is absent,
 but deployments should set one unambiguous server token and make the client
 match it.
 
 This minimum is one supported topology, not a requirement that every AetherGateway
 deployment install DeepSeek. At least one enabled Provider and a valid
-`MODELPORT_DEFAULT_PROVIDER` are required; a Qwen-only deployment can omit all
+`AETHERGATEWAY_DEFAULT_PROVIDER` are required; a Qwen-only deployment can omit all
 DeepSeek values.
 
 Validate before startup:
@@ -109,12 +109,12 @@ Placeholder secrets, an invalid/missing default provider, broken aliases,
 unsafe provider definitions, and malformed guardrail values therefore do not
 silently enter service. Numeric environment variables are checked as unsigned
 integers and, where zero has no safe meaning, as greater than zero. In
-particular `MODELPORT_MAX_REQUEST_BODY_BYTES`,
-`MODELPORT_MAX_CONCURRENT_REQUESTS`, and the documented request-size, session,
+particular `AETHERGATEWAY_MAX_REQUEST_BODY_BYTES`,
+`AETHERGATEWAY_MAX_CONCURRENT_REQUESTS`, and the documented request-size, session,
 HTTP timeout/body, and SSE byte guardrails must be non-zero. Rate limiting has
 its separate explicit disable switch.
 
-The shared deployment preflight requires `MODELPORT_DATABASE_URL` and validates
+The shared deployment preflight requires `AETHERGATEWAY_DATABASE_URL` and validates
 PostgreSQL URL syntax without echoing credentials, database TLS policy, pool
 min/max and acquisition-timeout bounds, enterprise lease timing, trusted-proxy
 IP/CIDR entries, and allowed-origin syntax. Enterprise mode additionally
@@ -146,7 +146,7 @@ policy_version = "builtin-v1"
 activation_percent = 0        # 0-100; used only by active mode
 
 [routing.groups.general]
-aliases = ["modelport-auto"]
+aliases = ["aethergateway-auto"]
 default_profile = "balanced"
 
 [[routing.groups.general.candidates]]
@@ -172,7 +172,7 @@ assignment is per request. The other requests remain the canary control group.
 An active configuration with zero percent is valid but emits a warning.
 
 Clients may override the group/default profile with
-`x-modelport-routing-profile`. `x-modelport-session-id` adds a small,
+`x-aethergateway-routing-profile`. `x-aethergateway-session-id` adds a small,
 deterministic affinity tie-breaker; its raw value is neither logged nor
 persisted. Both headers are optional. Invalid profiles fail before Provider
 egress.
@@ -181,9 +181,9 @@ The following environment variables are emergency/runtime overrides for the
 corresponding TOML values:
 
 ```env
-MODELPORT_SMART_ROUTING_MODE=shadow
-MODELPORT_SMART_ROUTING_PROFILE=balanced
-MODELPORT_SMART_ROUTING_ACTIVATION_PERCENT=0
+AETHERGATEWAY_SMART_ROUTING_MODE=shadow
+AETHERGATEWAY_SMART_ROUTING_PROFILE=balanced
+AETHERGATEWAY_SMART_ROUTING_ACTIVATION_PERCENT=0
 ```
 
 Candidate quality is currently a versioned operator prior, not a self-modifying
@@ -197,9 +197,9 @@ per group, and 1,024 aliases and candidates in total.
 Environment:
 
 ```env
-MODELPORT_CONFIG=config.toml
-MODELPORT_AUTH_TOKEN=replace-with-a-long-random-router-token
-MODELPORT_DEFAULT_PROVIDER=local_qwen
+AETHERGATEWAY_CONFIG=config.toml
+AETHERGATEWAY_AUTH_TOKEN=replace-with-a-long-random-router-token
+AETHERGATEWAY_DEFAULT_PROVIDER=local_qwen
 QWEN_LOCAL_BASE_URL=http://qwen-runtime:8080/v1
 ```
 
@@ -208,7 +208,7 @@ unused upstream credential. For a host process, replace the Docker DNS address
 with the Qwen runtime's reachable loopback URL.
 
 The complete contract-aligned example is
-[`deploy/local-inference/modelport.local-qwen.toml`](../deploy/local-inference/modelport.local-qwen.toml).
+[`deploy/local-inference/aethergateway.local-qwen.toml`](../deploy/local-inference/aethergateway.local-qwen.toml).
 It is validated by the repository checks and should be copied or merged rather
 than edited in place.
 
@@ -217,7 +217,7 @@ default_provider = "local_qwen"
 provider_order = ["local_qwen"]
 
 [auth]
-token_env = "MODELPORT_AUTH_TOKEN"
+token_env = "AETHERGATEWAY_AUTH_TOKEN"
 
 [providers.local_qwen]
 display_name = "Qwen3.5-9B Q5_K_M (local)"
@@ -300,20 +300,20 @@ In environment-default mode, enable its Codex and Claude channels
 independently:
 
 ```env
-MODELPORT_ENABLE_CPA_CODEX=1
+AETHERGATEWAY_ENABLE_CPA_CODEX=1
 CPA_CODEX_BASE_URL=http://127.0.0.1:8317/v1
 CPA_CODEX_API_KEY=replace-with-cpa-client-api-key
 CPA_CODEX_MODEL=gpt-5.3-codex
 CPA_CODEX_MODELS=gpt-5.3-codex
 
-MODELPORT_ENABLE_CPA_CLAUDE=1
+AETHERGATEWAY_ENABLE_CPA_CLAUDE=1
 CPA_CLAUDE_BASE_URL=http://127.0.0.1:8317
 CPA_CLAUDE_API_KEY=replace-with-cpa-client-api-key
 CPA_CLAUDE_MODEL=claude-sonnet-4-6
 CPA_CLAUDE_MODELS=claude-sonnet-4-6
 ```
 
-Setting either key or an explicit `MODELPORT_ENABLE_CPA_*` flag enables only
+Setting either key or an explicit `AETHERGATEWAY_ENABLE_CPA_*` flag enables only
 that Provider. The two key variables may contain the same CPA client key; they
 stay separate so enabling one protocol never silently enables the other.
 
@@ -358,7 +358,7 @@ because the Anthropic adapter appends `/v1/messages`.
 Docker deployments should use `http://cpa:8317/v1` and
 `http://cpa:8317` only after attaching CPA under the single-label `cpa` DNS
 name to AetherGateway's private network. Keep CPA unexposed. A private literal IP
-still requires `MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS=1`; a public hostname
+still requires `AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS=1`; a public hostname
 requires HTTPS.
 
 AetherGateway owns request-level retries and cross-Provider fallback. Set CPA's
@@ -366,21 +366,21 @@ AetherGateway owns request-level retries and cross-Provider fallback. Set CPA's
 AetherGateway attempt cannot fan out across an unbounded CPA account pool. See the
 [CPA Provider contract](PROVIDERS.md#cpa-codex-and-claude-account-adapter).
 
-### QuantPilot client boundary
+### SignalFoundry client boundary
 
-For QuantPilot, issue a dashboard API key scoped only to the providers/models it
+For SignalFoundry, issue a dashboard API key scoped only to the providers/models it
 needs, commonly:
 
 - `local_qwen:qwen3.5-9b-q5km`
 - `deepseek:deepseek-v4-flash`
 - `GET /v1/models` and `POST /v1/chat/completions`
 
-Store that client key in QuantPilot as `MODELPORT_API_KEY`. Never copy
+Store that client key in SignalFoundry as `AETHERGATEWAY_API_KEY`. Never copy
 `DEEPSEEK_ANTHROPIC_AUTH_TOKEN`, a Qwen upstream key, the complete AetherGateway
-`.env`, or provider credential-pool material into QuantPilot. A Qwen-only client
+`.env`, or provider credential-pool material into SignalFoundry. A Qwen-only client
 key may omit every DeepSeek scope; AetherGateway itself may also run Qwen-only.
 
-QuantPilot's official-direct `deepseek-v4-flash` profile bypasses AetherGateway and
+SignalFoundry's official-direct `deepseek-v4-flash` profile bypasses AetherGateway and
 uses its own `DEEPSEEK_API_KEY`; it is a separate path from the namespaced
 `deepseek:deepseek-v4-flash` AetherGateway model. AetherGateway is not involved in the
 direct path and cannot govern its usage or balance.
@@ -389,75 +389,75 @@ direct path and cannot govern its usage or balance.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `MODELPORT_BIND` | `127.0.0.1:17878` | Backend listen address. |
-| `MODELPORT_MAX_REQUEST_BODY_BYTES` | `33554432` | Axum request-body limit for all routes; must be greater than zero. |
-| `MODELPORT_MAX_CONCURRENT_REQUESTS` | `64` | Process-wide concurrency layer; must be greater than zero. |
-| `MODELPORT_MAX_CONCURRENT_STREAMS` | inherits `MODELPORT_MAX_CONCURRENT_REQUESTS` | Maximum concurrent streaming response bodies. Exhaustion returns HTTP 429 with `Retry-After: 1`; the permit is held until the body completes or is dropped. |
-| `MODELPORT_AUTH_TOKEN` | required | Legacy router token. |
-| `MODELPORT_ALLOW_NO_AUTH` | off | Dangerous isolated-test override. Never use on a shared network. |
-| `MODELPORT_REQUIRE_CONTROL_API_KEYS` | off | Reject the legacy token wherever data-plane authentication is evaluated (`/v1/*`, `/metrics`, `/readyz`, and detailed health); require dashboard-issued keys. |
-| `MODELPORT_ADMIN_USERNAME` | `admin` | First-admin bootstrap username. Used only when the auth store is empty. |
-| `MODELPORT_ADMIN_PASSWORD` | effective router token fallback | First-admin password; set it explicitly. It and the fallback must pass strong-password checks. |
-| `MODELPORT_ADMIN_EMAIL` | `admin@modelport.local` | First-admin bootstrap email. |
-| `MODELPORT_ADMIN_SESSION_TTL_SECONDS` | `43200` | Dashboard session lifetime. |
-| `MODELPORT_ADMIN_COOKIE_SECURE` | off | Add `Secure` to the dashboard cookie. Set to `1` behind HTTPS. |
-| `MODELPORT_PASSWORD_LOGIN_ENABLED` | `1` | Set to `0` to reject password login at the backend. Requires configured OIDC and an active administrator already linked to that issuer at startup. |
-| `MODELPORT_REQUIRE_DUAL_APPROVAL` | off; always on in enterprise mode | Require an approved change request from two distinct administrators before high-risk identity, Provider, model, or hard-budget writes. Small-Team mode otherwise relies on the administrator session, CSRF protection, and audit trail so a one-admin first install remains operable. |
-| `MODELPORT_OIDC_ISSUER` | unset | OIDC issuer discovery URL. OIDC console sign-in stays disabled when no OIDC values are configured. |
-| `MODELPORT_OIDC_CLIENT_ID` | unset | OIDC client identifier; required with issuer and redirect URI when OIDC is enabled. |
-| `MODELPORT_OIDC_CLIENT_SECRET` | unset | Optional confidential-client secret. Leave unset only when the identity provider accepts the supported public-client code exchange. |
-| `MODELPORT_OIDC_REDIRECT_URI` | unset | Exact external callback URL; its path must be `/admin/auth/oidc/callback` with no query or fragment. |
-| `MODELPORT_OIDC_LABEL` | `Single sign-on` | Login-button label. |
-| `MODELPORT_OIDC_REQUIRED_ACR` | unset | Exact signed OIDC authentication-class claim required for login. Sends `acr_values` and rejects missing/mismatched claims. Requires password login disabled; the identity provider must enforce the corresponding MFA policy. |
-| `MODELPORT_OIDC_AUTO_PROVISION` | off | Create missing ordinary users after a valid OIDC login. Keep off initially and pre-create users; it never grants administrator access. |
-| `MODELPORT_OIDC_USERNAME_CLAIM` | `preferred_username` | ID-token claim used as the AetherGateway username. |
-| `MODELPORT_OIDC_EMAIL_CLAIM` | `email` | ID-token claim read as the AetherGateway email. Initial linking/JIT requires the standard `email` claim plus `email_verified=true`; verification is not inherited by a custom claim name. |
-| `MODELPORT_OIDC_ALLOW_INSECURE_HTTP` | off | Allow HTTP only for loopback OIDC development URLs. Never enable it for a remote or production identity provider. |
-| `MODELPORT_STATE_DIR` | `.modelport` | Working directory for explicit backup output. Runtime state is not stored here. |
-| `MODELPORT_DATABASE_URL` | required at runtime | PostgreSQL target for the operational ledger and low-frequency auth/control documents. Compose constructs an internal default unless explicitly overridden. Setting an external URL moves the internal `postgres` service to the `internal-db` Compose profile, so that container is not started. |
-| `MODELPORT_ENTERPRISE_DATABASE_URL` | inherits `MODELPORT_DATABASE_URL` | Optional separate PostgreSQL target for the operational ledger and embedded migrations. `MODELPORT_DATABASE_URL` is still required. |
-| `MODELPORT_DATABASE_TLS_MODE` | `prefer`; `verify-full` in enterprise mode | SQLx PostgreSQL TLS mode: `disable`, `allow`, `prefer`, `require`, `verify-ca`, or `verify-full`. Enterprise mode rejects every value except `verify-full`. Certificate options such as `sslrootcert` can be supplied in the PostgreSQL URL. |
-| `MODELPORT_DATABASE_MAX_CONNECTIONS` | `16` | Maximum connections in the normalized ledger pool. Each auth/control document worker independently caps its pool at one connection. |
-| `MODELPORT_DATABASE_MIN_CONNECTIONS` | `0` | Minimum eagerly maintained PostgreSQL connections, capped at the pool maximum. |
-| `MODELPORT_DATABASE_ACQUIRE_TIMEOUT_SECS` | `10` | Maximum wait to acquire a PostgreSQL connection. |
-| `MODELPORT_LEDGER_LEASE_TTL_SECS` | `300` | Lifetime of a request/attempt ownership lease; minimum 30 seconds. Active requests renew at one-third of this interval. |
-| `MODELPORT_LEDGER_RECONCILE_INTERVAL_SECS` | `60` | Interval for reclaiming expired `started` rows; minimum 5 seconds and strictly smaller than the lease TTL. |
-| `MODELPORT_FINALIZATION_DRAIN_TIMEOUT_SECONDS` | `30` | Graceful-shutdown deadline for tracked streaming ledger finalizers; valid range `1..300`. |
-| `MODELPORT_REQUEST_DETAIL_RETENTION_DAYS` | `30` | Age after which an explicit admin retention apply redacts request identity/network/error/idempotency details, redacts mutable Provider-attempt details, and removes routing-decision evidence. |
-| `MODELPORT_USER_USAGE_RETENTION_DAYS` | `90` | Age after which an explicit retention apply de-identifies user-level usage rows while preserving required aggregate/budget evidence. Must not be shorter than request-detail retention. |
-| `MODELPORT_AUDIT_RETENTION_DAYS` | `395` | Age after which an explicit retention apply removes ordinary governance audit events. Must not be shorter than user-usage retention; immutable budget events remain. |
-| `MODELPORT_RETENTION_LEGAL_HOLD` | off | When `1`, retention dry-run still previews but an apply returns `applied=false` and changes no retained data. Restart required. |
-| `MODELPORT_ENTERPRISE_MODE` | off | Fail-closed production profile. Requires database TLS `verify-full`, secure admin cookies, dashboard-issued control API keys, HTTPS-only allowed origins, explicit trusted proxies, and enabled CSRF protection. |
+| `AETHERGATEWAY_BIND` | `127.0.0.1:17878` | Backend listen address. |
+| `AETHERGATEWAY_MAX_REQUEST_BODY_BYTES` | `33554432` | Axum request-body limit for all routes; must be greater than zero. |
+| `AETHERGATEWAY_MAX_CONCURRENT_REQUESTS` | `64` | Process-wide concurrency layer; must be greater than zero. |
+| `AETHERGATEWAY_MAX_CONCURRENT_STREAMS` | inherits `AETHERGATEWAY_MAX_CONCURRENT_REQUESTS` | Maximum concurrent streaming response bodies. Exhaustion returns HTTP 429 with `Retry-After: 1`; the permit is held until the body completes or is dropped. |
+| `AETHERGATEWAY_AUTH_TOKEN` | required | Legacy router token. |
+| `AETHERGATEWAY_ALLOW_NO_AUTH` | off | Dangerous isolated-test override. Never use on a shared network. |
+| `AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS` | off | Reject the legacy token wherever data-plane authentication is evaluated (`/v1/*`, `/metrics`, `/readyz`, and detailed health); require dashboard-issued keys. |
+| `AETHERGATEWAY_ADMIN_USERNAME` | `admin` | First-admin bootstrap username. Used only when the auth store is empty. |
+| `AETHERGATEWAY_ADMIN_PASSWORD` | effective router token fallback | First-admin password; set it explicitly. It and the fallback must pass strong-password checks. |
+| `AETHERGATEWAY_ADMIN_EMAIL` | `admin@aethergateway.local` | First-admin bootstrap email. |
+| `AETHERGATEWAY_ADMIN_SESSION_TTL_SECONDS` | `43200` | Dashboard session lifetime. |
+| `AETHERGATEWAY_ADMIN_COOKIE_SECURE` | off | Add `Secure` to the dashboard cookie. Set to `1` behind HTTPS. |
+| `AETHERGATEWAY_PASSWORD_LOGIN_ENABLED` | `1` | Set to `0` to reject password login at the backend. Requires configured OIDC and an active administrator already linked to that issuer at startup. |
+| `AETHERGATEWAY_REQUIRE_DUAL_APPROVAL` | off; always on in enterprise mode | Require an approved change request from two distinct administrators before high-risk identity, Provider, model, or hard-budget writes. Small-Team mode otherwise relies on the administrator session, CSRF protection, and audit trail so a one-admin first install remains operable. |
+| `AETHERGATEWAY_OIDC_ISSUER` | unset | OIDC issuer discovery URL. OIDC console sign-in stays disabled when no OIDC values are configured. |
+| `AETHERGATEWAY_OIDC_CLIENT_ID` | unset | OIDC client identifier; required with issuer and redirect URI when OIDC is enabled. |
+| `AETHERGATEWAY_OIDC_CLIENT_SECRET` | unset | Optional confidential-client secret. Leave unset only when the identity provider accepts the supported public-client code exchange. |
+| `AETHERGATEWAY_OIDC_REDIRECT_URI` | unset | Exact external callback URL; its path must be `/admin/auth/oidc/callback` with no query or fragment. |
+| `AETHERGATEWAY_OIDC_LABEL` | `Single sign-on` | Login-button label. |
+| `AETHERGATEWAY_OIDC_REQUIRED_ACR` | unset | Exact signed OIDC authentication-class claim required for login. Sends `acr_values` and rejects missing/mismatched claims. Requires password login disabled; the identity provider must enforce the corresponding MFA policy. |
+| `AETHERGATEWAY_OIDC_AUTO_PROVISION` | off | Create missing ordinary users after a valid OIDC login. Keep off initially and pre-create users; it never grants administrator access. |
+| `AETHERGATEWAY_OIDC_USERNAME_CLAIM` | `preferred_username` | ID-token claim used as the AetherGateway username. |
+| `AETHERGATEWAY_OIDC_EMAIL_CLAIM` | `email` | ID-token claim read as the AetherGateway email. Initial linking/JIT requires the standard `email` claim plus `email_verified=true`; verification is not inherited by a custom claim name. |
+| `AETHERGATEWAY_OIDC_ALLOW_INSECURE_HTTP` | off | Allow HTTP only for loopback OIDC development URLs. Never enable it for a remote or production identity provider. |
+| `AETHERGATEWAY_STATE_DIR` | `.aethergateway` | Working directory for explicit backup output. Runtime state is not stored here. |
+| `AETHERGATEWAY_DATABASE_URL` | required at runtime | PostgreSQL target for the operational ledger and low-frequency auth/control documents. Compose constructs an internal default unless explicitly overridden. Setting an external URL moves the internal `postgres` service to the `internal-db` Compose profile, so that container is not started. |
+| `AETHERGATEWAY_ENTERPRISE_DATABASE_URL` | inherits `AETHERGATEWAY_DATABASE_URL` | Optional separate PostgreSQL target for the operational ledger and embedded migrations. `AETHERGATEWAY_DATABASE_URL` is still required. |
+| `AETHERGATEWAY_DATABASE_TLS_MODE` | `prefer`; `verify-full` in enterprise mode | SQLx PostgreSQL TLS mode: `disable`, `allow`, `prefer`, `require`, `verify-ca`, or `verify-full`. Enterprise mode rejects every value except `verify-full`. Certificate options such as `sslrootcert` can be supplied in the PostgreSQL URL. |
+| `AETHERGATEWAY_DATABASE_MAX_CONNECTIONS` | `16` | Maximum connections in the normalized ledger pool. Each auth/control document worker independently caps its pool at one connection. |
+| `AETHERGATEWAY_DATABASE_MIN_CONNECTIONS` | `0` | Minimum eagerly maintained PostgreSQL connections, capped at the pool maximum. |
+| `AETHERGATEWAY_DATABASE_ACQUIRE_TIMEOUT_SECS` | `10` | Maximum wait to acquire a PostgreSQL connection. |
+| `AETHERGATEWAY_LEDGER_LEASE_TTL_SECS` | `300` | Lifetime of a request/attempt ownership lease; minimum 30 seconds. Active requests renew at one-third of this interval. |
+| `AETHERGATEWAY_LEDGER_RECONCILE_INTERVAL_SECS` | `60` | Interval for reclaiming expired `started` rows; minimum 5 seconds and strictly smaller than the lease TTL. |
+| `AETHERGATEWAY_FINALIZATION_DRAIN_TIMEOUT_SECONDS` | `30` | Graceful-shutdown deadline for tracked streaming ledger finalizers; valid range `1..300`. |
+| `AETHERGATEWAY_REQUEST_DETAIL_RETENTION_DAYS` | `30` | Age after which an explicit admin retention apply redacts request identity/network/error/idempotency details, redacts mutable Provider-attempt details, and removes routing-decision evidence. |
+| `AETHERGATEWAY_USER_USAGE_RETENTION_DAYS` | `90` | Age after which an explicit retention apply de-identifies user-level usage rows while preserving required aggregate/budget evidence. Must not be shorter than request-detail retention. |
+| `AETHERGATEWAY_AUDIT_RETENTION_DAYS` | `395` | Age after which an explicit retention apply removes ordinary governance audit events. Must not be shorter than user-usage retention; immutable budget events remain. |
+| `AETHERGATEWAY_RETENTION_LEGAL_HOLD` | off | When `1`, retention dry-run still previews but an apply returns `applied=false` and changes no retained data. Restart required. |
+| `AETHERGATEWAY_ENTERPRISE_MODE` | off | Fail-closed production profile. Requires database TLS `verify-full`, secure admin cookies, dashboard-issued control API keys, HTTPS-only allowed origins, explicit trusted proxies, and enabled CSRF protection. |
 
 Bootstrap variables do not overwrite existing users. Dashboard sessions are
 process-local and are invalidated by restart.
 
 OIDC is an optional console-login method and is disabled by default. Once any
-required OIDC value is configured, set `MODELPORT_OIDC_ISSUER`,
-`MODELPORT_OIDC_CLIENT_ID`, and `MODELPORT_OIDC_REDIRECT_URI` together. Register
+required OIDC value is configured, set `AETHERGATEWAY_OIDC_ISSUER`,
+`AETHERGATEWAY_OIDC_CLIENT_ID`, and `AETHERGATEWAY_OIDC_REDIRECT_URI` together. Register
 the exact external callback ending in `/admin/auth/oidc/callback`; this path is
 fixed. Automatic provisioning remains disabled unless explicitly enabled.
 
 ```env
-MODELPORT_OIDC_ISSUER=https://identity.example.com/realms/modelport
-MODELPORT_OIDC_CLIENT_ID=modelport
-MODELPORT_OIDC_REDIRECT_URI=https://modelport.example.com/admin/auth/oidc/callback
+AETHERGATEWAY_OIDC_ISSUER=https://identity.example.com/realms/aethergateway
+AETHERGATEWAY_OIDC_CLIENT_ID=aethergateway
+AETHERGATEWAY_OIDC_REDIRECT_URI=https://aethergateway.example.com/admin/auth/oidc/callback
 # Optional for a confidential client:
-MODELPORT_OIDC_CLIENT_SECRET=replace-with-client-secret
-MODELPORT_OIDC_LABEL=Company SSO
-MODELPORT_OIDC_AUTO_PROVISION=0
-MODELPORT_OIDC_USERNAME_CLAIM=preferred_username
-MODELPORT_OIDC_EMAIL_CLAIM=email
+AETHERGATEWAY_OIDC_CLIENT_SECRET=replace-with-client-secret
+AETHERGATEWAY_OIDC_LABEL=Company SSO
+AETHERGATEWAY_OIDC_AUTO_PROVISION=0
+AETHERGATEWAY_OIDC_USERNAME_CLAIM=preferred_username
+AETHERGATEWAY_OIDC_EMAIL_CLAIM=email
 # Loopback development only:
-# MODELPORT_OIDC_ALLOW_INSECURE_HTTP=1
+# AETHERGATEWAY_OIDC_ALLOW_INSECURE_HTTP=1
 ```
 
 For production OIDC, serve one HTTPS origin and also set:
 
 ```env
-MODELPORT_ADMIN_COOKIE_SECURE=1
-MODELPORT_ALLOWED_ORIGINS=https://modelport.example.com
-MODELPORT_REQUIRE_CONTROL_API_KEYS=1
+AETHERGATEWAY_ADMIN_COOKIE_SECURE=1
+AETHERGATEWAY_ALLOWED_ORIGINS=https://aethergateway.example.com
+AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS=1
 ```
 
 OIDC authenticates dashboard users only. Requiring control-plane API keys keeps
@@ -482,7 +482,7 @@ gateway-request, Provider-attempt, budget, and audit schema. Terminal request
 rows are the usage source for logs, Dashboard ranges, quota/spend checks, and
 management statistics. Auth and low-frequency control definitions may still
 use files, but a running server has no memory fallback for the operational
-ledger and requires `MODELPORT_DATABASE_URL`. `/readyz` verifies all stores.
+ledger and requires `AETHERGATEWAY_DATABASE_URL`. `/readyz` verifies all stores.
 
 `0005_current_operational_schema.sql` preserves existing normalized request and
 attempt rows. It backfills conservative values for dimensions absent from the
@@ -499,27 +499,27 @@ the periodic reconciler terminalize only expired `started` rows as
 crash, those rows retain zero usage and `chargeable=false` pending future
 manual evidence or adjustment.
 
-Compose's default URL directly interpolates `MODELPORT_POSTGRES_PASSWORD`
+Compose's default URL directly interpolates `AETHERGATEWAY_POSTGRES_PASSWORD`
 without percent-encoding. Prefer a long URL-safe password containing letters,
 digits, `_`, and `-`. If the raw PostgreSQL password contains reserved URL
 characters such as `@`, `:`, `/`, `%`, or `#`, set an explicitly percent-encoded
-complete `MODELPORT_DATABASE_URL`; keep `MODELPORT_POSTGRES_PASSWORD` as the raw
+complete `AETHERGATEWAY_DATABASE_URL`; keep `AETHERGATEWAY_POSTGRES_PASSWORD` as the raw
 password used to initialize PostgreSQL.
 
 ## Security And Network
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `MODELPORT_TRUSTED_PROXIES` | loopback | Comma-separated proxy IPs/CIDRs allowed to supply forwarded client IP headers. |
-| `MODELPORT_ALLOWED_ORIGINS` | unset | Extra comma-separated absolute HTTP(S) origins accepted for dashboard write checks. Entries are scheme + host + optional port only; userinfo, path, query, and fragment are rejected. This does not enable CORS. |
-| `MODELPORT_DISABLE_CSRF` | off | Emergency local-debug bypass for dashboard write protection. |
-| `MODELPORT_EXPOSE_DETAILED_HEALTH` | off | Expose detailed `/health` without authentication. |
-| `MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS` | off | Allow literal private provider addresses. IPv4-mapped IPv6 literals are normalized before this check. Use only on trusted networks. |
-| `MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP` | off | Permit plain HTTP for non-local/non-custom Providers. Emergency trusted-network override; HTTPS is the safe default. |
-| `MODELPORT_INCLUDE_UNAVAILABLE_PROVIDERS` | off | Keep file-config providers that lack required keys; useful for diagnostics, not normal routing. |
+| `AETHERGATEWAY_TRUSTED_PROXIES` | loopback | Comma-separated proxy IPs/CIDRs allowed to supply forwarded client IP headers. |
+| `AETHERGATEWAY_ALLOWED_ORIGINS` | unset | Extra comma-separated absolute HTTP(S) origins accepted for dashboard write checks. Entries are scheme + host + optional port only; userinfo, path, query, and fragment are rejected. This does not enable CORS. |
+| `AETHERGATEWAY_DISABLE_CSRF` | off | Emergency local-debug bypass for dashboard write protection. |
+| `AETHERGATEWAY_EXPOSE_DETAILED_HEALTH` | off | Expose detailed `/health` without authentication. |
+| `AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS` | off | Allow literal private provider addresses. IPv4-mapped IPv6 literals are normalized before this check. Use only on trusted networks. |
+| `AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP` | off | Permit plain HTTP for non-local/non-custom Providers. Emergency trusted-network override; HTTPS is the safe default. |
+| `AETHERGATEWAY_INCLUDE_UNAVAILABLE_PROVIDERS` | off | Keep file-config providers that lack required keys; useful for diagnostics, not normal routing. |
 
 Forwarded headers are considered only when the connected peer matches
-`MODELPORT_TRUSTED_PROXIES`. AetherGateway appends that peer to the received
+`AETHERGATEWAY_TRUSTED_PROXIES`. AetherGateway appends that peer to the received
 `X-Forwarded-For` chain, walks from right to left, removes explicitly trusted
 proxy hops, and uses the first untrusted address. Do not trust an entire client
 network just to make forwarding work. A single-hop proxy should overwrite XFF
@@ -543,25 +543,25 @@ protocol header.
 Remote Provider records must use `https://` by default. Plain `http://` sends
 the Provider API key, request content, and response content without transport
 encryption; any host or network device on the path can read or alter them. Set
-`MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP=1` only for an explicitly trusted
+`AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP=1` only for an explicitly trusted
 internal upstream whose network boundary you control, and prefer TLS even
 there. Providers classified as local/custom (`custom`, `ollama`, and
 `local_*`) may still use HTTP for loopback or local-runtime integration. The
 override does not weaken private/metadata-IP checks; those remain controlled
-separately by `MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS`.
+separately by `AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS`.
 
 ## HTTP Transport
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `MODELPORT_HTTP_CONNECT_TIMEOUT_SECS` | `10` | Upstream connect timeout. |
-| `MODELPORT_HTTP_REQUEST_TIMEOUT_SECS` | `600` | Complete non-stream timeout and total upstream SSE lifecycle timeout, including connection, response headers, and event-body reads. |
-| `MODELPORT_HTTP_STREAM_IDLE_TIMEOUT_SECS` | `300` | Maximum silence between upstream stream chunks after the handshake. |
-| `MODELPORT_HTTP_MAX_RESPONSE_BYTES` | `33554432` | Maximum non-stream/error body accepted from upstream. |
-| `MODELPORT_HTTP_SSE_MAX_LINE_BYTES` | `1048576` | Maximum buffered SSE line. |
-| `MODELPORT_HTTP_SSE_MAX_EVENT_BYTES` | `8388608` | Maximum bytes accumulated for one SSE event. |
-| `MODELPORT_HTTP_SSE_MAX_STREAM_BYTES` | `67108864` | Maximum raw bytes accepted for one upstream stream. |
-| `MODELPORT_HTTP_USER_AGENT` | `model-port/<version>` | Upstream User-Agent override. |
+| `AETHERGATEWAY_HTTP_CONNECT_TIMEOUT_SECS` | `10` | Upstream connect timeout. |
+| `AETHERGATEWAY_HTTP_REQUEST_TIMEOUT_SECS` | `600` | Complete non-stream timeout and total upstream SSE lifecycle timeout, including connection, response headers, and event-body reads. |
+| `AETHERGATEWAY_HTTP_STREAM_IDLE_TIMEOUT_SECS` | `300` | Maximum silence between upstream stream chunks after the handshake. |
+| `AETHERGATEWAY_HTTP_MAX_RESPONSE_BYTES` | `33554432` | Maximum non-stream/error body accepted from upstream. |
+| `AETHERGATEWAY_HTTP_SSE_MAX_LINE_BYTES` | `1048576` | Maximum buffered SSE line. |
+| `AETHERGATEWAY_HTTP_SSE_MAX_EVENT_BYTES` | `8388608` | Maximum bytes accumulated for one SSE event. |
+| `AETHERGATEWAY_HTTP_SSE_MAX_STREAM_BYTES` | `67108864` | Maximum raw bytes accepted for one upstream stream. |
+| `AETHERGATEWAY_HTTP_USER_AGENT` | `model-port/<version>` | Upstream User-Agent override. |
 
 Upstream redirects are disabled. A live SSE stream is bounded by the total
 request timeout measured from the outbound request start. Each event-body read
@@ -573,7 +573,7 @@ them deliberately.
 An SSE handshake requires a 2xx status other than 204 and the
 `text/event-stream` media type. The request timeout covers connection through
 response headers. Non-2xx and wrong-content-type error bodies are then bounded
-by `MODELPORT_HTTP_MAX_RESPONSE_BYTES` and by both a total body-read timeout
+by `AETHERGATEWAY_HTTP_MAX_RESPONSE_BYTES` and by both a total body-read timeout
 using the request-timeout value and the resettable stream-idle timeout, so a
 slow-drip error cannot hold the connection indefinitely. Established event
 streams use the total request timeout, idle timeout, and SSE byte limits and
@@ -583,23 +583,23 @@ must still end with the protocol's required termination event.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `MODELPORT_RATE_LIMIT_DISABLED` | off | Disable every process-local rate dimension. |
-| `MODELPORT_RATE_LIMIT_WINDOW_SECONDS` | `60` | Sliding-window duration. |
-| `MODELPORT_RATE_LIMIT_GLOBAL_PER_MINUTE` | `6000` | Global request count per configured window. |
-| `MODELPORT_RATE_LIMIT_API_KEY_PER_MINUTE` | `600` | Identity count per window. |
-| `MODELPORT_RATE_LIMIT_IP_PER_MINUTE` | `1200` | Client-IP count per window. |
-| `MODELPORT_RATE_LIMIT_PROVIDER_PER_MINUTE` | `3000` | Resolved-provider count per window. |
-| `MODELPORT_RATE_LIMIT_MODEL_PER_MINUTE` | `1200` | Resolved-model count per window. |
-| `MODELPORT_MAX_MODEL_NAME_CHARS` | `240` | Maximum model-name characters. |
-| `MODELPORT_MAX_MESSAGES` | `200` | Maximum messages per request. |
-| `MODELPORT_MAX_MESSAGES_JSON_CHARS` | `2097152` | Maximum serialized messages characters. |
-| `MODELPORT_MAX_SYSTEM_JSON_CHARS` | `262144` | Maximum serialized system characters. |
-| `MODELPORT_MAX_TOOLS` | `256` | Maximum Tool Use definitions. |
-| `MODELPORT_MAX_TOOLS_JSON_CHARS` | `1048576` | Maximum serialized tools characters. |
-| `MODELPORT_MAX_OUTPUT_TOKENS` | `131072` | Maximum accepted Anthropic `max_tokens` or OpenAI `max_completion_tokens`/`max_tokens`. |
+| `AETHERGATEWAY_RATE_LIMIT_DISABLED` | off | Disable every process-local rate dimension. |
+| `AETHERGATEWAY_RATE_LIMIT_WINDOW_SECONDS` | `60` | Sliding-window duration. |
+| `AETHERGATEWAY_RATE_LIMIT_GLOBAL_PER_MINUTE` | `6000` | Global request count per configured window. |
+| `AETHERGATEWAY_RATE_LIMIT_API_KEY_PER_MINUTE` | `600` | Identity count per window. |
+| `AETHERGATEWAY_RATE_LIMIT_IP_PER_MINUTE` | `1200` | Client-IP count per window. |
+| `AETHERGATEWAY_RATE_LIMIT_PROVIDER_PER_MINUTE` | `3000` | Resolved-provider count per window. |
+| `AETHERGATEWAY_RATE_LIMIT_MODEL_PER_MINUTE` | `1200` | Resolved-model count per window. |
+| `AETHERGATEWAY_MAX_MODEL_NAME_CHARS` | `240` | Maximum model-name characters. |
+| `AETHERGATEWAY_MAX_MESSAGES` | `200` | Maximum messages per request. |
+| `AETHERGATEWAY_MAX_MESSAGES_JSON_CHARS` | `2097152` | Maximum serialized messages characters. |
+| `AETHERGATEWAY_MAX_SYSTEM_JSON_CHARS` | `262144` | Maximum serialized system characters. |
+| `AETHERGATEWAY_MAX_TOOLS` | `256` | Maximum Tool Use definitions. |
+| `AETHERGATEWAY_MAX_TOOLS_JSON_CHARS` | `1048576` | Maximum serialized tools characters. |
+| `AETHERGATEWAY_MAX_OUTPUT_TOKENS` | `131072` | Maximum accepted Anthropic `max_tokens` or OpenAI `max_completion_tokens`/`max_tokens`. |
 
 Every `POST /v1/messages` request must include integer `max_tokens > 0` and the
-value must be at most `MODELPORT_MAX_OUTPUT_TOKENS`. This is validated locally
+value must be at most `AETHERGATEWAY_MAX_OUTPUT_TOKENS`. This is validated locally
 before Provider routing. The Provider's `max_tokens_field` only selects the
 outbound OpenAI-compatible field name; it does not make the client field
 optional or change the global cap.
@@ -628,7 +628,7 @@ The complete built-in catalog and current defaults are in
 <PROVIDER>_BASE_URL
 <PROVIDER>_MODEL
 <PROVIDER>_MODELS=model-a,model-b
-MODELPORT_ENABLE_<PROVIDER>=1
+AETHERGATEWAY_ENABLE_<PROVIDER>=1
 ```
 
 Names that intentionally differ include:
@@ -641,7 +641,7 @@ Names that intentionally differ include:
 | `deepseek_openai` | `DEEPSEEK_OPENAI_API_KEY` (fallback `DEEPSEEK_API_KEY`) | `DEEPSEEK_OPENAI_BASE_URL` | `DEEPSEEK_OPENAI_MODEL` |
 | `mimo` | `MIMO_OPENAI_API_KEY` | `MIMO_OPENAI_BASE_URL` (fallback `BASE_URL`) | `MIMO_MODEL` |
 | `anthropic` | `ANTHROPIC_API_KEY` | `ANTHROPIC_UPSTREAM_BASE_URL` | `ANTHROPIC_UPSTREAM_MODEL` |
-| `openai` | `MODELPORT_OPENAI_API_KEY` (legacy fallback `OPENAI_API_KEY`) | `MODELPORT_OPENAI_BASE_URL` (legacy fallback `OPENAI_BASE_URL`) | `MODELPORT_OPENAI_MODEL` (legacy fallback `OPENAI_MODEL`) |
+| `openai` | `AETHERGATEWAY_OPENAI_API_KEY` (legacy fallback `OPENAI_API_KEY`) | `AETHERGATEWAY_OPENAI_BASE_URL` (legacy fallback `OPENAI_BASE_URL`) | `AETHERGATEWAY_OPENAI_MODEL` (legacy fallback `OPENAI_MODEL`) |
 | `gemini` | `GEMINI_API_KEY` (fallback `GOOGLE_API_KEY`) | `GEMINI_OPENAI_BASE_URL` | `GEMINI_MODEL` |
 | `dashscope` | `DASHSCOPE_API_KEY` (fallback `QWEN_API_KEY`) | `DASHSCOPE_BASE_URL` | `DASHSCOPE_MODEL` |
 | `kimi` | `MOONSHOT_API_KEY` (fallback `KIMI_API_KEY`) | `KIMI_BASE_URL` | `KIMI_MODEL` |
@@ -656,7 +656,7 @@ DEEPSEEK_MODELS
 DEEPSEEK_OPENAI_MODELS
 MIMO_MODELS
 ANTHROPIC_UPSTREAM_MODELS
-MODELPORT_OPENAI_MODELS
+AETHERGATEWAY_OPENAI_MODELS
 OPENROUTER_MODELS
 GEMINI_MODELS
 XAI_MODELS
@@ -673,17 +673,17 @@ VLLM_MODELS
 LLAMACPP_MODELS
 ```
 
-The `MODELPORT_OPENAI_*` namespace is deliberately server-specific. Standard
+The `AETHERGATEWAY_OPENAI_*` namespace is deliberately server-specific. Standard
 `OPENAI_BASE_URL`, `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_MODELS` remain
-fallbacks for compatibility, but using one without its `MODELPORT_OPENAI_*`
+fallbacks for compatibility, but using one without its `AETHERGATEWAY_OPENAI_*`
 counterpart produces a configuration warning. New deployments should reserve
 standard `OPENAI_*` variables for SDK/client processes. A configured `openai`
 Provider whose `/v1` base URL points to the same local listener as
-`MODELPORT_BIND` is rejected as a self-referential routing loop.
+`AETHERGATEWAY_BIND` is rejected as a self-referential routing loop.
 
 Local runtimes use `SGLANG_*`, `VLLM_*`, `LLAMACPP_*`, or `OLLAMA_*` and are
-enabled with the corresponding `MODELPORT_ENABLE_*` flag. `custom` is enabled
-by a custom URL, model, key, or `MODELPORT_ENABLE_CUSTOM=1`.
+enabled with the corresponding `AETHERGATEWAY_ENABLE_*` flag. `custom` is enabled
+by a custom URL, model, key, or `AETHERGATEWAY_ENABLE_CUSTOM=1`.
 Optional runtime credentials are `SGLANG_API_KEY`, `VLLM_API_KEY`,
 `LLAMACPP_API_KEY`, and `OLLAMA_API_KEY`; set `api_key_required=true` in TOML
 when the runtime must reject unauthenticated calls.
@@ -697,10 +697,10 @@ when the runtime must reject unauthenticated calls.
   (including a fallback name) is present.
 - `BASE_URL` can activate `mimo`; avoid exporting a generic value unintentionally.
 - In TOML mode, providers that require a missing key are filtered unless they
-  are the configured default or `MODELPORT_INCLUDE_UNAVAILABLE_PROVIDERS=1`.
+  are the configured default or `AETHERGATEWAY_INCLUDE_UNAVAILABLE_PROVIDERS=1`.
 - TOML providers with `api_key_required=false` remain visible even if their
   local runtime is offline. Catalog visibility is not a health check.
-- `MODELPORT_<PROVIDER_ID>_BUFFER_STREAM_TEXT=1` enables the built-in buffered
+- `AETHERGATEWAY_<PROVIDER_ID>_BUFFER_STREAM_TEXT=1` enables the built-in buffered
   generation path for that provider ID. It awaits and converts a complete
   non-stream upstream response before creating local SSE, so pre-header errors
   can fallback and reported usage can be accounted. This is a compatibility
@@ -749,7 +749,7 @@ stream_idle_timeout_ms = 300000   # optional; resets after each SSE data chunk
 # cookies, Host/framing, forwarding, request-ID, trace, and User-Agent headers
 # are reserved and rejected during validation.
 [providers.example.static_headers]
-HTTP-Referer = "https://modelport.example"
+HTTP-Referer = "https://aethergateway.example"
 X-Title = "AetherGateway"
 
 [providers.example.retry]
@@ -1011,7 +1011,7 @@ Content-Type: application/json
 
 {
   "organizationId": "org_local",
-  "projectId": "prj_quantpilot",
+  "projectId": "prj_signalfoundry",
   "environmentId": "env_development"
 }
 ```
@@ -1024,13 +1024,13 @@ Clients may send all three assertion headers:
 
 ```text
 X-AetherGateway-Organization-Id: org_local
-X-AetherGateway-Project-Id: prj_quantpilot
+X-AetherGateway-Project-Id: prj_signalfoundry
 X-AetherGateway-Environment-Id: env_development
 ```
 
 Omitting them uses the key binding. A partial tuple is 400; a different tuple is
 403. Headers never create authority. Give every consuming application its own
-key and AetherGateway project; do not share QuantPilot's key with future products.
+key and AetherGateway project; do not share SignalFoundry's key with future products.
 
 ## Client, Compose, Script, And Dashboard Variables
 
@@ -1039,25 +1039,25 @@ These names are consumed outside the backend configuration loader:
 | Variable | Consumer | Meaning |
 | --- | --- | --- |
 | `ANTHROPIC_BASE_URL` | Claude client | AetherGateway API origin. |
-| `ANTHROPIC_AUTH_TOKEN` | Claude client; server fallback | Client token; also the server token fallback when `MODELPORT_AUTH_TOKEN` is absent. |
+| `ANTHROPIC_AUTH_TOKEN` | Claude client; server fallback | Client token; also the server token fallback when `AETHERGATEWAY_AUTH_TOKEN` is absent. |
 | `ANTHROPIC_MODEL`, `ANTHROPIC_DEFAULT_*_MODEL`, `ANTHROPIC_SMALL_FAST_MODEL`, `CLAUDE_CODE_SUBAGENT_MODEL` | Claude client | Client-side selected model names. |
-| `MODELPORT_API_PUBLISH`, `MODELPORT_DASHBOARD_PUBLISH` | Compose | Host publish address/port. |
-| `MODELPORT_POSTGRES_DB`, `MODELPORT_POSTGRES_USER`, `MODELPORT_POSTGRES_PASSWORD` | Compose/PostgreSQL | Internal database bootstrap. |
-| `MODELPORT_IMAGE`, `MODELPORT_DASHBOARD_IMAGE` | Compose | Release images; use version tags for evaluation and immutable digests for shared/production use. |
-| `MODELPORT_PULL_POLICY` | Compose | Image pull policy; root source-build Compose defaults to `never`, release Compose to `missing`. Production upgrades set `always`. |
-| `MODELPORT_COMPOSE_FILE` | `scripts/compose-up.sh`, `scripts/doctor.sh` | Selected Compose manifest; defaults to the root source-build profile. |
-| `MODELPORT_LOCAL_BUILD` | `scripts/compose-up.sh` | Image mode for the selected manifest: `auto` (default) enables local-build mode when the manifest resolves to `:local` images and remote mode otherwise; `1` forces local-build mode (verifies the `:local` images built by `scripts/build-container.sh` and disables pulls); `0` forces remote mode. |
-| `MODELPORT_HEALTHCHECK_API_KEY` | Compose healthcheck | Dedicated scoped key for authenticated `/readyz`; local Compose falls back to the legacy router token when omitted. |
-| `MODELPORT_STOP_GRACE_PERIOD` | Compose | Backend SIGTERM-to-SIGKILL window; defaults to 11 minutes. |
-| `MODELPORT_RUNTIME_ENV_FILE`, `MODELPORT_CONFIG_FILE`, `MODELPORT_DATABASE_CA_FILE`, `MODELPORT_OWNERSHIP_FILE` | Production Compose/preflight | Operator-owned runtime secret, reviewed config, PostgreSQL CA, and named operations-ownership paths required by the single-instance production profile. |
+| `AETHERGATEWAY_API_PUBLISH`, `AETHERGATEWAY_DASHBOARD_PUBLISH` | Compose | Host publish address/port. |
+| `AETHERGATEWAY_POSTGRES_DB`, `AETHERGATEWAY_POSTGRES_USER`, `AETHERGATEWAY_POSTGRES_PASSWORD` | Compose/PostgreSQL | Internal database bootstrap. |
+| `AETHERGATEWAY_IMAGE`, `AETHERGATEWAY_DASHBOARD_IMAGE` | Compose | Release images; use version tags for evaluation and immutable digests for shared/production use. |
+| `AETHERGATEWAY_PULL_POLICY` | Compose | Image pull policy; root source-build Compose defaults to `never`, release Compose to `missing`. Production upgrades set `always`. |
+| `AETHERGATEWAY_COMPOSE_FILE` | `scripts/compose-up.sh`, `scripts/doctor.sh` | Selected Compose manifest; defaults to the root source-build profile. |
+| `AETHERGATEWAY_LOCAL_BUILD` | `scripts/compose-up.sh` | Image mode for the selected manifest: `auto` (default) enables local-build mode when the manifest resolves to `:local` images and remote mode otherwise; `1` forces local-build mode (verifies the `:local` images built by `scripts/build-container.sh` and disables pulls); `0` forces remote mode. |
+| `AETHERGATEWAY_HEALTHCHECK_API_KEY` | Compose healthcheck | Dedicated scoped key for authenticated `/readyz`; local Compose falls back to the legacy router token when omitted. |
+| `AETHERGATEWAY_STOP_GRACE_PERIOD` | Compose | Backend SIGTERM-to-SIGKILL window; defaults to 11 minutes. |
+| `AETHERGATEWAY_RUNTIME_ENV_FILE`, `AETHERGATEWAY_CONFIG_FILE`, `AETHERGATEWAY_DATABASE_CA_FILE`, `AETHERGATEWAY_OWNERSHIP_FILE` | Production Compose/preflight | Operator-owned runtime secret, reviewed config, PostgreSQL CA, and named operations-ownership paths required by the single-instance production profile. |
 | `RUST_LOG` | tracing | Backend log filter. |
-| `MODELPORT_RUNTIME_DIR`, `MODELPORT_PID_FILE`, `MODELPORT_LOG_FILE` | local scripts | Background process files. |
-| `MODELPORT_FORCE_BUILD` | local scripts | Force rebuilding a local binary. |
-| `MODELPORT_DASHBOARD_URL` | acceptance | Dashboard origin to check. |
-| `MODELPORT_TOOL_USE_MOCK_HOST` | Tool Use acceptance | Hostname reachable by the backend for the temporary mock. |
-| `MODELPORT_CHECK_NPM_CI` | aggregate checks | Force a clean locked dashboard install. |
-| `MODELPORT_VITE_PROXY_TARGET` | Vite dev/E2E | Backend origin for Vite's same-origin proxy; defaults to `http://127.0.0.1:38082`. |
-| `VITE_MODELPORT_MOCK` | dashboard build/dev | UI mock mode; never enable for production. |
+| `AETHERGATEWAY_RUNTIME_DIR`, `AETHERGATEWAY_PID_FILE`, `AETHERGATEWAY_LOG_FILE` | local scripts | Background process files. |
+| `AETHERGATEWAY_FORCE_BUILD` | local scripts | Force rebuilding a local binary. |
+| `AETHERGATEWAY_DASHBOARD_URL` | acceptance | Dashboard origin to check. |
+| `AETHERGATEWAY_TOOL_USE_MOCK_HOST` | Tool Use acceptance | Hostname reachable by the backend for the temporary mock. |
+| `AETHERGATEWAY_CHECK_NPM_CI` | aggregate checks | Force a clean locked dashboard install. |
+| `AETHERGATEWAY_VITE_PROXY_TARGET` | Vite dev/E2E | Backend origin for Vite's same-origin proxy; defaults to `http://127.0.0.1:38082`. |
+| `VITE_AETHERGATEWAY_MOCK` | dashboard build/dev | UI mock mode; never enable for production. |
 | `VITE_API_BASE_URL` | dashboard build | Browser API prefix/origin. Cross-origin use requires a separately designed CORS proxy. |
 | `PLAYWRIGHT_BASE_URL`, `PLAYWRIGHT_SKIP_WEBSERVER` | Playwright | E2E target and dev-server control. |
 
@@ -1065,5 +1065,5 @@ Client model variables do not reconfigure the server catalog. A client name must
 resolve through an enabled provider, alias, exact model, prefix, or intentional
 unknown-model passthrough.
 
-Variables beginning `MODELPORT_TEST_` are test-only implementation details and
+Variables beginning `AETHERGATEWAY_TEST_` are test-only implementation details and
 are not supported deployment configuration.

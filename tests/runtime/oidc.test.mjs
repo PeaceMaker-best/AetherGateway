@@ -21,7 +21,7 @@ async function identityProvider(t) {
     if (url.pathname === '/jwks') return json(res, { keys: [jwk] })
     if (url.pathname === '/authorize') {
       assert.equal(url.searchParams.get('code_challenge_method'), 'S256')
-      assert.equal(url.searchParams.get('client_id'), 'modelport-assurance')
+      assert.equal(url.searchParams.get('client_id'), 'aethergateway-assurance')
       const code = secret()
       grants.set(code, { params: url.searchParams, selected: { ...selected } })
       const redirect = new URL(url.searchParams.get('redirect_uri'))
@@ -31,7 +31,7 @@ async function identityProvider(t) {
     }
     if (url.pathname === '/token') {
       tokenCalls++
-      assert.ok(req.headers.authorization === `Basic ${Buffer.from(`modelport-assurance:${clientSecret}`).toString('base64')}`, 'confidential client authenticates at the token endpoint')
+      assert.ok(req.headers.authorization === `Basic ${Buffer.from(`aethergateway-assurance:${clientSecret}`).toString('base64')}`, 'confidential client authenticates at the token endpoint')
       const input = new URLSearchParams(await body(req))
       const grant = grants.get(input.get('code'))
       grants.delete(input.get('code'))
@@ -41,9 +41,9 @@ async function identityProvider(t) {
       assert.equal(createHash('sha256').update(input.get('code_verifier')).digest('base64url'), grant.params.get('code_challenge'))
       const now = Math.floor(Date.now() / 1000)
       const claims = {
-        iss: idp.url, aud: 'modelport-assurance', sub: 'assurance-subject', iat: now, exp: now + 300,
+        iss: idp.url, aud: 'aethergateway-assurance', sub: 'assurance-subject', iat: now, exp: now + 300,
         nonce: grant.params.get('nonce'), email_verified: true,
-        acr: 'urn:modelport:assurance:mfa', ...grant.selected.claims,
+        acr: 'urn:aethergateway:assurance:mfa', ...grant.selected.claims,
       }
       const accessToken = secret()
       claims.at_hash = createHash('sha256').update(accessToken).digest().subarray(0, 16).toString('base64url')
@@ -72,10 +72,10 @@ async function begin(app) {
 test('OIDC wire flow verifies signed claims, PKCE, browser binding, identity status and SSO policy', { skip: !databaseURL, timeout: 120_000 }, async t => {
   const idp = await identityProvider(t)
   const app = await gateway(t, {
-    MODELPORT_OIDC_ISSUER: idp.url,
-    MODELPORT_OIDC_CLIENT_ID: 'modelport-assurance',
-    MODELPORT_OIDC_CLIENT_SECRET: idp.clientSecret,
-    MODELPORT_OIDC_ALLOW_INSECURE_HTTP: '1',
+    AETHERGATEWAY_OIDC_ISSUER: idp.url,
+    AETHERGATEWAY_OIDC_CLIENT_ID: 'aethergateway-assurance',
+    AETHERGATEWAY_OIDC_CLIENT_SECRET: idp.clientSecret,
+    AETHERGATEWAY_OIDC_ALLOW_INSECURE_HTTP: '1',
   })
   let admin = await adminSession(app)
   let failures = 0
@@ -89,7 +89,7 @@ test('OIDC wire flow verifies signed claims, PKCE, browser binding, identity sta
   }
   await scenario('SSO-only startup refuses a deployment without a linked administrator', async () => {
     await app.stop()
-    await assert.rejects(app.start({ MODELPORT_PASSWORD_LOGIN_ENABLED: '0' }), /isolated gateway must start/)
+    await assert.rejects(app.start({ AETHERGATEWAY_PASSWORD_LOGIN_ENABLED: '0' }), /isolated gateway must start/)
     assert.match(app.logs(), /active administrator already linked/)
     await app.start()
     admin = await adminSession(app)
@@ -99,7 +99,7 @@ test('OIDC wire flow verifies signed claims, PKCE, browser binding, identity sta
     const flow = await begin(app)
     const response = await complete(flow)
     assert.equal(response.headers.get('location'), '/models')
-    const cookie = response.headers.getSetCookie().find(value => value.startsWith('modelport_admin_session=')).split(';')[0]
+    const cookie = response.headers.getSetCookie().find(value => value.startsWith('aethergateway_admin_session=')).split(';')[0]
     assert.equal((await app.request('/admin/auth/me', { headers: { cookie } })).status, 200)
     assert.equal((await app.request('/v1/models', { headers: { cookie } })).status, 401)
     assert.match((await complete(flow)).headers.get('location'), /oidc_error=invalid_state/)
@@ -107,7 +107,7 @@ test('OIDC wire flow verifies signed claims, PKCE, browser binding, identity sta
   await scenario('rejects another browser before attempting the token exchange', async () => {
     const flow = await begin(app)
     const calls = idp.tokenCalls()
-    assert.match((await complete(flow, 'modelport_oidc_flow=wrong-browser')).headers.get('location'), /invalid_state/)
+    assert.match((await complete(flow, 'aethergateway_oidc_flow=wrong-browser')).headers.get('location'), /invalid_state/)
     assert.equal(idp.tokenCalls(), calls)
   })
   for (const [label, selected] of [
@@ -121,19 +121,19 @@ test('OIDC wire flow verifies signed claims, PKCE, browser binding, identity sta
     idp.select({ ...selected, claims: { ...baseClaims, ...selected.claims } })
     const response = await complete(await begin(app))
     assert.match(response.headers.get('location'), /oidc_error=token_invalid/)
-    assert.ok(!response.headers.getSetCookie().some(value => value.startsWith('modelport_admin_session=')))
+    assert.ok(!response.headers.getSetCookie().some(value => value.startsWith('aethergateway_admin_session=')))
   })
   await scenario('requires signed assurance and rejects password fallback when SSO-only is configured', async () => {
-    const promoted = await app.request(`/admin/users/${user.id}`, { method: 'PUT', headers: { cookie: admin, 'x-modelport-csrf': '1' }, data: { role: 'admin' } })
+    const promoted = await app.request(`/admin/users/${user.id}`, { method: 'PUT', headers: { cookie: admin, 'x-aethergateway-csrf': '1' }, data: { role: 'admin' } })
     assert.equal(promoted.status, 200)
     await app.stop()
-    await app.start({ MODELPORT_PASSWORD_LOGIN_ENABLED: '0', MODELPORT_OIDC_REQUIRED_ACR: 'urn:modelport:assurance:mfa' })
+    await app.start({ AETHERGATEWAY_PASSWORD_LOGIN_ENABLED: '0', AETHERGATEWAY_OIDC_REQUIRED_ACR: 'urn:aethergateway:assurance:mfa' })
     assert.equal((await (await app.request('/admin/auth/methods')).json()).passwordEnabled, false)
     assert.equal((await app.request('/admin/auth/login', { data: { username: 'assurance_admin', password: app.password } })).status, 403)
     for (const acr of [undefined, 'urn:lower-assurance']) {
       idp.select({ claims: { ...baseClaims, acr } })
       const flow = await begin(app)
-      assert.equal(flow.authorize.searchParams.get('acr_values'), 'urn:modelport:assurance:mfa')
+      assert.equal(flow.authorize.searchParams.get('acr_values'), 'urn:aethergateway:assurance:mfa')
       assert.match((await complete(flow)).headers.get('location'), /oidc_error=token_invalid/)
     }
     idp.select({ claims: baseClaims })
@@ -143,7 +143,7 @@ test('OIDC wire flow verifies signed claims, PKCE, browser binding, identity sta
     await app.stop()
     await app.start()
     admin = await adminSession(app)
-    const disabled = await app.request(`/admin/users/${user.id}`, { method: 'PUT', headers: { cookie: admin, 'x-modelport-csrf': '1' }, data: { status: 'disabled' } })
+    const disabled = await app.request(`/admin/users/${user.id}`, { method: 'PUT', headers: { cookie: admin, 'x-aethergateway-csrf': '1' }, data: { status: 'disabled' } })
     assert.equal(disabled.status, 200)
     idp.select({ claims: baseClaims })
     assert.match((await complete(await begin(app))).headers.get('location'), /account_not_authorized/)

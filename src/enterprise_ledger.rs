@@ -17,7 +17,7 @@ use tokio::sync::oneshot;
 use tracing::{error, info, warn};
 use uuid::Uuid;
 
-use modelport_ops_protocol::{
+use aethergateway_ops_protocol::{
     OpsAgentSummary, OpsHeartbeat, OpsIncidentDetail, OpsIncidentEvidence,
     OpsIncidentFeedbackInput, OpsIncidentList, OpsIncidentStatus, OpsIncidentStatusUpdate,
     OpsIncidentSummary, OpsIncidentTimelineEntry, OpsLedgerHealth, OpsObservation,
@@ -46,7 +46,7 @@ const DEFAULT_LEASE_TTL_SECS: u64 = 300;
 const DEFAULT_RECONCILE_INTERVAL_SECS: u64 = 60;
 const MIN_LEASE_TTL_SECS: u64 = 30;
 const MIN_RECONCILE_INTERVAL_SECS: u64 = 5;
-const RETAINED_REQUEST_FINGERPRINT_PREFIX: &str = "modelport-retained-request-fingerprint-v1:";
+const RETAINED_REQUEST_FINGERPRINT_PREFIX: &str = "aethergateway-retained-request-fingerprint-v1:";
 
 #[derive(Clone)]
 pub(crate) struct EnterpriseLedger {
@@ -346,15 +346,15 @@ pub(crate) struct RetentionResult {
 impl RetentionPolicy {
     pub(crate) fn from_env() -> Result<Self, AppError> {
         let request_detail_days = retention_days_from_env(
-            "MODELPORT_REQUEST_DETAIL_RETENTION_DAYS",
+            "AETHERGATEWAY_REQUEST_DETAIL_RETENTION_DAYS",
             DEFAULT_REQUEST_DETAIL_RETENTION_DAYS,
         )?;
         let user_usage_days = retention_days_from_env(
-            "MODELPORT_USER_USAGE_RETENTION_DAYS",
+            "AETHERGATEWAY_USER_USAGE_RETENTION_DAYS",
             DEFAULT_USER_USAGE_RETENTION_DAYS,
         )?;
         let audit_days = retention_days_from_env(
-            "MODELPORT_AUDIT_RETENTION_DAYS",
+            "AETHERGATEWAY_AUDIT_RETENTION_DAYS",
             DEFAULT_AUDIT_RETENTION_DAYS,
         )?;
         if request_detail_days > user_usage_days || user_usage_days > audit_days {
@@ -366,7 +366,7 @@ impl RetentionPolicy {
             request_detail_days,
             user_usage_days,
             audit_days,
-            legal_hold: retention_flag_from_env("MODELPORT_RETENTION_LEGAL_HOLD")?,
+            legal_hold: retention_flag_from_env("AETHERGATEWAY_RETENTION_LEGAL_HOLD")?,
             content_persistence: false,
         })
     }
@@ -842,10 +842,10 @@ impl EnterpriseLedger {
                 let row = sqlx::query(
                     r#"
                     SELECT
-                        EXISTS (SELECT 1 FROM modelport_gateway_requests) AS has_request,
+                        EXISTS (SELECT 1 FROM aethergateway_gateway_requests) AS has_request,
                         EXISTS (
                             SELECT 1
-                            FROM modelport_gateway_requests
+                            FROM aethergateway_gateway_requests
                             WHERE state = 'completed' AND status_code >= 200 AND status_code < 300
                         ) AS has_successful_request
                     "#,
@@ -897,13 +897,13 @@ impl EnterpriseLedger {
         let (lease_ttl, reconcile_interval) = lease_config()?;
         if control_database_url().is_none() {
             return Err(AppError::Config(
-                "MODELPORT_DATABASE_URL is required; current AetherGateway releases use PostgreSQL as the only runtime request ledger"
+                "AETHERGATEWAY_DATABASE_URL is required; current AetherGateway releases use PostgreSQL as the only runtime request ledger"
                     .to_owned(),
             ));
         }
         let Some(database_url) = enterprise_database_url() else {
             return Err(AppError::Config(
-                "MODELPORT_ENTERPRISE_DATABASE_URL or MODELPORT_DATABASE_URL is required"
+                "AETHERGATEWAY_ENTERPRISE_DATABASE_URL or AETHERGATEWAY_DATABASE_URL is required"
                     .to_owned(),
             ));
         };
@@ -1056,7 +1056,7 @@ impl EnterpriseLedger {
                 let mut transaction = pool.begin().await?;
                 ensure_tenant_catalog(&mut transaction, &request.tenant).await?;
                 let result = sqlx::query(
-                    "INSERT INTO modelport_gateway_requests (
+                    "INSERT INTO aethergateway_gateway_requests (
                         ledger_id, request_id,
                         organization_id, project_id, environment_id,
                         principal_id, username,
@@ -1112,7 +1112,7 @@ impl EnterpriseLedger {
                     })?;
                     let existing = sqlx::query_as::<_, (String, String)>(
                         "SELECT request_fingerprint, state
-                         FROM modelport_gateway_requests
+                         FROM aethergateway_gateway_requests
                          WHERE organization_id = $1
                            AND project_id = $2
                            AND environment_id = $3
@@ -1131,7 +1131,7 @@ impl EnterpriseLedger {
                 }
                 if let Some(decision) = &metadata.routing_decision {
                     sqlx::query(
-                        "INSERT INTO modelport_routing_decisions (
+                        "INSERT INTO aethergateway_routing_decisions (
                             decision_id, request_ledger_id,
                             organization_id, project_id, environment_id,
                             route_group_id, routing_profile, routing_mode, policy_version,
@@ -1304,7 +1304,7 @@ impl EnterpriseLedger {
             LedgerBackend::Postgres(pool) => {
                 let mut transaction = pool.begin().await?;
                 sqlx::query(
-                    "INSERT INTO modelport_provider_attempts (
+                    "INSERT INTO aethergateway_provider_attempts (
                         attempt_id, request_ledger_id,
                         organization_id, project_id, environment_id,
                         provider_id, resolved_model, provider_protocol,
@@ -1312,7 +1312,7 @@ impl EnterpriseLedger {
                     )
                     SELECT $1, ledger_id, organization_id, project_id, environment_id,
                            $6, $7, $8, $9, now() + ($10 * interval '1 second')
-                    FROM modelport_gateway_requests
+                    FROM aethergateway_gateway_requests
                     WHERE ledger_id = $2
                       AND organization_id = $3
                       AND project_id = $4
@@ -1343,7 +1343,7 @@ impl EnterpriseLedger {
                 reserve_usage_capacity_pg(&mut transaction, request, usage_policy, estimate)
                     .await?;
                 sqlx::query(
-                    "INSERT INTO modelport_budget_accounts (
+                    "INSERT INTO aethergateway_budget_accounts (
                         organization_id, project_id, environment_id, currency
                      ) VALUES ($1, $2, $3, 'USD')
                      ON CONFLICT (organization_id, project_id, environment_id, currency)
@@ -1356,7 +1356,7 @@ impl EnterpriseLedger {
                 .await?;
                 let hard_budget_enabled = sqlx::query_scalar::<_, Option<i64>>(
                     "SELECT limit_microunits
-                     FROM modelport_budget_accounts
+                     FROM aethergateway_budget_accounts
                      WHERE organization_id = $1
                        AND project_id = $2
                        AND environment_id = $3
@@ -1374,7 +1374,7 @@ impl EnterpriseLedger {
                     ));
                 }
                 let reserved = sqlx::query_as::<_, (Option<i64>, i64, i64)>(
-                    "UPDATE modelport_budget_accounts
+                    "UPDATE aethergateway_budget_accounts
                      SET reserved_microunits = reserved_microunits + $1,
                          version = version + 1,
                          updated_at = now()
@@ -1401,7 +1401,7 @@ impl EnterpriseLedger {
                     )));
                 }
                 sqlx::query(
-                    "INSERT INTO modelport_budget_reservations (
+                    "INSERT INTO aethergateway_budget_reservations (
                         reservation_id,
                         organization_id, project_id, environment_id, currency,
                         request_ledger_id, attempt_id, reserved_microunits
@@ -1509,7 +1509,7 @@ impl EnterpriseLedger {
                 .await?;
                 if !updated {
                     let state = sqlx::query_scalar::<_, String>(
-                        "SELECT state FROM modelport_provider_attempts
+                        "SELECT state FROM aethergateway_provider_attempts
                          WHERE attempt_id = $1
                            AND organization_id = $2
                            AND project_id = $3
@@ -1635,7 +1635,7 @@ impl EnterpriseLedger {
                         })
                         .unwrap_or((None, None, None, None));
                 sqlx::query(
-                    "UPDATE modelport_gateway_requests
+                    "UPDATE aethergateway_gateway_requests
                      SET provider_id = $1,
                          resolved_model = $2,
                          provider_protocol = $3,
@@ -1773,7 +1773,7 @@ impl EnterpriseLedger {
                 let lease_ttl = duration_secs_i32(self.lease_ttl);
                 let mut transaction = pool.begin().await?;
                 sqlx::query(
-                    "UPDATE modelport_gateway_requests
+                    "UPDATE aethergateway_gateway_requests
                      SET lease_expires_at = now() + ($1 * interval '1 second'),
                          updated_at = now()
                      WHERE ledger_id = $2
@@ -1792,7 +1792,7 @@ impl EnterpriseLedger {
                 .execute(&mut *transaction)
                 .await?;
                 sqlx::query(
-                    "UPDATE modelport_provider_attempts
+                    "UPDATE aethergateway_provider_attempts
                      SET lease_expires_at = now() + ($1 * interval '1 second'),
                          updated_at = now()
                      WHERE request_ledger_id = $2
@@ -1866,7 +1866,7 @@ impl EnterpriseLedger {
             LedgerBackend::Postgres(pool) => {
                 let mut transaction = pool.begin().await?;
                 let expired_attempts = sqlx::query(
-                    "UPDATE modelport_provider_attempts
+                    "UPDATE aethergateway_provider_attempts
                      SET state = 'failed',
                          status_code = 500,
                          terminal_reason = 'lease_expired_unreconciled',
@@ -1901,7 +1901,7 @@ impl EnterpriseLedger {
                     .await?;
                 }
                 let expired_requests = sqlx::query(
-                    "UPDATE modelport_gateway_requests
+                    "UPDATE aethergateway_gateway_requests
                      SET state = 'failed',
                          status_code = 500,
                          terminal_reason = 'lease_expired_unreconciled',
@@ -2108,7 +2108,7 @@ impl EnterpriseLedger {
                             FILTER (WHERE team_id = $2
                                 AND created_at >= now() - interval '30 days'), 0)::bigint
                             AS team_month
-                     FROM modelport_gateway_requests
+                     FROM aethergateway_gateway_requests
                      WHERE state <> 'started'
                        AND chargeable
                        AND ((cardinality($1::text[]) > 0
@@ -2173,7 +2173,7 @@ impl EnterpriseLedger {
                         ), 0)::bigint AS tokens,
                         COALESCE(sum(billable_cost_microunits), 0)::bigint
                             AS cost_microunits
-                     FROM modelport_gateway_requests
+                     FROM aethergateway_gateway_requests
                      WHERE principal_id = $1
                        AND state <> 'started'
                        AND chargeable
@@ -2215,7 +2215,7 @@ impl EnterpriseLedger {
             }
             LedgerBackend::Postgres(pool) => {
                 sqlx::query(
-                    "INSERT INTO modelport_audit_events (
+                    "INSERT INTO aethergateway_audit_events (
                         event_id, activity_type, actor_id, actor_name,
                         target, message, severity
                      ) VALUES ($1, $2, $3, $4, $5, $6, $7)",
@@ -2251,14 +2251,14 @@ impl EnterpriseLedger {
             }
             LedgerBackend::Postgres(pool) => {
                 let total =
-                    sqlx::query_scalar::<_, i64>("SELECT count(*) FROM modelport_audit_events")
+                    sqlx::query_scalar::<_, i64>("SELECT count(*) FROM aethergateway_audit_events")
                         .fetch_one(pool)
                         .await?;
                 let rows = sqlx::query(
                     "SELECT event_id, activity_type, actor_id, actor_name,
                             target, message, severity,
                             (EXTRACT(EPOCH FROM occurred_at) * 1000)::bigint AS occurred_at_ms
-                     FROM modelport_audit_events
+                     FROM aethergateway_audit_events
                      ORDER BY occurred_at DESC, event_id DESC
                      LIMIT $1",
                 )
@@ -2362,13 +2362,13 @@ impl EnterpriseLedger {
             }
             LedgerBackend::Postgres(pool) => {
                 sqlx::query(
-                    "INSERT INTO modelport_budget_accounts (
+                    "INSERT INTO aethergateway_budget_accounts (
                         organization_id, project_id, environment_id, currency, limit_microunits
                      ) VALUES ($1, $2, $3, 'USD', $4)
                      ON CONFLICT (organization_id, project_id, environment_id, currency)
                      DO UPDATE SET
                          limit_microunits = EXCLUDED.limit_microunits,
-                         version = modelport_budget_accounts.version + 1,
+                         version = aethergateway_budget_accounts.version + 1,
                          updated_at = now()",
                 )
                 .bind(&tenant.organization_id)
@@ -2418,7 +2418,7 @@ impl EnterpriseLedger {
             LedgerBackend::Postgres(pool) => {
                 let mut transaction = pool.begin().await?;
                 sqlx::query(
-                    "INSERT INTO modelport_budget_accounts (
+                    "INSERT INTO aethergateway_budget_accounts (
                         organization_id, project_id, environment_id, currency
                      ) VALUES ($1, $2, $3, 'USD')
                      ON CONFLICT (organization_id, project_id, environment_id, currency)
@@ -2430,7 +2430,7 @@ impl EnterpriseLedger {
                 .execute(&mut *transaction)
                 .await?;
                 let updated = sqlx::query(
-                    "UPDATE modelport_budget_accounts
+                    "UPDATE aethergateway_budget_accounts
                      SET settled_microunits = settled_microunits + $1,
                          version = version + 1,
                          updated_at = now()
@@ -2452,7 +2452,7 @@ impl EnterpriseLedger {
                     ));
                 }
                 sqlx::query(
-                    "INSERT INTO modelport_budget_events (
+                    "INSERT INTO aethergateway_budget_events (
                         event_id,
                         organization_id, project_id, environment_id, currency,
                         event_type, reserved_delta_microunits, settled_delta_microunits,
@@ -2634,7 +2634,7 @@ impl EnterpriseLedger {
                 let usage_cutoff = i64::try_from(usage_cutoff_ms).unwrap_or(i64::MAX);
                 let audit_cutoff = i64::try_from(audit_cutoff_ms).unwrap_or(i64::MAX);
                 let request_details_redacted = sqlx::query_scalar::<_, i64>(
-                    "SELECT count(*)::bigint FROM modelport_gateway_requests
+                    "SELECT count(*)::bigint FROM aethergateway_gateway_requests
                      WHERE state <> 'started'
                        AND created_at < to_timestamp($1::double precision / 1000.0)
                        AND request_id NOT LIKE 'retained:%'",
@@ -2644,8 +2644,8 @@ impl EnterpriseLedger {
                 .await?;
                 let provider_attempts_redacted = sqlx::query_scalar::<_, i64>(
                     "SELECT count(*)::bigint
-                     FROM modelport_provider_attempts a
-                     JOIN modelport_gateway_requests r
+                     FROM aethergateway_provider_attempts a
+                     JOIN aethergateway_gateway_requests r
                        ON r.ledger_id = a.request_ledger_id
                       AND r.organization_id = a.organization_id
                       AND r.project_id = a.project_id
@@ -2660,8 +2660,8 @@ impl EnterpriseLedger {
                 .await?;
                 let routing_decisions_deleted = sqlx::query_scalar::<_, i64>(
                     "SELECT count(*)::bigint
-                     FROM modelport_routing_decisions d
-                     JOIN modelport_gateway_requests r
+                     FROM aethergateway_routing_decisions d
+                     JOIN aethergateway_gateway_requests r
                        ON r.ledger_id = d.request_ledger_id
                       AND r.organization_id = d.organization_id
                       AND r.project_id = d.project_id
@@ -2674,7 +2674,7 @@ impl EnterpriseLedger {
                 .fetch_one(&mut *transaction)
                 .await?;
                 let user_usage_rows_deidentified = sqlx::query_scalar::<_, i64>(
-                    "SELECT count(*)::bigint FROM modelport_gateway_requests
+                    "SELECT count(*)::bigint FROM aethergateway_gateway_requests
                      WHERE state <> 'started'
                        AND created_at < to_timestamp($1::double precision / 1000.0)
                        AND principal_id <> $2",
@@ -2684,7 +2684,7 @@ impl EnterpriseLedger {
                 .fetch_one(&mut *transaction)
                 .await?;
                 let usage_reservations_deidentified = sqlx::query_scalar::<_, i64>(
-                    "SELECT count(*)::bigint FROM modelport_usage_reservations
+                    "SELECT count(*)::bigint FROM aethergateway_usage_reservations
                      WHERE state <> 'reserved'
                        AND created_at < to_timestamp($1::double precision / 1000.0)
                        AND user_id <> $2",
@@ -2694,7 +2694,7 @@ impl EnterpriseLedger {
                 .fetch_one(&mut *transaction)
                 .await?;
                 let audit_events_deleted = sqlx::query_scalar::<_, i64>(
-                    "SELECT count(*)::bigint FROM modelport_audit_events
+                    "SELECT count(*)::bigint FROM aethergateway_audit_events
                      WHERE occurred_at < to_timestamp($1::double precision / 1000.0)",
                 )
                 .bind(audit_cutoff)
@@ -2714,8 +2714,8 @@ impl EnterpriseLedger {
                     preview
                 } else {
                     let routing_decisions_deleted = sqlx::query(
-                        "DELETE FROM modelport_routing_decisions d
-                         USING modelport_gateway_requests r
+                        "DELETE FROM aethergateway_routing_decisions d
+                         USING aethergateway_gateway_requests r
                          WHERE r.ledger_id = d.request_ledger_id
                            AND r.organization_id = d.organization_id
                            AND r.project_id = d.project_id
@@ -2729,11 +2729,11 @@ impl EnterpriseLedger {
                     .await?
                     .rows_affected();
                     let provider_attempts_redacted = sqlx::query(
-                        "UPDATE modelport_provider_attempts a
+                        "UPDATE aethergateway_provider_attempts a
                          SET error_message = NULL,
                              terminal_reason = 'retained_financial_evidence',
                              lease_owner = 'retained'
-                         FROM modelport_gateway_requests r
+                         FROM aethergateway_gateway_requests r
                          WHERE r.ledger_id = a.request_ledger_id
                            AND r.organization_id = a.organization_id
                            AND r.project_id = a.project_id
@@ -2748,7 +2748,7 @@ impl EnterpriseLedger {
                     .await?
                     .rows_affected();
                     let request_details_redacted = sqlx::query(
-                        "UPDATE modelport_gateway_requests
+                        "UPDATE aethergateway_gateway_requests
                          SET request_id = 'retained:' || ledger_id,
                              client_ip = NULL,
                              idempotency_key_hash = NULL,
@@ -2770,13 +2770,13 @@ impl EnterpriseLedger {
                         "SELECT DISTINCT quota_subject_id
                          FROM (
                             SELECT quota_subject_id
-                            FROM modelport_gateway_requests
+                            FROM aethergateway_gateway_requests
                             WHERE state <> 'started'
                               AND created_at < to_timestamp($1::double precision / 1000.0)
                               AND principal_id <> $2
                             UNION ALL
                             SELECT quota_subject_id
-                            FROM modelport_usage_reservations
+                            FROM aethergateway_usage_reservations
                             WHERE state <> 'reserved'
                               AND created_at < to_timestamp($1::double precision / 1000.0)
                               AND user_id <> $2
@@ -2790,7 +2790,7 @@ impl EnterpriseLedger {
                     .await?;
                     for subject in legacy_quota_subjects {
                         sqlx::query(
-                            "UPDATE modelport_gateway_requests
+                            "UPDATE aethergateway_gateway_requests
                              SET quota_subject_id = $3
                              WHERE state <> 'started'
                                AND created_at < to_timestamp($1::double precision / 1000.0)
@@ -2802,7 +2802,7 @@ impl EnterpriseLedger {
                         .execute(&mut *transaction)
                         .await?;
                         sqlx::query(
-                            "UPDATE modelport_usage_reservations
+                            "UPDATE aethergateway_usage_reservations
                              SET quota_subject_id = $3
                              WHERE state <> 'reserved'
                                AND created_at < to_timestamp($1::double precision / 1000.0)
@@ -2815,7 +2815,7 @@ impl EnterpriseLedger {
                         .await?;
                     }
                     let user_usage_rows_deidentified = sqlx::query(
-                        "UPDATE modelport_gateway_requests
+                        "UPDATE aethergateway_gateway_requests
                          SET principal_id = $2,
                              username = $2,
                              api_key_id = NULL,
@@ -2833,7 +2833,7 @@ impl EnterpriseLedger {
                     .await?
                     .rows_affected();
                     let usage_reservations_deidentified = sqlx::query(
-                        "UPDATE modelport_usage_reservations
+                        "UPDATE aethergateway_usage_reservations
                          SET user_id = $2,
                              team_id = NULL,
                              updated_at = now()
@@ -2847,7 +2847,7 @@ impl EnterpriseLedger {
                     .await?
                     .rows_affected();
                     let audit_events_deleted = sqlx::query(
-                        "DELETE FROM modelport_audit_events
+                        "DELETE FROM aethergateway_audit_events
                          WHERE occurred_at < to_timestamp($1::double precision / 1000.0)",
                     )
                     .bind(audit_cutoff)
@@ -2941,7 +2941,7 @@ async fn ensure_tenant_catalog(
     tenant: &TenantKey,
 ) -> Result<(), AppError> {
     sqlx::query(
-        "INSERT INTO modelport_organizations (organization_id, display_name)
+        "INSERT INTO aethergateway_organizations (organization_id, display_name)
          VALUES ($1, $1)
          ON CONFLICT (organization_id) DO NOTHING",
     )
@@ -2949,7 +2949,7 @@ async fn ensure_tenant_catalog(
     .execute(&mut **transaction)
     .await?;
     sqlx::query(
-        "INSERT INTO modelport_projects (organization_id, project_id, display_name)
+        "INSERT INTO aethergateway_projects (organization_id, project_id, display_name)
          VALUES ($1, $2, $2)
          ON CONFLICT (organization_id, project_id) DO NOTHING",
     )
@@ -2958,7 +2958,7 @@ async fn ensure_tenant_catalog(
     .execute(&mut **transaction)
     .await?;
     sqlx::query(
-        "INSERT INTO modelport_environments (
+        "INSERT INTO aethergateway_environments (
              organization_id, project_id, environment_id, display_name
          ) VALUES ($1, $2, $3, $3)
          ON CONFLICT (organization_id, project_id, environment_id) DO NOTHING",
@@ -2980,9 +2980,9 @@ async fn update_terminal_record_pg(
     outcome: &LedgerOutcome,
 ) -> Result<bool, AppError> {
     let table = if request_record {
-        "modelport_gateway_requests"
+        "aethergateway_gateway_requests"
     } else {
-        "modelport_provider_attempts"
+        "aethergateway_provider_attempts"
     };
     let id_column = if request_record {
         "ledger_id"
@@ -3360,7 +3360,7 @@ async fn reserve_usage_capacity_pg(
     lock_usage_scopes_pg(transaction, policy).await?;
     let existing = sqlx::query_as::<_, (String, Option<String>, Option<String>, String)>(
         "SELECT state, quota_subject_id, team_id, user_id
-         FROM modelport_usage_reservations
+         FROM aethergateway_usage_reservations
          WHERE organization_id = $1
            AND project_id = $2
            AND environment_id = $3
@@ -3399,7 +3399,7 @@ async fn reserve_usage_capacity_pg(
     }
     if existing.is_some() {
         let updated = sqlx::query(
-            "UPDATE modelport_usage_reservations
+            "UPDATE aethergateway_usage_reservations
              SET reserved_tokens = reserved_tokens + $1,
                  reserved_cost_microunits = reserved_cost_microunits + $2,
                  updated_at = now()
@@ -3424,7 +3424,7 @@ async fn reserve_usage_capacity_pg(
         }
     } else {
         sqlx::query(
-            "INSERT INTO modelport_usage_reservations (
+            "INSERT INTO aethergateway_usage_reservations (
                 reservation_id,
                 organization_id, project_id, environment_id,
                 request_ledger_id, quota_subject_id, team_id, user_id,
@@ -3507,12 +3507,12 @@ async fn usage_spend_totals_pg_tx(
          FROM (
             SELECT quota_subject_id, team_id, created_at,
                    COALESCE(billable_cost_microunits, 0) AS cost_microunits
-            FROM modelport_gateway_requests
+            FROM aethergateway_gateway_requests
             WHERE state <> 'started' AND chargeable
             UNION ALL
             SELECT quota_subject_id, team_id, created_at,
                    reserved_cost_microunits AS cost_microunits
-            FROM modelport_usage_reservations
+            FROM aethergateway_usage_reservations
             WHERE state = 'reserved'
          ) usage
          WHERE ((cardinality($1::text[]) > 0
@@ -3542,13 +3542,13 @@ async fn quota_totals_pg_tx(
     let row = sqlx::query(
         "SELECT
             (SELECT count(*)::bigint
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE principal_id = $1
                AND state <> 'started'
                AND chargeable
                AND created_at >= to_timestamp($2::double precision / 1000.0))
                 + COALESCE((SELECT sum(reserved_requests)::bigint
-                    FROM modelport_usage_reservations
+                    FROM aethergateway_usage_reservations
                     WHERE user_id = $1
                       AND state = 'reserved'
                       AND created_at >= to_timestamp($2::double precision / 1000.0)), 0)
@@ -3557,25 +3557,25 @@ async fn quota_totals_pg_tx(
                     input_tokens + output_tokens
                     + cache_write_tokens + cache_read_tokens
                 )::bigint
-                FROM modelport_gateway_requests
+                FROM aethergateway_gateway_requests
                 WHERE principal_id = $1
                   AND state <> 'started'
                   AND chargeable
                   AND created_at >= to_timestamp($2::double precision / 1000.0)), 0)
                 + COALESCE((SELECT sum(reserved_tokens)::bigint
-                    FROM modelport_usage_reservations
+                    FROM aethergateway_usage_reservations
                     WHERE user_id = $1
                       AND state = 'reserved'
                       AND created_at >= to_timestamp($2::double precision / 1000.0)), 0)
                 AS tokens,
             COALESCE((SELECT sum(billable_cost_microunits)::bigint
-                FROM modelport_gateway_requests
+                FROM aethergateway_gateway_requests
                 WHERE principal_id = $1
                   AND state <> 'started'
                   AND chargeable
                   AND created_at >= to_timestamp($2::double precision / 1000.0)), 0)
                 + COALESCE((SELECT sum(reserved_cost_microunits)::bigint
-                    FROM modelport_usage_reservations
+                    FROM aethergateway_usage_reservations
                     WHERE user_id = $1
                       AND state = 'reserved'
                       AND created_at >= to_timestamp($2::double precision / 1000.0)), 0)
@@ -3660,7 +3660,7 @@ async fn settle_usage_reservation_by_id_pg(
         ("released", 0, 0, 0)
     };
     sqlx::query(
-        "UPDATE modelport_usage_reservations
+        "UPDATE aethergateway_usage_reservations
          SET state = $1,
              actual_requests = $2,
              actual_tokens = $3,
@@ -3696,7 +3696,7 @@ async fn release_usage_reservation_pg(
     tenant: &TenantKey,
 ) -> Result<(), AppError> {
     sqlx::query(
-        "UPDATE modelport_usage_reservations
+        "UPDATE aethergateway_usage_reservations
          SET state = 'released',
              evidence_source = 'lease-expired',
              billing_mode = 'unreconciled',
@@ -3837,7 +3837,7 @@ async fn settle_budget_pg(
             .expect("settlement requires billable cost"),
     );
     let reservation = sqlx::query_as::<_, (String, i64)>(
-        "UPDATE modelport_budget_reservations
+        "UPDATE aethergateway_budget_reservations
          SET state = 'settled',
              settled_microunits = $1,
              evidence_source = $2,
@@ -3862,7 +3862,7 @@ async fn settle_budget_pg(
     .await?
     .ok_or_else(|| AppError::Database("open budget reservation is missing".to_owned()))?;
     let account = sqlx::query(
-        "UPDATE modelport_budget_accounts
+        "UPDATE aethergateway_budget_accounts
          SET reserved_microunits = reserved_microunits - $1,
              settled_microunits = settled_microunits + $2,
              version = version + 1,
@@ -3909,7 +3909,7 @@ async fn release_budget_pg(
     reason: &str,
 ) -> Result<(), AppError> {
     let reservation = sqlx::query_as::<_, (String, String, i64)>(
-        "UPDATE modelport_budget_reservations
+        "UPDATE aethergateway_budget_reservations
          SET state = 'released',
              evidence_source = $5,
              billing_mode = $6,
@@ -3934,7 +3934,7 @@ async fn release_budget_pg(
         return Ok(());
     };
     let account = sqlx::query(
-        "UPDATE modelport_budget_accounts
+        "UPDATE aethergateway_budget_accounts
          SET reserved_microunits = reserved_microunits - $1,
              version = version + 1,
              updated_at = now()
@@ -3990,7 +3990,7 @@ async fn insert_budget_event_pg(
     estimate: UsageEstimate,
 ) -> Result<(), AppError> {
     sqlx::query(
-        "INSERT INTO modelport_budget_events (
+        "INSERT INTO aethergateway_budget_events (
             event_id,
             organization_id, project_id, environment_id, currency,
             reservation_id, request_ledger_id, attempt_id,
@@ -4235,7 +4235,7 @@ fn budget_exceeded(account: &MemoryBudgetAccount, requested: i64) -> AppError {
 }
 
 const REQUEST_COUNT_SQL: &str = "SELECT count(*)::bigint
-    FROM modelport_gateway_requests r
+    FROM aethergateway_gateway_requests r
     WHERE
         ($1::text IS NULL OR r.state = $1)
         AND ($2::text IS NULL OR r.client_protocol = $2)
@@ -4295,13 +4295,13 @@ const REQUEST_LIST_SQL: &str = "SELECT
         (EXTRACT(EPOCH FROM r.created_at) * 1000)::bigint AS created_at_ms,
         (EXTRACT(EPOCH FROM r.updated_at) * 1000)::bigint AS updated_at_ms,
         (EXTRACT(EPOCH FROM r.completed_at) * 1000)::bigint AS completed_at_ms,
-        (SELECT count(*) FROM modelport_provider_attempts a
+        (SELECT count(*) FROM aethergateway_provider_attempts a
          WHERE a.request_ledger_id = r.ledger_id
            AND a.organization_id = r.organization_id
            AND a.project_id = r.project_id
            AND a.environment_id = r.environment_id)::bigint AS attempt_count
-    FROM modelport_gateway_requests r
-    LEFT JOIN modelport_routing_decisions d
+    FROM aethergateway_gateway_requests r
+    LEFT JOIN aethergateway_routing_decisions d
       ON d.request_ledger_id = r.ledger_id
      AND d.organization_id = r.organization_id
      AND d.project_id = r.project_id
@@ -4372,8 +4372,8 @@ const OPERATIONAL_LOG_SELECT_SQL: &str = "SELECT
         (EXTRACT(EPOCH FROM r.updated_at) * 1000)::bigint AS updated_at_ms,
         (EXTRACT(EPOCH FROM r.completed_at) * 1000)::bigint AS completed_at_ms,
         0::bigint AS attempt_count
-    FROM modelport_gateway_requests r
-    LEFT JOIN modelport_routing_decisions d
+    FROM aethergateway_gateway_requests r
+    LEFT JOIN aethergateway_routing_decisions d
       ON d.request_ledger_id = r.ledger_id
      AND d.organization_id = r.organization_id
      AND d.project_id = r.project_id
@@ -4418,13 +4418,13 @@ const REQUEST_DETAIL_SQL: &str = "SELECT
         (EXTRACT(EPOCH FROM r.created_at) * 1000)::bigint AS created_at_ms,
         (EXTRACT(EPOCH FROM r.updated_at) * 1000)::bigint AS updated_at_ms,
         (EXTRACT(EPOCH FROM r.completed_at) * 1000)::bigint AS completed_at_ms,
-        (SELECT count(*) FROM modelport_provider_attempts a
+        (SELECT count(*) FROM aethergateway_provider_attempts a
          WHERE a.request_ledger_id = r.ledger_id
            AND a.organization_id = r.organization_id
            AND a.project_id = r.project_id
            AND a.environment_id = r.environment_id)::bigint AS attempt_count
-    FROM modelport_gateway_requests r
-    LEFT JOIN modelport_routing_decisions d
+    FROM aethergateway_gateway_requests r
+    LEFT JOIN aethergateway_routing_decisions d
       ON d.request_ledger_id = r.ledger_id
      AND d.organization_id = r.organization_id
      AND d.project_id = r.project_id
@@ -4446,7 +4446,7 @@ const ATTEMPT_LIST_SQL: &str = "SELECT
         (EXTRACT(EPOCH FROM created_at) * 1000)::bigint AS created_at_ms,
         (EXTRACT(EPOCH FROM updated_at) * 1000)::bigint AS updated_at_ms,
         (EXTRACT(EPOCH FROM completed_at) * 1000)::bigint AS completed_at_ms
-    FROM modelport_provider_attempts
+    FROM aethergateway_provider_attempts
     WHERE request_ledger_id = $1
     ORDER BY created_at, attempt_id";
 
@@ -4454,7 +4454,7 @@ const BUDGET_ACCOUNT_SQL: &str = "SELECT
         organization_id, project_id, environment_id, currency,
         limit_microunits, reserved_microunits, settled_microunits, version,
         (EXTRACT(EPOCH FROM updated_at) * 1000)::bigint AS updated_at_ms
-    FROM modelport_budget_accounts
+    FROM aethergateway_budget_accounts
     WHERE organization_id = $1
       AND project_id = $2
       AND environment_id = $3
@@ -4467,7 +4467,7 @@ const BUDGET_EVENTS_SQL: &str = "SELECT
         evidence_source, billing_mode, reason, actor_id,
         input_tokens, output_tokens, cache_write_tokens, cache_read_tokens,
         (EXTRACT(EPOCH FROM created_at) * 1000)::bigint AS created_at_ms
-    FROM modelport_budget_events
+    FROM aethergateway_budget_events
     WHERE organization_id = $1
       AND project_id = $2
       AND environment_id = $3
@@ -5524,12 +5524,12 @@ fn missing_scoped_record() -> AppError {
 
 fn lease_config() -> Result<(Duration, Duration), AppError> {
     let lease_ttl = env_seconds(
-        "MODELPORT_LEDGER_LEASE_TTL_SECS",
+        "AETHERGATEWAY_LEDGER_LEASE_TTL_SECS",
         DEFAULT_LEASE_TTL_SECS,
         MIN_LEASE_TTL_SECS,
     )?;
     let reconcile_interval = env_seconds(
-        "MODELPORT_LEDGER_RECONCILE_INTERVAL_SECS",
+        "AETHERGATEWAY_LEDGER_RECONCILE_INTERVAL_SECS",
         DEFAULT_RECONCILE_INTERVAL_SECS,
         MIN_RECONCILE_INTERVAL_SECS,
     )?;
@@ -5543,7 +5543,7 @@ fn validate_lease_durations(
 ) -> Result<(), AppError> {
     if reconcile_interval >= lease_ttl {
         return Err(AppError::Config(
-            "MODELPORT_LEDGER_RECONCILE_INTERVAL_SECS must be smaller than MODELPORT_LEDGER_LEASE_TTL_SECS"
+            "AETHERGATEWAY_LEDGER_RECONCILE_INTERVAL_SECS must be smaller than AETHERGATEWAY_LEDGER_LEASE_TTL_SECS"
                 .to_owned(),
         ));
     }
@@ -5810,7 +5810,7 @@ mod tests {
 
     #[tokio::test]
     async fn postgres_critical_paths_use_database_transactions_and_aggregation() {
-        let Ok(database_url) = std::env::var("MODELPORT_TEST_DATABASE_URL") else {
+        let Ok(database_url) = std::env::var("AETHERGATEWAY_TEST_DATABASE_URL") else {
             return;
         };
         let ledger = EnterpriseLedger::postgres_for_tests(&database_url)
@@ -5821,19 +5821,19 @@ mod tests {
         };
         sqlx::query(
             "TRUNCATE TABLE
-                modelport_usage_reservations,
-                modelport_budget_events,
-                modelport_budget_reservations,
-                modelport_routing_feedback,
-                modelport_routing_decisions,
-                modelport_provider_attempts,
-                modelport_gateway_requests",
+                aethergateway_usage_reservations,
+                aethergateway_budget_events,
+                aethergateway_budget_reservations,
+                aethergateway_routing_feedback,
+                aethergateway_routing_decisions,
+                aethergateway_provider_attempts,
+                aethergateway_gateway_requests",
         )
         .execute(pool)
         .await
         .unwrap();
         sqlx::query(
-            "UPDATE modelport_budget_accounts
+            "UPDATE aethergateway_budget_accounts
              SET limit_microunits = NULL,
                  reserved_microunits = 0,
                  settled_microunits = 0,
@@ -5995,7 +5995,7 @@ mod tests {
         assert_eq!(latency["p95"], 120);
 
         sqlx::query(
-            "UPDATE modelport_gateway_requests
+            "UPDATE aethergateway_gateway_requests
              SET created_at = now() - interval '100 days'
              WHERE ledger_id = $1",
         )
@@ -6018,7 +6018,7 @@ mod tests {
             .unwrap();
         let retained_fingerprint = sqlx::query_scalar::<_, String>(
             "SELECT request_fingerprint
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE ledger_id = $1",
         )
         .bind(&request.ledger_id)
@@ -6040,13 +6040,13 @@ mod tests {
 
         sqlx::query(
             "TRUNCATE TABLE
-                modelport_usage_reservations,
-                modelport_budget_events,
-                modelport_budget_reservations,
-                modelport_routing_feedback,
-                modelport_routing_decisions,
-                modelport_provider_attempts,
-                modelport_gateway_requests",
+                aethergateway_usage_reservations,
+                aethergateway_budget_events,
+                aethergateway_budget_reservations,
+                aethergateway_routing_feedback,
+                aethergateway_routing_decisions,
+                aethergateway_provider_attempts,
+                aethergateway_gateway_requests",
         )
         .execute(pool)
         .await
@@ -6114,19 +6114,19 @@ mod tests {
 
         sqlx::query(
             "TRUNCATE TABLE
-                modelport_usage_reservations,
-                modelport_budget_events,
-                modelport_budget_reservations,
-                modelport_routing_feedback,
-                modelport_routing_decisions,
-                modelport_provider_attempts,
-                modelport_gateway_requests",
+                aethergateway_usage_reservations,
+                aethergateway_budget_events,
+                aethergateway_budget_reservations,
+                aethergateway_routing_feedback,
+                aethergateway_routing_decisions,
+                aethergateway_provider_attempts,
+                aethergateway_gateway_requests",
         )
         .execute(pool)
         .await
         .unwrap();
         sqlx::query(
-            "UPDATE modelport_budget_accounts
+            "UPDATE aethergateway_budget_accounts
              SET limit_microunits = NULL,
                  reserved_microunits = 0,
                  settled_microunits = 0,
@@ -6140,7 +6140,7 @@ mod tests {
 
     #[tokio::test]
     async fn postgres_usage_admission_is_atomic_across_concurrent_transactions() {
-        let Ok(database_url) = std::env::var("MODELPORT_TEST_DATABASE_URL") else {
+        let Ok(database_url) = std::env::var("AETHERGATEWAY_TEST_DATABASE_URL") else {
             return;
         };
         let ledger = EnterpriseLedger::postgres_for_tests(&database_url)
@@ -6262,7 +6262,7 @@ mod tests {
             "SELECT count(*)::bigint,
                     COALESCE(sum(reserved_requests), 0)::bigint,
                     COALESCE(sum(reserved_cost_microunits), 0)::bigint
-             FROM modelport_usage_reservations
+             FROM aethergateway_usage_reservations
              WHERE quota_subject_id = $1 AND state = 'reserved'",
         )
         .bind(&subject)
@@ -6272,7 +6272,7 @@ mod tests {
         assert_eq!(reservation, (1, 1, 750_000));
         let tenant_reservations = sqlx::query_scalar::<_, i64>(
             "SELECT count(*)::bigint
-             FROM modelport_budget_reservations
+             FROM aethergateway_budget_reservations
              WHERE organization_id = $1
                AND project_id = $2
                AND environment_id = $3
@@ -6596,7 +6596,7 @@ mod tests {
 
     #[tokio::test]
     async fn postgres_operations_incident_queries_round_trip() {
-        let Ok(database_url) = std::env::var("MODELPORT_TEST_DATABASE_URL") else {
+        let Ok(database_url) = std::env::var("AETHERGATEWAY_TEST_DATABASE_URL") else {
             return;
         };
         let ledger = EnterpriseLedger::postgres_for_tests(&database_url)
@@ -6607,11 +6607,11 @@ mod tests {
         };
         sqlx::query(
             "TRUNCATE TABLE
-                modelport_ops_incident_feedback,
-                modelport_ops_incident_timeline,
-                modelport_ops_incident_evidence,
-                modelport_ops_incidents,
-                modelport_ops_agent_heartbeats",
+                aethergateway_ops_incident_feedback,
+                aethergateway_ops_incident_timeline,
+                aethergateway_ops_incident_evidence,
+                aethergateway_ops_incidents,
+                aethergateway_ops_agent_heartbeats",
         )
         .execute(pool)
         .await
@@ -7834,7 +7834,7 @@ mod tests {
         assert_eq!(reopened.occurrence_count, 2);
         ledger
             .record_ops_heartbeat(&OpsHeartbeat {
-                instance_id: "modelport-test".to_owned(),
+                instance_id: "aethergateway-test".to_owned(),
                 agent_version: "0.1.0".to_owned(),
                 mode: "read_only".to_owned(),
                 rule_set_version: "ops-rules-v1".to_owned(),

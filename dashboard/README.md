@@ -41,11 +41,11 @@ npm run dev
 
 The default URL is `http://127.0.0.1:33002`. Vite proxies `/admin`, `/v1`,
 `/livez`, `/readyz`, `/health`, and `/metrics` to the backend on port 38082.
-Set `MODELPORT_VITE_PROXY_TARGET` to another backend origin when isolating E2E
+Set `AETHERGATEWAY_VITE_PROXY_TARGET` to another backend origin when isolating E2E
 runs or developing against multiple local instances; the default is
 `http://127.0.0.1:38082`.
 
-Login uses `MODELPORT_ADMIN_USERNAME` and `MODELPORT_ADMIN_PASSWORD`. The router
+Login uses `AETHERGATEWAY_ADMIN_USERNAME` and `AETHERGATEWAY_ADMIN_PASSWORD`. The router
 token is for data-plane clients and metrics, not normal dashboard login.
 
 ## Same-Origin Requirement
@@ -56,13 +56,13 @@ origin through Vite, the Docker Nginx image, or another reverse proxy.
 `VITE_API_BASE_URL` changes the browser fetch origin at build time, but the
 backend does not currently emit general CORS headers. Do not point it at a
 different browser origin unless a trusted proxy implements and tests the full
-CORS/credential policy. `MODELPORT_ALLOWED_ORIGINS` only affects dashboard write
+CORS/credential policy. `AETHERGATEWAY_ALLOWED_ORIGINS` only affects dashboard write
 validation; it is not a CORS switch.
 
 ## Mock Mode
 
 ```bash
-VITE_MODELPORT_MOCK=1 npm run dev
+VITE_AETHERGATEWAY_MOCK=1 npm run dev
 ```
 
 Mock mode is for component/layout work. Mock values, synthetic trace panels, and

@@ -10,7 +10,7 @@ max_request_body_bytes = 33554432
 max_concurrent_requests = 64
 
 [auth]
-token_env = "MODELPORT_AUTH_TOKEN"
+token_env = "AETHERGATEWAY_AUTH_TOKEN"
 
 [providers.local_qwen]
 display_name = "Qwen3.5-9B Q5_K_M (local)"

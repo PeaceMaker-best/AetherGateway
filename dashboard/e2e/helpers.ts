@@ -10,23 +10,23 @@ export interface AetherGatewayE2EEnv {
   authToken: string
 }
 
-export function modelPortEnv(): AetherGatewayE2EEnv {
-  const fileEnv = readEnvFile(process.env.MODELPORT_ENV_FILE || path.resolve(process.cwd(), '..', '.env'))
+export function aetherGatewayEnv(): AetherGatewayE2EEnv {
+  const fileEnv = readEnvFile(process.env.AETHERGATEWAY_ENV_FILE || path.resolve(process.cwd(), '..', '.env'))
   const env = { ...fileEnv, ...process.env }
   return {
-    adminUsername: env.MODELPORT_ADMIN_USERNAME || 'admin',
-    adminPassword: env.MODELPORT_ADMIN_PASSWORD || '',
-    authToken: env.MODELPORT_AUTH_TOKEN || env.ANTHROPIC_AUTH_TOKEN || '',
+    adminUsername: env.AETHERGATEWAY_ADMIN_USERNAME || 'admin',
+    adminPassword: env.AETHERGATEWAY_ADMIN_PASSWORD || '',
+    authToken: env.AETHERGATEWAY_AUTH_TOKEN || env.ANTHROPIC_AUTH_TOKEN || '',
   }
 }
 
 export function requireE2EEnv(): AetherGatewayE2EEnv {
-  const env = modelPortEnv()
+  const env = aetherGatewayEnv()
   if (!env.adminPassword) {
-    throw new Error('MODELPORT_ADMIN_PASSWORD is required for dashboard E2E tests')
+    throw new Error('AETHERGATEWAY_ADMIN_PASSWORD is required for dashboard E2E tests')
   }
   if (!env.authToken) {
-    throw new Error('MODELPORT_AUTH_TOKEN or ANTHROPIC_AUTH_TOKEN is required for dashboard E2E tests')
+    throw new Error('AETHERGATEWAY_AUTH_TOKEN or ANTHROPIC_AUTH_TOKEN is required for dashboard E2E tests')
   }
   return env
 }

@@ -52,7 +52,7 @@ export const settingsService = {
       ...mockSettingsStore.smartRouting,
       groups: [{
         id: 'general',
-        aliases: ['modelport-auto'],
+        aliases: ['aethergateway-auto'],
         defaultProfile: mockSettingsStore.smartRouting.defaultProfile,
         candidateCount: mockSettingsStore.smartRouting.candidateCount,
       }],

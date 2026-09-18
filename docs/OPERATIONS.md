@@ -10,11 +10,11 @@ Choose commands for the deployment you operate:
 
 | Deployment | Status | Recent gateway logs |
 | --- | --- | --- |
-| Docker Compose | `docker compose ps` | `docker compose logs --tail=80 modelport` |
-| systemd | `systemctl status modelport` | `journalctl -u modelport -n 80` |
+| Docker Compose | `docker compose ps` | `docker compose logs --tail=80 aethergateway` |
+| systemd | `systemctl status aethergateway` | `journalctl -u aethergateway -n 80` |
 | Native source checkout | `scripts/dev.sh status` | `scripts/dev.sh logs` |
 
-For a non-default Compose manifest, add `-f "$MODELPORT_COMPOSE_FILE"` to
+For a non-default Compose manifest, add `-f "$AETHERGATEWAY_COMPOSE_FILE"` to
 Compose commands, as described in [Docker Compose](DOCKER.md). For native
 configuration and runtime diagnosis, use `scripts/dev.sh doctor`; startup,
 validation, rebuild behavior, and prerequisites live in
@@ -57,16 +57,16 @@ Treat a routing-policy change like a production release:
    classes. Bucketing is deterministic per hashed session ID when supplied,
    otherwise per principal-scoped request ID. Reuse the request ID when retry
    assignment must remain stable.
-4. Roll back immediately by setting `MODELPORT_SMART_ROUTING_MODE=shadow` or
+4. Roll back immediately by setting `AETHERGATEWAY_SMART_ROUTING_MODE=shadow` or
    `off` and restarting/reloading the base configuration. Do not edit historical
    decision rows.
 
 Authenticated `GET /admin/router/status` reports the loaded policy, groups,
 decision counts, shadow disagreements, selected candidates, and process-local
 outcome/latency observations. Prometheus exposes
-`modelport_routing_decisions_total` and
-`modelport_routing_shadow_disagreements_total`. Durable evidence is stored in
-`modelport_routing_decisions` and is also included as `routingDecision` in
+`aethergateway_routing_decisions_total` and
+`aethergateway_routing_shadow_disagreements_total`. Durable evidence is stored in
+`aethergateway_routing_decisions` and is also included as `routingDecision` in
 request/log API rows. Decision evidence contains IDs, models, scores, bounded
 reason codes, and whether session affinity was used; it does not contain the
 prompt or raw session header.
@@ -195,7 +195,7 @@ Provider-rate rejection before `send()` can create a zero-usage log row without
 incrementing user quota or API-key/team spend. Earlier authentication,
 request-shape, model-resolution, global-rate, and stream-permit failures may
 return before a persisted usage row exists. They increment the bounded
-`modelport_inference_rejections_total` metric by pre-ledger phase and safe error
+`aethergateway_inference_rejections_total` metric by pre-ledger phase and safe error
 category. Neither class consumes budget.
 
 ## Dashboard Ranges And Retention
@@ -249,9 +249,9 @@ The default policy is:
 | 395 days (13 months) | Delete ordinary governance audit events. Append-only budget events are retained. |
 
 Configure the policy with
-`MODELPORT_REQUEST_DETAIL_RETENTION_DAYS`,
-`MODELPORT_USER_USAGE_RETENTION_DAYS`, and
-`MODELPORT_AUDIT_RETENTION_DAYS`. The periods must remain ordered
+`AETHERGATEWAY_REQUEST_DETAIL_RETENTION_DAYS`,
+`AETHERGATEWAY_USER_USAGE_RETENTION_DAYS`, and
+`AETHERGATEWAY_AUDIT_RETENTION_DAYS`. The periods must remain ordered
 `request detail <= user usage <= audit`. Changing them requires restart.
 
 Retention is administrator-only and always starts with a preview. Both preview
@@ -297,7 +297,7 @@ tokens fail closed. The service consumes a valid token before starting the
 operation, including when legal hold prevents mutation or storage returns an
 uncertain error. Run a new preview before every retry.
 
-Set `MODELPORT_RETENTION_LEGAL_HOLD=1` during an approved hold and restart. A
+Set `AETHERGATEWAY_RETENTION_LEGAL_HOLD=1` during an approved hold and restart. A
 preview still works; an apply returns `applied=false` and
 `skippedReason="legal_hold"`. When no hold is active, `skippedReason` is null.
 Ordinary users and viewers receive 403. The endpoint requires an administrator
@@ -344,29 +344,29 @@ boundaries.
 
 ```bash
 curl -sS \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   http://127.0.0.1:38082/metrics
 ```
 
 Metrics are process-local and reset on restart:
 
-- `modelport_uptime_seconds`
-- `modelport_route_{requests,successes,failures,duration_ms}_total`
-- `modelport_inference_rejections_total`
-- `modelport_message_{requests,successes,failures,duration_ms}_total`
-- `modelport_message_{input,output,cache_write,cache_read}_tokens_total`
-- `modelport_message_cost_estimate_usd_total`
-- `modelport_message_latency_ms` (global histogram)
-- `modelport_ledger_operation_failures_total`
-- `modelport_ledger_operation_degraded`
-- `modelport_ledger_reconciled_{requests,attempts}_total`
-- `modelport_ledger_pending_finalizers`
-- `modelport_gateway_ready`
-- `modelport_database_ready`
-- `modelport_database_pool_connections`, `modelport_database_pool_max_connections`, and `modelport_database_pool_utilization_ratio`
-- `modelport_provider_available` and `modelport_provider_cooldown`
-- `modelport_local_scheduler_{running,interactive_queued,batch_queued,users_queued,estimated_service_ms,oldest_interactive_wait_ms,oldest_batch_wait_ms}`
-- `modelport_stream_permits_available`
+- `aethergateway_uptime_seconds`
+- `aethergateway_route_{requests,successes,failures,duration_ms}_total`
+- `aethergateway_inference_rejections_total`
+- `aethergateway_message_{requests,successes,failures,duration_ms}_total`
+- `aethergateway_message_{input,output,cache_write,cache_read}_tokens_total`
+- `aethergateway_message_cost_estimate_usd_total`
+- `aethergateway_message_latency_ms` (global histogram)
+- `aethergateway_ledger_operation_failures_total`
+- `aethergateway_ledger_operation_degraded`
+- `aethergateway_ledger_reconciled_{requests,attempts}_total`
+- `aethergateway_ledger_pending_finalizers`
+- `aethergateway_gateway_ready`
+- `aethergateway_database_ready`
+- `aethergateway_database_pool_connections`, `aethergateway_database_pool_max_connections`, and `aethergateway_database_pool_utilization_ratio`
+- `aethergateway_provider_available` and `aethergateway_provider_cooldown`
+- `aethergateway_local_scheduler_{running,interactive_queued,batch_queued,users_queued,estimated_service_ms,oldest_interactive_wait_ms,oldest_batch_wait_ms}`
+- `aethergateway_stream_permits_available`
 
 Message series have `provider`, `model`, `traffic_class`, and `stream` labels.
 Model names are operator-controlled and can create high cardinality when
@@ -380,9 +380,9 @@ Ledger operation labels are bounded to gateway-owned operations such as request
 and attempt finalization, lease renewal/reconciliation, and finalizer spawning.
 The degraded gauge records whether the most recent operation of that type
 failed. A degraded operation also makes `/readyz` fail until a later successful
-operation proves recovery. `modelport_ledger_pending_finalizers` should normally
+operation proves recovery. `aethergateway_ledger_pending_finalizers` should normally
 return to zero promptly and is drained for up to
-`MODELPORT_FINALIZATION_DRAIN_TIMEOUT_SECONDS` during graceful shutdown.
+`AETHERGATEWAY_FINALIZATION_DRAIN_TIMEOUT_SECONDS` during graceful shutdown.
 
 The official minimum monitoring package is in
 [`deploy/observability`](../deploy/observability/README.md). It includes
@@ -423,7 +423,7 @@ Tune only after measurement:
 
 - reduce concurrency when Provider limits, local runtime queues, or database
   latency are saturated;
-- size `MODELPORT_MAX_CONCURRENT_STREAMS` for simultaneously open bodies, not
+- size `AETHERGATEWAY_MAX_CONCURRENT_STREAMS` for simultaneously open bodies, not
   request-start throughput;
 - keep request, response, SSE, idle, and byte limits finite;
 - diagnose Provider/network/runtime latency before extending timeouts;
@@ -437,9 +437,9 @@ reconciliation.
 
 ## Streaming Concurrency
 
-`MODELPORT_MAX_CONCURRENT_STREAMS` bounds established or establishing streaming
+`AETHERGATEWAY_MAX_CONCURRENT_STREAMS` bounds established or establishing streaming
 requests independently of the normal Axum request service future. When unset,
-it inherits the effective `MODELPORT_MAX_CONCURRENT_REQUESTS`. The stream permit
+it inherits the effective `AETHERGATEWAY_MAX_CONCURRENT_REQUESTS`. The stream permit
 is retained by the returned response body and is released only when that body
 finishes or is dropped, so slow readers and abandoned clients remain counted.
 
@@ -479,8 +479,8 @@ backup and non-destructive restore drill are:
 
 ```bash
 scripts/backup-compose.sh create
-scripts/backup-compose.sh verify backups/modelport-<UTC>.tar.gz
-scripts/backup-compose.sh drill backups/modelport-<UTC>.tar.gz
+scripts/backup-compose.sh verify backups/aethergateway-<UTC>.tar.gz
+scripts/backup-compose.sh drill backups/aethergateway-<UTC>.tar.gz
 ```
 
 New schema-v2 archives include PostgreSQL, checksums, and secret-free deployment
@@ -492,9 +492,9 @@ restores into an isolated temporary PostgreSQL container and verifies required
 application namespaces without stopping or modifying production.
 
 ```bash
-model-port backup export /secure/modelport-backup.json
-model-port backup validate /secure/modelport-backup.json
-model-port backup restore /secure/modelport-backup.json --yes
+model-port backup export /secure/aethergateway-backup.json
+model-port backup validate /secure/aethergateway-backup.json
+model-port backup restore /secure/aethergateway-backup.json --yes
 ```
 
 Both `backup validate` and `backup restore` first deserialize the complete auth
@@ -538,7 +538,7 @@ optional matrix artifact contains no gateway URL, credential, or body; it
 records the commit, source state, traffic class, and completed check outcomes.
 
 Non-local/non-custom Providers must use HTTPS. If a trusted internal upstream
-is available only over HTTP, `MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP=1` is the
+is available only over HTTP, `AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP=1` is the
 explicit restart-required escape hatch. Plain HTTP exposes the Provider key and
 prompt/response content to the network path; never use it for an untrusted LAN
 or Internet endpoint. Local/custom runtime classes retain HTTP support for
@@ -554,9 +554,9 @@ replay is deliberately not yet available, so a same-body retry also receives
 process-local and loses claims on restart; enterprise mode requires PostgreSQL.
 
 Every active relational request owns a lease, renewed every one-third of
-`MODELPORT_LEDGER_LEASE_TTL_SECS`. The guard remains alive through the complete
+`AETHERGATEWAY_LEDGER_LEASE_TTL_SECS`. The guard remains alive through the complete
 stream body, including slow delivery. At startup and every
-`MODELPORT_LEDGER_RECONCILE_INTERVAL_SECS`, AetherGateway terminalizes expired
+`AETHERGATEWAY_LEDGER_RECONCILE_INTERVAL_SECS`, AetherGateway terminalizes expired
 request and attempt rows with:
 
 - `state=failed` and `status_code=500`;
@@ -579,20 +579,20 @@ pause and the reconciliation interval below the TTL.
 | 429 with `Retry-After` | Process-local request-rate limit or exhausted concurrent-stream permits; inspect the error message and active stream duration. |
 | 429 `quota_exceeded` | API-key spend window or user quota. |
 | 409 `idempotency_conflict` | The tenant already claimed that key. Preserve the original outcome; response replay is not available, and a new key authorizes a new Provider call. |
-| 400 before upstream | Model/messages/Tool Use guardrails; `max_tokens` is required, positive, and capped by `MODELPORT_MAX_OUTPUT_TOKENS`. |
+| 400 before upstream | Model/messages/Tool Use guardrails; `max_tokens` is required, positive, and capped by `AETHERGATEWAY_MAX_OUTPUT_TOKENS`. |
 | 400 deleting a team | One or more active or revoked API keys still reference it; reassign or delete those keys first. |
 | 413 | Request body exceeds the Axum/Nginx limit. |
 | 502 before a requested stream starts | Upstream returned 204, omitted/returned a non-SSE content type, returned an invalid status, or hit a pre-header transport/protocol failure; inspect the bounded redacted error and fallback attempts. |
 | SSE `event: error` with HTTP 200 | Upstream failed after stream headers or ended without `message_stop` / `[DONE]` / `finish_reason`; inspect the event and backend log. |
-| SSE ends at `MODELPORT_HTTP_REQUEST_TIMEOUT_SECS` | Expected total upstream lifecycle limit. Check the configured total and idle timeouts before increasing either; post-header failure is reported in the event stream. |
+| SSE ends at `AETHERGATEWAY_HTTP_REQUEST_TIMEOUT_SECS` | Expected total upstream lifecycle limit. Check the configured total and idle timeouts before increasing either; post-header failure is reported in the event stream. |
 | Provider is cooling down | Recent retryable/account failures; ordinary non-retryable 4xx responses do not trigger cooldown. Verify key, rate limit, and balance. |
 | Provider pool has no usable credential | `failover`/`round_robin` fail closed when every credential is disabled, cooling down, or missing its environment value; repair the pool or verify the next Provider candidate. |
 | CPA request shows excessive attempts or latency | Verify CPA `request-retry: 0` and a bounded `max-retry-credentials`; AetherGateway already owns retry/fallback and records each AetherGateway attempt. |
 | CPA returns 401 | Check the CPA client key in `CPA_CODEX_API_KEY`/`CPA_CLAUDE_API_KEY`, not the upstream OAuth token; then inspect CPA auth state without copying auth files into AetherGateway. |
 | CPA Claude sends requests to `/v1/v1/messages` | Remove `/v1` from `CPA_CLAUDE_BASE_URL`; only `CPA_CODEX_BASE_URL` ends in `/v1`. |
 | CPA model is visible but calls fail | Catalog discovery is availability metadata, not entitlement. Call the provider-qualified model and verify the exact account, protocol, stream, and Tool Use path. |
-| Dashboard cross-origin failure | Use a same-origin reverse proxy; `MODELPORT_ALLOWED_ORIGINS` is not a CORS switch. |
-| `config validate` rejects enterprise mode | Set a valid `MODELPORT_DATABASE_URL`, use `MODELPORT_DATABASE_TLS_MODE=verify-full`, and fix any reported pool, lease, proxy, or origin syntax before restarting. Validation errors intentionally prevent the server from binding. |
+| Dashboard cross-origin failure | Use a same-origin reverse proxy; `AETHERGATEWAY_ALLOWED_ORIGINS` is not a CORS switch. |
+| `config validate` rejects enterprise mode | Set a valid `AETHERGATEWAY_DATABASE_URL`, use `AETHERGATEWAY_DATABASE_TLS_MODE=verify-full`, and fix any reported pool, lease, proxy, or origin syntax before restarting. Validation errors intentionally prevent the server from binding. |
 | Auth/control state write latency grows | Inspect PostgreSQL latency and the one-connection document workers. Operational usage and audit rows are independent; low-frequency identity/policy definitions still replace their complete PostgreSQL documents. |
 | `/readyz` reports enterprise ledger failure | Check PostgreSQL reachability, migration permissions, pool exhaustion, TLS mode, root certificate, and hostname verification. |
 | `lease_expired_unreconciled` rows appear | Check process restarts, runtime stalls, PostgreSQL availability, and heartbeat warnings. Do not bill these rows without Provider evidence. |

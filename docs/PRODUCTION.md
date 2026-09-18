@@ -34,11 +34,11 @@ rules do not establish a particular real-model throughput or latency.
 - [ ] Back up PostgreSQL and apply migrations to an isolated restored copy.
 - [ ] Use PostgreSQL TLS `verify-full` for a remote production database.
 - [ ] Set unique administrator, router, database, and Provider credentials.
-- [ ] Enable `MODELPORT_ENTERPRISE_MODE=1` and resolve every guardrail failure.
+- [ ] Enable `AETHERGATEWAY_ENTERPRISE_MODE=1` and resolve every guardrail failure.
 - [ ] Configure secure cookies, exact HTTPS origins, exact trusted proxy CIDRs,
       enabled CSRF protection, and private backend/database ports.
-- [ ] Set `MODELPORT_REQUIRE_CONTROL_API_KEYS=1`.
-- [ ] Issue a dedicated scoped `MODELPORT_HEALTHCHECK_API_KEY`; never place it
+- [ ] Set `AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS=1`.
+- [ ] Issue a dedicated scoped `AETHERGATEWAY_HEALTHCHECK_API_KEY`; never place it
       in Compose, Prometheus rules, Grafana variables, or alert annotations.
 - [ ] Verify backup creation, restore drill, encryption, off-host replication,
       retention, and deletion ownership.
@@ -54,7 +54,7 @@ Run the isolated runtime gate on a Linux host with Docker, Node and the pinned
 Rust toolchain:
 
 ```bash
-MODELPORT_ASSURANCE_OUTPUT_DIR=/tmp/modelport-assurance scripts/acceptance.sh --isolated
+AETHERGATEWAY_ASSURANCE_OUTPUT_DIR=/tmp/aethergateway-assurance scripts/acceptance.sh --isolated
 ```
 
 It creates and removes its own PostgreSQL container, signs OIDC tokens with an
@@ -68,7 +68,7 @@ binary against the restored database for paired application rollback.
 
 Evidence contains commit/source state, latency distributions, rejection counts
 and recovery outcomes, with no credentials or conversation content. Set
-`MODELPORT_ASSURANCE_LOAD_SECONDS=60` for a longer paced run (1–120 seconds;
+`AETHERGATEWAY_ASSURANCE_LOAD_SECONDS=60` for a longer paced run (1–120 seconds;
 the request budget remains 400). This synthetic gate validates gateway behavior,
 not production model capacity or production RTO/RPO. `capacity-acceptance.sh`
 separately checks policy unit invariants. Neither script certifies a real GPU

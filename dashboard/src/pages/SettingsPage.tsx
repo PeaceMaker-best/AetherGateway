@@ -291,9 +291,9 @@ function SettingsForm({ initialSettings }: { initialSettings: SystemSettings }) 
                 <CardDescription>这些值来自当前进程，不是可编辑表单；部署配置修改后需要重启。</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-3 md:grid-cols-3">
-                <RuntimeFact label="绑定地址" value={form.server.bindAddress} hint="MODELPORT_BIND" mono />
-                <RuntimeFact label="最大请求体" value={formatBytes(form.server.maxRequestBodyBytes)} hint="MODELPORT_MAX_REQUEST_BODY_BYTES" />
-                <RuntimeFact label="并发请求" value={String(form.server.maxConcurrentRequests)} hint="MODELPORT_MAX_CONCURRENT_REQUESTS" />
+                <RuntimeFact label="绑定地址" value={form.server.bindAddress} hint="AETHERGATEWAY_BIND" mono />
+                <RuntimeFact label="最大请求体" value={formatBytes(form.server.maxRequestBodyBytes)} hint="AETHERGATEWAY_MAX_REQUEST_BODY_BYTES" />
+                <RuntimeFact label="并发请求" value={String(form.server.maxConcurrentRequests)} hint="AETHERGATEWAY_MAX_CONCURRENT_REQUESTS" />
               </CardContent>
             </Card>
             <SmartRoutingStatusCard
@@ -1190,7 +1190,7 @@ function downloadBackup(backup: BackupExport) {
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = `modelport-diagnostic-snapshot-${stamp}.json`
+  anchor.download = `aethergateway-diagnostic-snapshot-${stamp}.json`
   anchor.click()
   URL.revokeObjectURL(url)
 }

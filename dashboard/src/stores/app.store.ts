@@ -23,16 +23,16 @@ export const useAppStore = create<AppState>((set) => ({
   sidebarCollapsed: false,
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
-  theme: (localStorage.getItem('modelport_theme') as Theme) || 'system',
+  theme: (localStorage.getItem('aethergateway_theme') as Theme) || 'system',
   setTheme: (theme) => {
-    localStorage.setItem('modelport_theme', theme)
+    localStorage.setItem('aethergateway_theme', theme)
     applyTheme(theme)
     set({ theme })
   },
 }))
 
 // Apply theme on load
-const savedTheme = (localStorage.getItem('modelport_theme') as Theme) || 'system'
+const savedTheme = (localStorage.getItem('aethergateway_theme') as Theme) || 'system'
 applyTheme(savedTheme)
 
 // Listen for system theme changes

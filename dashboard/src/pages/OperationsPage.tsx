@@ -197,7 +197,7 @@ export function OperationsPage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <Label htmlFor="ops-analysis-enabled">启用模型诊断</Label>
-                  <p className="mt-1 text-xs text-muted-foreground">需要容器中的独立 MODELPORT_OPS_MODEL_API_KEY；失败不会阻断规则告警。</p>
+                  <p className="mt-1 text-xs text-muted-foreground">需要容器中的独立 AETHERGATEWAY_OPS_MODEL_API_KEY；失败不会阻断规则告警。</p>
                 </div>
                 <Switch
                   id="ops-analysis-enabled"

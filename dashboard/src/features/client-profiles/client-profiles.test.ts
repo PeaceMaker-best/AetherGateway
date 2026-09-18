@@ -28,7 +28,7 @@ describe('buildClientProfiles', () => {
     expect(qwen?.status).toBe('supported')
     if (!qwen || qwen.status !== 'supported') throw new Error('Qwen profile should be supported')
     const [environment, settingsSource] = qwen.configuration.split('# ~/.qwen/settings.json\n')
-    expect(environment).toContain('MODELPORT_API_KEY=sk-mp-one-time')
+    expect(environment).toContain('AETHERGATEWAY_API_KEY=sk-mp-one-time')
     expect(settingsSource).not.toContain('sk-mp-one-time')
 
     const settings = JSON.parse(settingsSource) as {
@@ -39,11 +39,11 @@ describe('buildClientProfiles', () => {
     expect(settings.modelProviders.openai).toEqual([expect.objectContaining({
       id: 'qwen3',
       baseUrl: 'http://localhost:38082/v1',
-      envKey: 'MODELPORT_API_KEY',
+      envKey: 'AETHERGATEWAY_API_KEY',
     })])
     expect(settings.security.auth.selectedType).toBe('openai')
     expect(settings.model.name).toBe('qwen3')
-    expect(settings).not.toHaveProperty('modelProviders.modelport')
+    expect(settings).not.toHaveProperty('modelProviders.aethergateway')
   })
 
   it('blocks Codex without exposing copyable configuration', () => {

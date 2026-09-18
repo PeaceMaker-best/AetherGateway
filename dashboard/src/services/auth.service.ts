@@ -26,7 +26,7 @@ const MOCK_AUTH_METHODS: AuthMethods = {
   },
 }
 
-const MOCK_SESSION_KEY = 'modelport_mock_session'
+const MOCK_SESSION_KEY = 'aethergateway_mock_session'
 export const AUTH_METHODS_TIMEOUT_MS = 8_000
 
 function authMethodsTimeoutError(): Error {

@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1
 
-ARG MODELPORT_VERSION=0.1.3
-ARG MODELPORT_SOURCE_REVISION=unknown
-ARG MODELPORT_SOURCE_STATE=unknown
-ARG MODELPORT_BUILD_DATE=unknown
+ARG AETHERGATEWAY_VERSION=0.1.3
+ARG AETHERGATEWAY_SOURCE_REVISION=unknown
+ARG AETHERGATEWAY_SOURCE_STATE=unknown
+ARG AETHERGATEWAY_BUILD_DATE=unknown
 FROM node:24-bookworm-slim AS builder
 
 WORKDIR /app
@@ -17,23 +17,23 @@ RUN npm run build
 
 FROM nginx:1.30.4-alpine AS runtime
 
-ARG MODELPORT_VERSION
-ARG MODELPORT_SOURCE_REVISION
-ARG MODELPORT_SOURCE_STATE
-ARG MODELPORT_BUILD_DATE
+ARG AETHERGATEWAY_VERSION
+ARG AETHERGATEWAY_SOURCE_REVISION
+ARG AETHERGATEWAY_SOURCE_STATE
+ARG AETHERGATEWAY_BUILD_DATE
 LABEL org.opencontainers.image.title="AetherGateway Dashboard" \
       org.opencontainers.image.description="Same-origin administration dashboard for AetherGateway" \
       org.opencontainers.image.source="https://github.com/PeaceMaker-best/AetherGateway" \
-      org.opencontainers.image.revision="$MODELPORT_SOURCE_REVISION" \
-      org.opencontainers.image.version="$MODELPORT_VERSION" \
-      org.opencontainers.image.created="$MODELPORT_BUILD_DATE" \
+      org.opencontainers.image.revision="$AETHERGATEWAY_SOURCE_REVISION" \
+      org.opencontainers.image.version="$AETHERGATEWAY_VERSION" \
+      org.opencontainers.image.created="$AETHERGATEWAY_BUILD_DATE" \
       org.opencontainers.image.licenses="MIT" \
-      io.modelport.source-state="$MODELPORT_SOURCE_STATE"
+      io.aethergateway.source-state="$AETHERGATEWAY_SOURCE_STATE"
 
 COPY deploy/docker/dashboard.nginx-main.conf /etc/nginx/nginx.conf
 COPY deploy/docker/dashboard.nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY --from=builder /app/package.json /app/package-lock.json /usr/share/modelport/sbom/
+COPY --from=builder /app/package.json /app/package-lock.json /usr/share/aethergateway/sbom/
 
 USER nginx
 

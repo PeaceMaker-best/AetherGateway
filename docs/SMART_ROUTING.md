@@ -61,9 +61,9 @@ contain at most 128 groups and 256 candidates per group.
 The restart/reload-time overrides are:
 
 ```env
-MODELPORT_SMART_ROUTING_MODE=shadow
-MODELPORT_SMART_ROUTING_PROFILE=balanced
-MODELPORT_SMART_ROUTING_ACTIVATION_PERCENT=0
+AETHERGATEWAY_SMART_ROUTING_MODE=shadow
+AETHERGATEWAY_SMART_ROUTING_PROFILE=balanced
+AETHERGATEWAY_SMART_ROUTING_ACTIVATION_PERCENT=0
 ```
 
 ## Request Contract
@@ -121,7 +121,7 @@ and attached feedback instead of leaving orphaned storage.
 
 Administrators can inspect current process state through
 `GET /admin/router/status`. Prometheus exposes
-`modelport_routing_decisions_total{mode,profile,provider}`. Request logs include
+`aethergateway_routing_decisions_total{mode,profile,provider}`. Request logs include
 the decision ID and selected/recommended route in structured backend logs.
 
 Recommended rollout:
@@ -132,7 +132,7 @@ Recommended rollout:
    Provider cooldown by profile for at least one representative traffic cycle.
 4. Switch to `active` at a small percentage such as `5`, then increase through
    explicit reviewed changes.
-5. Set `MODELPORT_SMART_ROUTING_MODE=shadow` or `off` and reload/restart to stop
+5. Set `AETHERGATEWAY_SMART_ROUTING_MODE=shadow` or `off` and reload/restart to stop
    adaptive selection. `off` keeps direct smart-alias calls on their configured
    baseline order; explicit routes remain available throughout.
 

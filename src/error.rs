@@ -322,7 +322,7 @@ impl IntoResponse for AppError {
 
         response
             .headers_mut()
-            .insert("x-modelport-error-contract", HeaderValue::from_static("v1"));
+            .insert("x-aethergateway-error-contract", HeaderValue::from_static("v1"));
 
         if let Some(retry_after_secs) = retry_after_secs
             && let Ok(value) = HeaderValue::from_str(&retry_after_secs.max(1).to_string())
@@ -454,7 +454,7 @@ fn error_hint(error: &AppError) -> &'static str {
             "检查环境变量、配置文件和供应商 API Key 后重启 AetherGateway。"
         }
         AppError::Database(_) => {
-            "检查 MODELPORT_DATABASE_URL、PostgreSQL 容器健康状态和数据库权限。"
+            "检查 AETHERGATEWAY_DATABASE_URL、PostgreSQL 容器健康状态和数据库权限。"
         }
         AppError::Forbidden(_) => "当前账号权限不足，或 API Key 的归属/IP 策略拒绝了本次操作。",
         AppError::IdempotencyConflict(_) => {

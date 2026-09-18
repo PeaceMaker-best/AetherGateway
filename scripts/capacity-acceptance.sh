@@ -4,7 +4,7 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 die() {
-  printf '[modelport-capacity] ERROR: %s\n' "$*" >&2
+  printf '[aethergateway-capacity] ERROR: %s\n' "$*" >&2
   exit 1
 }
 
@@ -16,7 +16,7 @@ main() {
   cd "$ROOT_DIR"
   cargo test --locked governance::tests:: -- --nocapture
   printf '%s\n' \
-    '[modelport-capacity] admission policy unit invariants passed (not a runtime load test):' \
+    '[aethergateway-capacity] admission policy unit invariants passed (not a runtime load test):' \
     '  per-user local execution=1, queued=2' \
     '  global interactive queue=16' \
     '  local_first/balanced overflow threshold=5s' \

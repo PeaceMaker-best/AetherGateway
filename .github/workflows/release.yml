@@ -48,9 +48,9 @@ jobs:
           [[ "$cargo_version" == "$version" ]]
           [[ "$dashboard_version" == "$version" ]]
           [[ "$dashboard_lock_version" == "$version" ]]
-          grep -F "ghcr.io/peacemaker-best/modelport:${version}" deploy/release/compose.yml
-          grep -F "ghcr.io/peacemaker-best/modelport-dashboard:${version}" deploy/release/compose.yml
-          grep -F "ghcr.io/peacemaker-best/modelport-ops-agent:${version}" deploy/release/compose.yml
+          grep -F "ghcr.io/peacemaker-best/aethergateway:${version}" deploy/release/compose.yml
+          grep -F "ghcr.io/peacemaker-best/aethergateway-dashboard:${version}" deploy/release/compose.yml
+          grep -F "ghcr.io/peacemaker-best/aethergateway-ops-agent:${version}" deploy/release/compose.yml
 
   verification:
     name: Verify release candidate
@@ -78,8 +78,8 @@ jobs:
 
       - name: Build release archive
         env:
-          MODELPORT_BUILD_REVISION: ${{ github.sha }}
-          MODELPORT_BUILD_SOURCE_STATE: clean
+          AETHERGATEWAY_BUILD_REVISION: ${{ github.sha }}
+          AETHERGATEWAY_BUILD_SOURCE_STATE: clean
         run: |
           cargo build --release --locked
           version="${GITHUB_REF_NAME#v}"
@@ -154,13 +154,13 @@ jobs:
       matrix:
         include:
           - title: backend image
-            image: modelport
+            image: aethergateway
             dockerfile: Dockerfile
           - title: dashboard image
-            image: modelport-dashboard
+            image: aethergateway-dashboard
             dockerfile: dashboard/Dockerfile
           - title: operations agent image
-            image: modelport-ops-agent
+            image: aethergateway-ops-agent
             dockerfile: crates/ops-agent/Dockerfile
 
     steps:
@@ -218,10 +218,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            MODELPORT_VERSION=${{ steps.image.outputs.version }}
-            MODELPORT_SOURCE_REVISION=${{ github.sha }}
-            MODELPORT_SOURCE_STATE=clean
-            MODELPORT_BUILD_DATE=${{ steps.image.outputs.build_date }}
+            AETHERGATEWAY_VERSION=${{ steps.image.outputs.version }}
+            AETHERGATEWAY_SOURCE_REVISION=${{ github.sha }}
+            AETHERGATEWAY_SOURCE_STATE=clean
+            AETHERGATEWAY_BUILD_DATE=${{ steps.image.outputs.build_date }}
 
       - name: Attest container provenance
         uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0
@@ -261,7 +261,7 @@ jobs:
           import sys
           with open(sys.argv[1], encoding="utf-8") as handle:
               sbom = json.load(handle)
-          ecosystem = "npm" if os.environ["RELEASE_IMAGE"] == "modelport-dashboard" else "cargo"
+          ecosystem = "npm" if os.environ["RELEASE_IMAGE"] == "aethergateway-dashboard" else "cargo"
           assert any(
               ref.get("referenceType") == "purl"
               and ref.get("referenceLocator", "").startswith(f"pkg:{ecosystem}/")

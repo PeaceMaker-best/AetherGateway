@@ -119,7 +119,7 @@ pub(crate) async fn serve() -> Result<(), AppError> {
 }
 
 fn stream_concurrency_limit(default: usize) -> usize {
-    std::env::var("MODELPORT_MAX_CONCURRENT_STREAMS")
+    std::env::var("AETHERGATEWAY_MAX_CONCURRENT_STREAMS")
         .ok()
         .and_then(|value| value.parse::<usize>().ok())
         .unwrap_or(default)
@@ -128,7 +128,7 @@ fn stream_concurrency_limit(default: usize) -> usize {
 
 fn finalization_drain_timeout() -> Duration {
     Duration::from_secs(
-        std::env::var("MODELPORT_FINALIZATION_DRAIN_TIMEOUT_SECONDS")
+        std::env::var("AETHERGATEWAY_FINALIZATION_DRAIN_TIMEOUT_SECONDS")
             .ok()
             .and_then(|value| value.parse::<u64>().ok())
             .unwrap_or(30)

@@ -601,27 +601,27 @@ impl LocalSchedulerConfig {
     pub(crate) fn from_env() -> Result<Self, AppError> {
         let config = Self {
             executing_per_user: env_usize(
-                "MODELPORT_LOCAL_EXECUTING_PER_USER",
+                "AETHERGATEWAY_LOCAL_EXECUTING_PER_USER",
                 DEFAULT_LOCAL_EXECUTING_PER_USER,
             ),
             queued_per_user: env_usize(
-                "MODELPORT_LOCAL_QUEUED_PER_USER",
+                "AETHERGATEWAY_LOCAL_QUEUED_PER_USER",
                 DEFAULT_LOCAL_QUEUED_PER_USER,
             ),
             global_interactive_queue: env_usize(
-                "MODELPORT_LOCAL_QUEUE_GLOBAL",
+                "AETHERGATEWAY_LOCAL_QUEUE_GLOBAL",
                 DEFAULT_LOCAL_QUEUE_GLOBAL,
             ),
             global_batch_queue: env_usize(
-                "MODELPORT_BATCH_QUEUE_GLOBAL",
+                "AETHERGATEWAY_BATCH_QUEUE_GLOBAL",
                 DEFAULT_BATCH_QUEUE_GLOBAL,
             ),
             overflow_after: Duration::from_secs(env_u64(
-                "MODELPORT_LOCAL_OVERFLOW_AFTER_SECONDS",
+                "AETHERGATEWAY_LOCAL_OVERFLOW_AFTER_SECONDS",
                 DEFAULT_OVERFLOW_AFTER.as_secs(),
             )),
             strict_wait: Duration::from_secs(env_u64(
-                "MODELPORT_LOCAL_STRICT_WAIT_SECONDS",
+                "AETHERGATEWAY_LOCAL_STRICT_WAIT_SECONDS",
                 DEFAULT_STRICT_WAIT.as_secs(),
             )),
         };

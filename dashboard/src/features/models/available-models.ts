@@ -87,7 +87,7 @@ export function preferredAvailableModel(
   defaultProvider?: string,
 ): string {
   const logicalModel = options.find((option) => option.kind === 'alias' && (
-    option.id === 'modelport-auto' || option.id.startsWith('code-')
+    option.id === 'aethergateway-auto' || option.id.startsWith('code-')
   )) ?? options.find((option) => option.kind === 'alias')
   if (logicalModel) return logicalModel.id
 

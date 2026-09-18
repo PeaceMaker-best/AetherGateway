@@ -41,7 +41,7 @@ inventory 和执行证据，实际推理仍由外部 Runtime 完成。宿主机
 在 Linux/WSL2 Shell 中设置两个真实路径：
 
 ```bash
-export MODELPORT_PROJECT_DIR=/path/to/AetherGateway
+export AETHERGATEWAY_PROJECT_DIR=/path/to/AetherGateway
 export LOCAL_INFERENCE_STACK_DIR=/path/to/local-inference-stack
 ```
 
@@ -59,7 +59,7 @@ cd "$LOCAL_INFERENCE_STACK_DIR"
 先校验 AetherGateway 自有的通用 capability 和 Qwen 参考 Fixture：
 
 ```bash
-cd "$MODELPORT_PROJECT_DIR"
+cd "$AETHERGATEWAY_PROJECT_DIR"
 ./scripts/runtime-adapter-check.sh --json
 ```
 
@@ -76,24 +76,24 @@ cd "$MODELPORT_PROJECT_DIR"
 请求模型。
 
 默认请求不写路由头也会按 `local_strict` 处理。仅当项目策略已批准云端，客户端才可用
-`x-modelport-hybrid-mode: local_first` 或 `balanced`；`unknown` / `sensitive` 分类无论何种
-请求头都不会离开本地。后台任务显式发送 `x-modelport-traffic-class: batch`。
+`x-aethergateway-hybrid-mode: local_first` 或 `balanced`；`unknown` / `sensitive` 分类无论何种
+请求头都不会离开本地。后台任务显式发送 `x-aethergateway-traffic-class: batch`。
 
 ## 第 2 阶段：准备 AetherGateway
 
 全新本地 Qwen 配置可以从维护的示例开始：
 
 ```bash
-cd "$MODELPORT_PROJECT_DIR"
-cp deploy/docker/modelport.env.example .env
-cp deploy/local-inference/modelport.local-qwen.toml config.toml
+cd "$AETHERGATEWAY_PROJECT_DIR"
+cp deploy/docker/aethergateway.env.example .env
+cp deploy/local-inference/aethergateway.local-qwen.toml config.toml
 ```
 
 如果已经有 `config.toml`，不要覆盖；把示例中的 `local_qwen`、三个逻辑别名和
 `token_counting` 段合并进去。编辑 `.env`：
 
 ```env
-MODELPORT_DEFAULT_PROVIDER=local_qwen
+AETHERGATEWAY_DEFAULT_PROVIDER=local_qwen
 QWEN_LOCAL_BASE_URL=http://qwen-runtime:8080/v1
 ANTHROPIC_BASE_URL=http://127.0.0.1:38082
 ANTHROPIC_MODEL=qwen3.5-code
@@ -116,7 +116,7 @@ ANTHROPIC_MODEL=qwen3.5-code
 顺序歧义，先启动 AetherGateway 基础栈，再启动推理 Runtime：
 
 ```bash
-cd "$MODELPORT_PROJECT_DIR"
+cd "$AETHERGATEWAY_PROJECT_DIR"
 ./scripts/build-container.sh
 ./scripts/compose-up.sh
 
@@ -137,7 +137,7 @@ cd "$LOCAL_INFERENCE_STACK_DIR"
 ./scripts/runtime.sh status
 curl --noproxy '*' -fsS http://127.0.0.1:18080/health
 
-cd "$MODELPORT_PROJECT_DIR"
+cd "$AETHERGATEWAY_PROJECT_DIR"
 ./scripts/smoke-test.sh
 curl --noproxy '*' -fsS http://127.0.0.1:38082/livez
 ```
@@ -146,7 +146,7 @@ curl --noproxy '*' -fsS http://127.0.0.1:38082/livez
 
 ```bash
 cd "$LOCAL_INFERENCE_STACK_DIR"
-MODELPORT_PROJECT_DIR="$MODELPORT_PROJECT_DIR" \
+AETHERGATEWAY_PROJECT_DIR="$AETHERGATEWAY_PROJECT_DIR" \
   ./scripts/acceptance-suite.sh standard
 ```
 
@@ -170,7 +170,7 @@ Token 计数；超出逻辑档位或 131,072 硬上下文时返回可操作的 4
 1. 联合检查失败：只修复第一个 `FAIL`，不要同时改两个仓库的多项配置。
 2. `readyToDeploy=false`：回到 `plan --json` 的 `caveats`，不要启动 Runtime。
 3. `qwen-runtime` 无法解析：检查两个容器是否都连接
-   `modelport_default`，以及 Runtime 的网络别名。
+   `aethergateway_default`，以及 Runtime 的网络别名。
 4. `18080/health` 成功但 `38082/livez` 失败：问题在 AetherGateway 进程或 Compose。
 5. `/livez` 成功但请求被拒：检查 AetherGateway Key、逻辑模型和返回的 Token 准入信息。
 

@@ -29,7 +29,7 @@ real Provider certification requires explicitly intended, potentially paid calls
   configuration.
 - Add tests for split SSE frames, errors after headers, Tool Use causality,
   request/response bounds, redirect behavior, and secret redaction.
-- Do not log or commit API keys, session/API tokens, `.env`, `.modelport/`,
+- Do not log or commit API keys, session/API tokens, `.env`, `.aethergateway/`,
   complete backups, raw prompts/responses, or large base64/multipart payloads.
 - Secret-bearing types need redacted `Debug` behavior and regression tests; a
   later derived/debug wrapper can silently undo that boundary.

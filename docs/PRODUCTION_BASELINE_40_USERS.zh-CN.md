@@ -5,9 +5,9 @@
 Runtime Adapter、Compute Node/GPU 与 Deployment 所有权以
 [ADR-0007](adr/0007-independent-model-and-gpu-control-plane.md) 为准。
 
-本页生产基线假定启用 `MODELPORT_ENTERPRISE_MODE=1`，因此高风险写入强制双人
+本页生产基线假定启用 `AETHERGATEWAY_ENTERPRISE_MODE=1`，因此高风险写入强制双人
 审批。默认 Small-Team 模式未启用 Enterprise 或
-`MODELPORT_REQUIRE_DUAL_APPROVAL=1` 时，管理员可在 CSRF 防护和审计记录下直接
+`AETHERGATEWAY_REQUIRE_DUAL_APPROVAL=1` 时，管理员可在 CSRF 防护和审计记录下直接
 执行，治理变更单仍可自愿使用。
 
 ## 现在是什么状态
@@ -34,8 +34,8 @@ Runtime Adapter、Compute Node/GPU 与 Deployment 所有权以
 - 本页 Enterprise 基线下，高风险变更的载荷先做 SHA-256 摘要，必须由两名不同
   管理员批准。
 
-全新企业库首次启动必须同时提供 `MODELPORT_ADMIN_*` 与
-`MODELPORT_BACKUP_ADMIN_*` 两组不同账号，系统在一次持久化写入中创建 Owner 和 Backup，
+全新企业库首次启动必须同时提供 `AETHERGATEWAY_ADMIN_*` 与
+`AETHERGATEWAY_BACKUP_ADMIN_*` 两组不同账号，系统在一次持久化写入中创建 Owner 和 Backup，
 避免单管理员无法批准新增 Backup 的死锁。数据库已有用户时不会再次引导或覆盖账号。
 
 Linux/WSL2 中运行不产生真实模型请求的容量基线：
@@ -45,7 +45,7 @@ Linux/WSL2 中运行不产生真实模型请求的容量基线：
 ```
 
 这条命令只验证准入规则。实际 HTTP、鉴权、流式、40 个独立用户的并发与恢复验收使用
-`scripts/acceptance.sh --isolated`；可设置 `MODELPORT_ASSURANCE_LOAD_SECONDS=60`
+`scripts/acceptance.sh --isolated`；可设置 `AETHERGATEWAY_ASSURANCE_LOAD_SECONDS=60`
 进行 60 秒的分批持续运行。它使用隔离 PostgreSQL 和本地合成响应，不能作为真实 GPU、
 云模型吞吐或生产 RTO/RPO 的证明。实际部署所需证据统一见
 [投产验收](PRODUCTION.md#deployment-specific-evidence)。

@@ -111,8 +111,8 @@ export const PROVIDER_TEMPLATES: ProviderTemplate[] = [
     family: 'OpenAI',
     protocol: 'openai-compat',
     baseUrl: 'https://api.openai.com/v1',
-    baseUrlEnv: 'MODELPORT_OPENAI_BASE_URL',
-    apiKeyEnv: 'MODELPORT_OPENAI_API_KEY',
+    baseUrlEnv: 'AETHERGATEWAY_OPENAI_BASE_URL',
+    apiKeyEnv: 'AETHERGATEWAY_OPENAI_API_KEY',
     apiKeyRequired: true,
     defaultModel: 'gpt-5.5',
     models: ['gpt-5.5', 'gpt-5.5-pro', 'gpt-5.4', 'gpt-5.4-pro', 'gpt-5.4-mini', 'gpt-5.4-nano', 'gpt-5.3-codex', 'gpt-5.2', 'gpt-5', 'gpt-5-mini', 'gpt-4.1', 'gpt-4.1-mini'],
@@ -377,6 +377,6 @@ export function providerEnv(template: ProviderTemplate): string {
   return [
     `export ${template.baseUrlEnv}=${template.baseUrl}`,
     keyLine,
-    `export MODELPORT_ENABLE_${template.id.toUpperCase()}=1`,
+    `export AETHERGATEWAY_ENABLE_${template.id.toUpperCase()}=1`,
   ].join('\n')
 }

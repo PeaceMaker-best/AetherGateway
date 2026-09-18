@@ -1,38 +1,38 @@
-name: modelport
+name: aethergateway
 
 # Versioned Small-Team Beta release profile. This file is used from a tagged
 # source checkout and pulls signed GHCR images instead of compiling source.
 services:
   postgres:
-    # Starts only when using the internal database. When MODELPORT_DATABASE_URL
+    # Starts only when using the internal database. When AETHERGATEWAY_DATABASE_URL
     # is set (an external PostgreSQL), this service moves to the "internal-db"
     # profile and is not started unless explicitly enabled with
     # `--profile internal-db`.
-    profiles: ["${MODELPORT_DATABASE_URL:+internal-db}"]
+    profiles: ["${AETHERGATEWAY_DATABASE_URL:+internal-db}"]
     image: postgres:18.4-alpine
     environment:
-      POSTGRES_DB: ${MODELPORT_POSTGRES_DB:-modelport}
-      POSTGRES_USER: ${MODELPORT_POSTGRES_USER:-modelport}
-      POSTGRES_PASSWORD: ${MODELPORT_POSTGRES_PASSWORD:-}
+      POSTGRES_DB: ${AETHERGATEWAY_POSTGRES_DB:-aethergateway}
+      POSTGRES_USER: ${AETHERGATEWAY_POSTGRES_USER:-aethergateway}
+      POSTGRES_PASSWORD: ${AETHERGATEWAY_POSTGRES_PASSWORD:-}
       PGDATA: /var/lib/postgresql/18/docker
     volumes:
-      - modelport-postgres-18:/var/lib/postgresql
+      - aethergateway-postgres-18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 5
     restart: unless-stopped
-    stop_grace_period: ${MODELPORT_POSTGRES_STOP_GRACE_PERIOD:-1m}
+    stop_grace_period: ${AETHERGATEWAY_POSTGRES_STOP_GRACE_PERIOD:-1m}
     logging:
       driver: json-file
       options:
-        max-size: ${MODELPORT_LOG_MAX_SIZE:-10m}
-        max-file: "${MODELPORT_LOG_MAX_FILES:-5}"
+        max-size: ${AETHERGATEWAY_LOG_MAX_SIZE:-10m}
+        max-file: "${AETHERGATEWAY_LOG_MAX_FILES:-5}"
 
-  modelport:
-    image: ${MODELPORT_IMAGE:-ghcr.io/peacemaker-best/modelport:0.1.3}
-    pull_policy: ${MODELPORT_PULL_POLICY:-missing}
+  aethergateway:
+    image: ${AETHERGATEWAY_IMAGE:-ghcr.io/peacemaker-best/aethergateway:0.1.3}
+    pull_policy: ${AETHERGATEWAY_PULL_POLICY:-missing}
     init: true
     read_only: true
     cap_drop:
@@ -42,35 +42,35 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=64m
     env_file:
-      - ${MODELPORT_COMPOSE_ENV_FILE:-../../.env}
+      - ${AETHERGATEWAY_COMPOSE_ENV_FILE:-../../.env}
     environment:
-      MODELPORT_BIND: 0.0.0.0:38082
-      MODELPORT_ENV_FILE: /config/.env
-      MODELPORT_STATE_DIR: /data
-      MODELPORT_CONFIG: /config/config.toml
-      MODELPORT_DATABASE_URL: ${MODELPORT_DATABASE_URL:-postgres://${MODELPORT_POSTGRES_USER:-modelport}:${MODELPORT_POSTGRES_PASSWORD:?set MODELPORT_POSTGRES_PASSWORD in .env}@postgres:5432/${MODELPORT_POSTGRES_DB:-modelport}}
-      MODELPORT_TRUSTED_PROXIES: ${MODELPORT_TRUSTED_PROXIES:-127.0.0.1,::1,172.16.0.0/12}
-      MODELPORT_ALLOWED_ORIGINS: ${MODELPORT_ALLOWED_ORIGINS:-}
+      AETHERGATEWAY_BIND: 0.0.0.0:38082
+      AETHERGATEWAY_ENV_FILE: /config/.env
+      AETHERGATEWAY_STATE_DIR: /data
+      AETHERGATEWAY_CONFIG: /config/config.toml
+      AETHERGATEWAY_DATABASE_URL: ${AETHERGATEWAY_DATABASE_URL:-postgres://${AETHERGATEWAY_POSTGRES_USER:-aethergateway}:${AETHERGATEWAY_POSTGRES_PASSWORD:?set AETHERGATEWAY_POSTGRES_PASSWORD in .env}@postgres:5432/${AETHERGATEWAY_POSTGRES_DB:-aethergateway}}
+      AETHERGATEWAY_TRUSTED_PROXIES: ${AETHERGATEWAY_TRUSTED_PROXIES:-127.0.0.1,::1,172.16.0.0/12}
+      AETHERGATEWAY_ALLOWED_ORIGINS: ${AETHERGATEWAY_ALLOWED_ORIGINS:-}
       RUST_LOG: ${RUST_LOG:-model_port=info,tower_http=info}
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
-      - ${MODELPORT_API_PUBLISH:-127.0.0.1:38082}:38082
+      - ${AETHERGATEWAY_API_PUBLISH:-127.0.0.1:38082}:38082
     volumes:
-      - modelport-data:/data
+      - aethergateway-data:/data
       - type: bind
-        source: ${MODELPORT_COMPOSE_ENV_FILE:-../../.env}
+        source: ${AETHERGATEWAY_COMPOSE_ENV_FILE:-../../.env}
         target: /config/.env
         read_only: true
       - type: bind
-        source: ${MODELPORT_CONFIG_FILE:-../../config.toml}
+        source: ${AETHERGATEWAY_CONFIG_FILE:-../../config.toml}
         target: /config/config.toml
         read_only: true
     healthcheck:
       test:
         - CMD-SHELL
         - >-
-          probe_key="$${MODELPORT_HEALTHCHECK_API_KEY:-$${MODELPORT_AUTH_TOKEN:-}}";
+          probe_key="$${AETHERGATEWAY_HEALTHCHECK_API_KEY:-$${AETHERGATEWAY_AUTH_TOKEN:-}}";
           test -n "$${probe_key}" &&
           curl -fsS -H "x-api-key: $${probe_key}" http://127.0.0.1:38082/readyz >/dev/null
       interval: 15s
@@ -78,16 +78,16 @@ services:
       start_period: 20s
       retries: 4
     restart: unless-stopped
-    stop_grace_period: ${MODELPORT_STOP_GRACE_PERIOD:-11m}
+    stop_grace_period: ${AETHERGATEWAY_STOP_GRACE_PERIOD:-11m}
     logging:
       driver: json-file
       options:
-        max-size: ${MODELPORT_LOG_MAX_SIZE:-10m}
-        max-file: "${MODELPORT_LOG_MAX_FILES:-5}"
+        max-size: ${AETHERGATEWAY_LOG_MAX_SIZE:-10m}
+        max-file: "${AETHERGATEWAY_LOG_MAX_FILES:-5}"
 
   dashboard:
-    image: ${MODELPORT_DASHBOARD_IMAGE:-ghcr.io/peacemaker-best/modelport-dashboard:0.1.3}
-    pull_policy: ${MODELPORT_PULL_POLICY:-missing}
+    image: ${AETHERGATEWAY_DASHBOARD_IMAGE:-ghcr.io/peacemaker-best/aethergateway-dashboard:0.1.3}
+    pull_policy: ${AETHERGATEWAY_PULL_POLICY:-missing}
     init: true
     read_only: true
     cap_drop:
@@ -97,57 +97,57 @@ services:
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=32m
     ports:
-      - ${MODELPORT_DASHBOARD_PUBLISH:-127.0.0.1:33002}:8080
+      - ${AETHERGATEWAY_DASHBOARD_PUBLISH:-127.0.0.1:33002}:8080
     restart: unless-stopped
-    stop_grace_period: ${MODELPORT_DASHBOARD_STOP_GRACE_PERIOD:-30s}
+    stop_grace_period: ${AETHERGATEWAY_DASHBOARD_STOP_GRACE_PERIOD:-30s}
     logging:
       driver: json-file
       options:
-        max-size: ${MODELPORT_LOG_MAX_SIZE:-10m}
-        max-file: "${MODELPORT_LOG_MAX_FILES:-5}"
+        max-size: ${AETHERGATEWAY_LOG_MAX_SIZE:-10m}
+        max-file: "${AETHERGATEWAY_LOG_MAX_FILES:-5}"
 
   ops-agent:
     profiles: ["ops-agent"]
-    image: ${MODELPORT_OPS_AGENT_IMAGE:-ghcr.io/peacemaker-best/modelport-ops-agent:0.1.3}
-    pull_policy: ${MODELPORT_PULL_POLICY:-missing}
+    image: ${AETHERGATEWAY_OPS_AGENT_IMAGE:-ghcr.io/peacemaker-best/aethergateway-ops-agent:0.1.3}
+    pull_policy: ${AETHERGATEWAY_PULL_POLICY:-missing}
     init: true
     read_only: true
     cap_drop:
       - ALL
     security_opt:
       - no-new-privileges:true
-    cpus: ${MODELPORT_OPS_CPU_LIMIT:-0.50}
-    mem_limit: ${MODELPORT_OPS_MEMORY_LIMIT:-256m}
-    pids_limit: ${MODELPORT_OPS_PIDS_LIMIT:-128}
+    cpus: ${AETHERGATEWAY_OPS_CPU_LIMIT:-0.50}
+    mem_limit: ${AETHERGATEWAY_OPS_MEMORY_LIMIT:-256m}
+    pids_limit: ${AETHERGATEWAY_OPS_PIDS_LIMIT:-128}
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=16m
     environment:
-      MODELPORT_OPS_BASE_URL: http://modelport:38082
-      MODELPORT_OPS_API_KEY: ${MODELPORT_OPS_API_KEY:-}
-      MODELPORT_OPS_MODEL_API_KEY: ${MODELPORT_OPS_MODEL_API_KEY:-}
-      MODELPORT_OPS_MODE: ${MODELPORT_OPS_MODE:-shadow}
-      MODELPORT_OPS_INTERVAL_SECONDS: ${MODELPORT_OPS_INTERVAL_SECONDS:-300}
-      MODELPORT_OPS_WEBHOOK_URL: ${MODELPORT_OPS_WEBHOOK_URL:-}
-      RUST_LOG: ${MODELPORT_OPS_RUST_LOG:-modelport_ops_agent=info}
+      AETHERGATEWAY_OPS_BASE_URL: http://aethergateway:38082
+      AETHERGATEWAY_OPS_API_KEY: ${AETHERGATEWAY_OPS_API_KEY:-}
+      AETHERGATEWAY_OPS_MODEL_API_KEY: ${AETHERGATEWAY_OPS_MODEL_API_KEY:-}
+      AETHERGATEWAY_OPS_MODE: ${AETHERGATEWAY_OPS_MODE:-shadow}
+      AETHERGATEWAY_OPS_INTERVAL_SECONDS: ${AETHERGATEWAY_OPS_INTERVAL_SECONDS:-300}
+      AETHERGATEWAY_OPS_WEBHOOK_URL: ${AETHERGATEWAY_OPS_WEBHOOK_URL:-}
+      RUST_LOG: ${AETHERGATEWAY_OPS_RUST_LOG:-aethergateway_ops_agent=info}
     volumes:
-      - modelport-ops-spool:/var/lib/modelport-ops
+      - aethergateway-ops-spool:/var/lib/aethergateway-ops
     depends_on:
-      modelport:
+      aethergateway:
         condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 30s
     logging:
       driver: json-file
       options:
-        max-size: ${MODELPORT_LOG_MAX_SIZE:-10m}
-        max-file: "${MODELPORT_LOG_MAX_FILES:-5}"
+        max-size: ${AETHERGATEWAY_LOG_MAX_SIZE:-10m}
+        max-file: "${AETHERGATEWAY_LOG_MAX_FILES:-5}"
 
 volumes:
-  modelport-data:
-  modelport-postgres-18:
-  modelport-ops-spool:
+  aethergateway-data:
+  aethergateway-postgres-18:
+  aethergateway-ops-spool:
 
 networks:
   default:
-    name: ${MODELPORT_NETWORK_NAME:-modelport_default}
+    name: ${AETHERGATEWAY_NETWORK_NAME:-aethergateway_default}
     external: true

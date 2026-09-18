@@ -203,7 +203,7 @@ without changing gateway limits:
 scripts/tool-use-acceptance.sh --upstream --max-tokens 2048
 ```
 
-`MODELPORT_TOOL_USE_MAX_TOKENS` provides the equivalent environment override.
+`AETHERGATEWAY_TOOL_USE_MAX_TOKENS` provides the equivalent environment override.
 
 The streaming acceptance check concatenates all `input_json_delta.partial_json`
 fragments before parsing them. Providers may split a valid JSON string at any

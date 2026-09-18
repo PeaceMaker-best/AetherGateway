@@ -44,7 +44,7 @@ outside this client boundary.
 
 ## Capability Rules
 
-Every document has `apiVersion: runtime.modelport.io/v1alpha1`,
+Every document has `apiVersion: runtime.aethergateway.io/v1alpha1`,
 `kind: RuntimeAdapterCapabilities`, a stable adapter identity, authentication
 and transport requirements, runtime engines, inference protocols, inventory
 kinds, and advertised operations. Unknown top-level and structured fields are

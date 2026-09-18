@@ -8,7 +8,7 @@ export const mockSettings: SystemSettings = {
   },
   auth: {
     enabled: true,
-    tokenEnvVar: 'MODELPORT_AUTH_TOKEN',
+    tokenEnvVar: 'AETHERGATEWAY_AUTH_TOKEN',
     allowNoAuth: false,
   },
   gateway: {
@@ -51,8 +51,8 @@ export const mockSettings: SystemSettings = {
     openaiEndpoint: 'http://127.0.0.1:38082/v1/chat/completions',
     modelsEndpoint: 'http://127.0.0.1:38082/v1/models',
     adminEndpoint: 'http://127.0.0.1:38082/admin',
-    controlDataPath: '/home/user/.modelport/control-plane.json',
-    authDataPath: '/home/user/.modelport/auth.json',
+    controlDataPath: '/home/user/.aethergateway/control-plane.json',
+    authDataPath: '/home/user/.aethergateway/auth.json',
   },
   setup: {
     ready: true,

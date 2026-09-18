@@ -226,7 +226,7 @@ function validateStaticHeaders(value: string): string | undefined {
     const sensitiveSegment = name.split(/[-_]/).some((segment) => (
       ['auth', 'authorization', 'token', 'secret', 'credential', 'cookie', 'signature'].includes(segment)
     ))
-    const reservedPrefix = ['x-forwarded-', 'x-b3-', 'sec-', 'x-modelport-']
+    const reservedPrefix = ['x-forwarded-', 'x-b3-', 'sec-', 'x-aethergateway-']
       .some((prefix) => name.startsWith(prefix))
     if (reserved.has(name) || sensitiveSegment || name.includes('api-key') || name.includes('api_key') || reservedPrefix) {
       return `${name} 属于认证、链路或 HTTP 帧保留头，不能静态覆盖。`

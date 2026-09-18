@@ -4,7 +4,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 STACK_DIR="${LOCAL_INFERENCE_STACK_DIR:-}"
-MODELPORT_CONFIG_PATH=""
+AETHERGATEWAY_CONFIG_PATH=""
 RELEASE=0
 JSON=0
 
@@ -36,7 +36,7 @@ while [[ "$#" -gt 0 ]]; do
       ;;
     --config)
       [[ "$#" -ge 2 ]] || { printf '%s\n' '--config requires a path' >&2; exit 2; }
-      MODELPORT_CONFIG_PATH="$2"
+      AETHERGATEWAY_CONFIG_PATH="$2"
       shift 2
       ;;
     --release)
@@ -60,7 +60,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 if [[ -z "$STACK_DIR" ]]; then
-  if [[ -n "$MODELPORT_CONFIG_PATH" || "$RELEASE" -eq 1 ]]; then
+  if [[ -n "$AETHERGATEWAY_CONFIG_PATH" || "$RELEASE" -eq 1 ]]; then
     printf '%s\n' '--config and --release require deprecated --stack-dir compatibility mode' >&2
     exit 2
   fi
@@ -96,11 +96,11 @@ fi
 
 arguments=(
   "$CHECKER"
-  --modelport-project "$ROOT_DIR"
+  --aethergateway-project "$ROOT_DIR"
   --contract "$CONTRACT"
 )
-if [[ -n "$MODELPORT_CONFIG_PATH" ]]; then
-  arguments+=(--modelport-config "$MODELPORT_CONFIG_PATH")
+if [[ -n "$AETHERGATEWAY_CONFIG_PATH" ]]; then
+  arguments+=(--aethergateway-config "$AETHERGATEWAY_CONFIG_PATH")
 fi
 if [[ "$RELEASE" -eq 1 ]]; then
   arguments+=(--release)

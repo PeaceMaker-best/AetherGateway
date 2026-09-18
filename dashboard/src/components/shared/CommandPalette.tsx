@@ -36,10 +36,10 @@ export function CommandPalette() {
     }
     document.addEventListener('keydown', onKeyDown)
     const openPalette = () => setOpen(true)
-    document.addEventListener('modelport:open-command-palette', openPalette)
+    document.addEventListener('aethergateway:open-command-palette', openPalette)
     return () => {
       document.removeEventListener('keydown', onKeyDown)
-      document.removeEventListener('modelport:open-command-palette', openPalette)
+      document.removeEventListener('aethergateway:open-command-palette', openPalette)
     }
   }, [])
 

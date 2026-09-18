@@ -32,7 +32,7 @@ export function Header({ onMenuClick, isMobile, mobileMenuOpen }: HeaderProps) {
 
   // Keyboard shortcut hint for command palette
   const [isMac] = useState(() => navigator.platform.includes('Mac'))
-  const openCommandPalette = () => document.dispatchEvent(new CustomEvent('modelport:open-command-palette'))
+  const openCommandPalette = () => document.dispatchEvent(new CustomEvent('aethergateway:open-command-palette'))
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border/70 bg-background/86 px-4 backdrop-blur-xl md:px-6">

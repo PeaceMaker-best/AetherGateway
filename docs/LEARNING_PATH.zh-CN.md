@@ -38,7 +38,7 @@ v2，不需要先学习 Rust。
 ```bash
 git clone https://github.com/PeaceMaker-best/AetherGateway.git
 cd AetherGateway
-cp deploy/docker/modelport.env.example .env
+cp deploy/docker/aethergateway.env.example .env
 cp config.example.toml config.toml
 ```
 
@@ -59,7 +59,7 @@ scripts/smoke-test.sh
 
 成功标准：
 
-- `postgres` 和 `modelport` 显示 healthy；
+- `postgres` 和 `aethergateway` 显示 healthy；
 - `scripts/smoke-test.sh` 通过；
 - 可以打开 `http://127.0.0.1:33002` 并登录；
 - 到这里没有调用真实模型，不会消耗 Provider 额度。
@@ -80,7 +80,7 @@ scripts/smoke-test.sh
 ```bash
 source .env
 curl -fsS \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   http://127.0.0.1:38082/v1/models
 ```
 
@@ -109,7 +109,7 @@ scripts/smoke-test.sh --upstream
 docker compose ps
 scripts/smoke-test.sh
 scripts/doctor.sh
-docker compose logs --tail=100 modelport
+docker compose logs --tail=100 aethergateway
 ```
 
 需要掌握的三个端点：

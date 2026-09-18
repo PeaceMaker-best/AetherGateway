@@ -27,7 +27,7 @@ describe('enterprise service', () => {
     }, 3, 50)).resolves.toEqual(payload)
 
     const [rawUrl] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const url = new URL(rawUrl, 'http://modelport.local')
+    const url = new URL(rawUrl, 'http://aethergateway.local')
     expect(url.pathname).toBe('/admin/enterprise/requests')
     expect(Object.fromEntries(url.searchParams)).toEqual({
       page: '3',
@@ -63,7 +63,7 @@ describe('enterprise service', () => {
     })
 
     const [rawUrl] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const url = new URL(rawUrl, 'http://modelport.local')
+    const url = new URL(rawUrl, 'http://aethergateway.local')
     expect(url.pathname).toBe('/admin/enterprise/budget')
     expect(Object.fromEntries(url.searchParams)).toEqual({
       organizationId: 'org_acme',

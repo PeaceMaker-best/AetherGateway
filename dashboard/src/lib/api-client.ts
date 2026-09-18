@@ -1,7 +1,7 @@
 import { clearSessionQueries } from '@/lib/query-client'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
-const CHANGE_REQUEST_STORAGE_KEY = 'modelport_change_request_id'
+const CHANGE_REQUEST_STORAGE_KEY = 'aethergateway_change_request_id'
 
 export class ApiError extends Error {
   status: number
@@ -44,9 +44,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     if (window.location.pathname !== '/login') {
       clearSessionQueries()
       try {
-        window.sessionStorage.setItem('modelport_auth_notice', '会话已过期，请重新登录后继续。')
+        window.sessionStorage.setItem('aethergateway_auth_notice', '会话已过期，请重新登录后继续。')
         window.sessionStorage.setItem(
-          'modelport_return_to',
+          'aethergateway_return_to',
           `${window.location.pathname}${window.location.search}${window.location.hash}`,
         )
       } catch {

@@ -60,14 +60,14 @@ export function buildClientProfiles({
       protocol: 'openai-chat-completions',
       status: 'supported',
       description: '使用 Qwen Code 的 OpenAI-compatible 客户端协议；密钥只放在环境变量中，不写入 settings.json。',
-      configuration: `# 环境变量\nMODELPORT_API_KEY=${clientKey}\n\n# ~/.qwen/settings.json\n${JSON.stringify({
+      configuration: `# 环境变量\nAETHERGATEWAY_API_KEY=${clientKey}\n\n# ~/.qwen/settings.json\n${JSON.stringify({
         modelProviders: {
           openai: [{
             id: model,
             name: model,
             description: 'AetherGateway governed route',
             baseUrl: `${origin}/v1`,
-            envKey: 'MODELPORT_API_KEY',
+            envKey: 'AETHERGATEWAY_API_KEY',
           }],
         },
         security: { auth: { selectedType: 'openai' } },

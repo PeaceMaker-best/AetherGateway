@@ -6,13 +6,13 @@ dependencies and are not added to the default Compose stack.
 
 ## Included Files
 
-- `prometheus/modelport-alerts.yml`: executable alert rules for process,
+- `prometheus/aethergateway-alerts.yml`: executable alert rules for process,
   readiness, persistence, request lifecycle, Provider, stream-admission,
   latency, quota-rejection, and reconciliation signals.
 - `prometheus/prometheus.example.yml`: authenticated metrics scrape plus an
   optional authenticated Blackbox Exporter readiness probe.
 - `prometheus/blackbox.example.yml`: `/readyz` probe module.
-- `grafana/modelport-overview.json`: importable dashboard for the same metrics.
+- `grafana/aethergateway-overview.json`: importable dashboard for the same metrics.
 - [`docs/OBSERVABILITY_RUNBOOK.md`](../../docs/OBSERVABILITY_RUNBOOK.md): alert
   meaning, triage, and recovery checks.
 
@@ -22,7 +22,7 @@ in Git, the rule file, a dashboard variable, or an alert annotation. Prometheus
 can authenticate to `/metrics` with `Authorization: Bearer`; Blackbox Exporter
 uses its own secret file for `/readyz`.
 
-Run `promtool check rules prometheus/modelport-alerts.yml` before reloading
+Run `promtool check rules prometheus/aethergateway-alerts.yml` before reloading
 Prometheus, then import the dashboard and select the Prometheus data source.
 
 ## Honest Coverage Boundary
@@ -43,7 +43,7 @@ running/queue/wait gauges are exported and consumed directly by the included
 rules and dashboard. Queue wait is currently a gauge, not a distribution; use
 it to find sustained pressure, not to claim a historical queue percentile.
 
-`modelport_message_cost_estimate_usd_total` is an estimate, not an invoice.
+`aethergateway_message_cost_estimate_usd_total` is an estimate, not an invoice.
 Dashboard budget values and PostgreSQL evidence remain the source for operator
 review until bounded budget metrics are implemented. Alert thresholds are a
 safe starting point for a 20–50 person team and must be calibrated against

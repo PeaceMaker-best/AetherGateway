@@ -185,7 +185,7 @@ async fn setup_rejects_operations_control_keys_for_inference() {
                 "userId": owner_key.public.user_id,
                 "name": "operations control",
                 "principalType": "service_account",
-                "purpose": "modelport_ops_agent",
+                "purpose": "aethergateway_ops_agent",
                 "allowedProviders": ["mimo"],
                 "allowedModels": ["mimo-v2.5-pro"],
                 "expiresAt": (now_millis() + 3_600_000).to_string(),

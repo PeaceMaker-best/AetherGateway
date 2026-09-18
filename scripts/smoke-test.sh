@@ -14,13 +14,13 @@ printf '\n'
 
 log "checking authenticated readiness"
 curl_local -fsS -m 5 \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   "$(base_url)/readyz"
 printf '\n'
 
 log "checking authenticated model list"
 curl_local -fsS -m 5 \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   "$(base_url)/v1/models"
 printf '\n'
 
@@ -46,8 +46,8 @@ status="$(
   curl_local -sS -m 60 \
     -o "$body_file" \
     -w '%{http_code}' \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
-    -H 'x-modelport-traffic-class: synthetic' \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
+    -H 'x-aethergateway-traffic-class: synthetic' \
     -H 'Content-Type: application/json' \
     "$(base_url)/v1/messages" \
     -d "$(printf '{"model":"%s","max_tokens":256,"messages":[{"role":"user","content":"用一句话回复：AetherGateway upstream OK。"}]}' "$model")"

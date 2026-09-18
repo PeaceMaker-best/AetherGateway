@@ -12,11 +12,11 @@ load_env
 # component POSTGRES_* values instead of a complete URL. Mirror that expansion
 # for static validation only; host start scripts still require an endpoint that
 # is reachable from the host.
-if [[ -z "${MODELPORT_DATABASE_URL:-}" && -n "${MODELPORT_POSTGRES_PASSWORD:-}" ]]; then
-  export MODELPORT_DATABASE_URL="postgres://${MODELPORT_POSTGRES_USER:-modelport}:${MODELPORT_POSTGRES_PASSWORD}@postgres:5432/${MODELPORT_POSTGRES_DB:-modelport}"
+if [[ -z "${AETHERGATEWAY_DATABASE_URL:-}" && -n "${AETHERGATEWAY_POSTGRES_PASSWORD:-}" ]]; then
+  export AETHERGATEWAY_DATABASE_URL="postgres://${AETHERGATEWAY_POSTGRES_USER:-aethergateway}:${AETHERGATEWAY_POSTGRES_PASSWORD}@postgres:5432/${AETHERGATEWAY_POSTGRES_DB:-aethergateway}"
 fi
 
-if [[ "${MODELPORT_FORCE_BUILD:-0}" != "1" ]] && release_is_fresh; then
+if [[ "${AETHERGATEWAY_FORCE_BUILD:-0}" != "1" ]] && release_is_fresh; then
   "$RELEASE_BIN" config validate
   exit 0
 fi

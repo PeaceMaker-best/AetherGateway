@@ -11,7 +11,7 @@ AetherGateway 是面向 20–50 人研发团队的免费、自托管模型网关
 云端模型、设好使用边界，开发者复制配置即可接入；出现问题时，可以按请求
 查看权限、路由、用量和计费证据。项目采用 MIT 许可证。
 
-![AetherGateway architecture overview](docs/assets/modelport-overview.svg)
+![AetherGateway architecture overview](docs/assets/aethergateway-overview.svg)
 
 ## 主要能力
 

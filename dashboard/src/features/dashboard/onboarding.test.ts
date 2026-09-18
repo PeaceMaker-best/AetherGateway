@@ -11,7 +11,7 @@ const stats = {
 
 const settings = {
   server: { bindAddress: '127.0.0.1:38082', maxRequestBodyBytes: 1024, maxConcurrentRequests: 8 },
-  auth: { enabled: true, tokenEnvVar: 'MODELPORT_AUTH_TOKEN', allowNoAuth: false },
+  auth: { enabled: true, tokenEnvVar: 'AETHERGATEWAY_AUTH_TOKEN', allowNoAuth: false },
   gateway: { defaultProvider: 'local', providerOrder: ['local'] },
   smartRouting: { mode: 'off', defaultProfile: 'balanced', policyVersion: 'test', activationPercent: 0, groupCount: 0, candidateCount: 0 },
   rateLimits: { maxConcurrentRequests: 8, maxRequestBodyBytes: 1024, requestTimeoutSecs: 30, streamIdleTimeoutSecs: 30 },

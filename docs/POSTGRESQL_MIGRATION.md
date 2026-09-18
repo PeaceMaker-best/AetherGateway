@@ -67,8 +67,8 @@ database, and do not reuse the source database credentials.
 4. Start the candidate AetherGateway revision against only that isolated target.
    Let embedded SQLx migrations finish before sending requests.
 5. Compare source and target counts for `_sqlx_migrations`,
-   `modelport_state`, `modelport_gateway_requests`,
-   `modelport_provider_attempts`, budget/evidence tables, and incomplete
+   `aethergateway_state`, `aethergateway_gateway_requests`,
+   `aethergateway_provider_attempts`, budget/evidence tables, and incomplete
    leases. Compare aggregates, not Prompt or response content.
 6. Run authenticated readiness, dashboard, backup restore, protocol, Tool Use,
    and the acceptance suite for each configured local Runtime Adapter. Existing
@@ -91,7 +91,7 @@ window:
    migration, readiness, and acceptance checks.
 6. Render short-lived runtime credentials from the secret manager. The
    database URL must use `verify-full` and the CA path mounted as
-   `/run/modelport/database-ca.pem`.
+   `/run/aethergateway/database-ca.pem`.
 7. Start [the single-instance production Compose profile](../deploy/production/compose.single.yml)
    with digest-pinned images.
 8. Re-enable traffic gradually and watch readiness, errors, ledger finalizers,

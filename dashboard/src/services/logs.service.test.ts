@@ -52,7 +52,7 @@ describe('logs service', () => {
     }, 2, 50)
 
     const [rawUrl] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const url = new URL(rawUrl, 'http://modelport.local')
+    const url = new URL(rawUrl, 'http://aethergateway.local')
     expect(url.pathname).toBe('/admin/logs')
     expect(Object.fromEntries(url.searchParams)).toEqual({
       page: '2',
@@ -84,7 +84,7 @@ describe('logs service', () => {
 
     const fetchMock = vi.mocked(fetch)
     const [rawUrl] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const url = new URL(rawUrl, 'http://modelport.local')
+    const url = new URL(rawUrl, 'http://aethergateway.local')
     expect(url.searchParams.get('page')).toBe('1')
     expect(url.searchParams.get('pageSize')).toBe('500')
   })
@@ -103,7 +103,7 @@ describe('logs service', () => {
 
     const fetchMock = vi.mocked(fetch)
     const [rawUrl] = fetchMock.mock.calls[0] as [string, RequestInit]
-    const url = new URL(rawUrl, 'http://modelport.local')
+    const url = new URL(rawUrl, 'http://aethergateway.local')
     expect(url.searchParams.get('dateFrom')).toBe(
       String(new Date('2026-07-26T13:06').getTime()),
     )

@@ -4,7 +4,7 @@ export const mockUsers: User[] = [
   {
     id: 'usr_001',
     username: 'admin',
-    email: 'admin@modelport.local',
+    email: 'admin@aethergateway.local',
     role: 'admin',
     status: 'active',
     createdAt: '2025-01-15T08:00:00Z',

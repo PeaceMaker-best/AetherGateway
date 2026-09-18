@@ -32,7 +32,7 @@ This track requires Git, Docker, and Docker Compose v2. Rust is not required.
 ```bash
 git clone https://github.com/PeaceMaker-best/AetherGateway.git
 cd AetherGateway
-cp deploy/docker/modelport.env.example .env
+cp deploy/docker/aethergateway.env.example .env
 cp config.example.toml config.toml
 # Replace every required replace-with-... value.
 scripts/doctor.sh --setup
@@ -53,7 +53,7 @@ Code, an SDK, or another client receives.
 ```bash
 source .env
 curl -fsS \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   http://127.0.0.1:38082/v1/models
 ```
 
@@ -75,7 +75,7 @@ Use this fixed diagnostic order:
 docker compose ps
 scripts/smoke-test.sh
 scripts/doctor.sh
-docker compose logs --tail=100 modelport
+docker compose logs --tail=100 aethergateway
 ```
 
 - `/livez` means the process is alive.

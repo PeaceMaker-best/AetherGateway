@@ -25,7 +25,7 @@ avoid adding a top-level directory for a single helper or duplicating documents.
 Runtime resources belong in `resources/`; test-only examples belong in
 `tests/fixtures/`. Keep SQL migrations in their conventional location.
 
-`target/`, `.modelport/`, `dashboard/node_modules/`, and dashboard build/test
+`target/`, `.aethergateway/`, `dashboard/node_modules/`, and dashboard build/test
 outputs are generated local state, excluded from version control. They are not
 source directories. Keep `.env`, `config.toml`, logs, and backups local too.
 
@@ -57,21 +57,21 @@ The check rejects Node/npm or other tools resolved from Windows-mounted
 ## Backend
 
 The local backend does not start PostgreSQL for you. Before `scripts/dev.sh`,
-make sure the `MODELPORT_DATABASE_URL` copied from `.env.example` is reachable.
+make sure the `AETHERGATEWAY_DATABASE_URL` copied from `.env.example` is reachable.
 For a disposable loopback-only development database, one option is:
 
 ```bash
-docker run -d --rm --name modelport-dev-postgres \
+docker run -d --rm --name aethergateway-dev-postgres \
   -p 127.0.0.1:5432:5432 \
-  -e POSTGRES_DB=modelport \
-  -e POSTGRES_USER=modelport \
+  -e POSTGRES_DB=aethergateway \
+  -e POSTGRES_USER=aethergateway \
   -e POSTGRES_PASSWORD=change-this-db-password \
   postgres:18.4-alpine
 ```
 
 This password is deliberately development-only and matches `.env.example`.
 Use a unique secret for any persistent or shared environment. Stop the
-disposable database with `docker stop modelport-dev-postgres`.
+disposable database with `docker stop aethergateway-dev-postgres`.
 
 ```bash
 cp .env.example .env
@@ -103,14 +103,14 @@ or `target/release/`. A reused PID or another program listening on the same
 port is left alone. An existing unhealthy native process must be diagnosed or
 restarted explicitly. Use Compose or systemd to manage those deployments.
 
-The scripts keep PID/log files below `.modelport/` and never require committing
+The scripts keep PID/log files below `.aethergateway/` and never require committing
 the local `.env`. Before launching a stopped service, `scripts/dev.sh start` reuses
 `target/release/model-port` only when it is newer than `src/`, `crates/`,
 `resources/`, `migrations/`, `Cargo.toml`, `Cargo.lock`, and
 `rust-toolchain.toml`; missing inputs also invalidate the cache. Otherwise it
 rebuilds with
 `cargo build --release --locked --bin model-port`. `scripts/dev.sh validate` uses the same
-freshness helper. Set `MODELPORT_FORCE_BUILD=1` to bypass the cache explicitly.
+freshness helper. Set `AETHERGATEWAY_FORCE_BUILD=1` to bypass the cache explicitly.
 
 `model-port config validate` and normal server startup call the same application
 checks and deployment-environment preflight. Add a regression test whenever a
@@ -132,11 +132,11 @@ paths to `127.0.0.1:38082`. For browser development, prefer this same-origin
 proxy. Mock mode is UI-only and must not be used as evidence of backend behavior:
 
 ```bash
-VITE_MODELPORT_MOCK=1 npm run dev
+VITE_AETHERGATEWAY_MOCK=1 npm run dev
 ```
 
 The setup initializer can also be checked without changing the local deployment:
-`scripts/setup.sh /tmp/modelport-setup-check`. It preserves existing files and
+`scripts/setup.sh /tmp/aethergateway-setup-check`. It preserves existing files and
 creates a minimal Compose environment; the full examples remain configuration
 references.
 

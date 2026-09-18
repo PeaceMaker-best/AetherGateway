@@ -90,7 +90,7 @@ limits and must not claim per-user fairness.
   budgets, identity permissions, or production model promotion require two
   approvers. Low-risk changes may use one administrator. Break-glass changes
   are time-bounded and immediately audited. This production target is enforced
-  by enterprise mode or `MODELPORT_REQUIRE_DUAL_APPROVAL=1`; default Small-Team
+  by enterprise mode or `AETHERGATEWAY_REQUIRE_DUAL_APPROVAL=1`; default Small-Team
   mode keeps the workflow optional and authorizes administrator writes through
   CSRF protection plus the audit trail.
 - The target monthly SLO is 99.9 percent for the gateway and 99.0 percent for

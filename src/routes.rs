@@ -82,29 +82,29 @@ use settings_view::{alias_row, alias_rows, config_issues_json, settings_row};
 
 const X_REQUEST_ID: HeaderName = HeaderName::from_static("x-request-id");
 const IDEMPOTENCY_KEY: HeaderName = HeaderName::from_static("idempotency-key");
-const TRAFFIC_CLASS: HeaderName = HeaderName::from_static("x-modelport-traffic-class");
-const ROUTING_PROFILE: HeaderName = HeaderName::from_static("x-modelport-routing-profile");
-const ROUTING_SESSION_ID: HeaderName = HeaderName::from_static("x-modelport-session-id");
-const ROUTING_DECISION_ID: HeaderName = HeaderName::from_static("x-modelport-routing-decision-id");
-const ROUTING_MODE: HeaderName = HeaderName::from_static("x-modelport-routing-mode");
-const LOGICAL_MODEL: HeaderName = HeaderName::from_static("x-modelport-logical-model");
-const RESOLVED_PROVIDER: HeaderName = HeaderName::from_static("x-modelport-resolved-provider");
-const RESOLVED_MODEL: HeaderName = HeaderName::from_static("x-modelport-resolved-model");
-const ROUTING_POLICY: HeaderName = HeaderName::from_static("x-modelport-routing-policy");
-const CLOUD_EGRESS: HeaderName = HeaderName::from_static("x-modelport-cloud-egress");
-const HYBRID_MODE: HeaderName = HeaderName::from_static("x-modelport-hybrid-mode");
-const DATA_CLASSIFICATION: HeaderName = HeaderName::from_static("x-modelport-data-classification");
-const EXECUTION_MODE: HeaderName = HeaderName::from_static("x-modelport-execution-mode");
-const CHANGE_REQUEST_ID: HeaderName = HeaderName::from_static("x-modelport-change-request-id");
-const ORGANIZATION_ID: HeaderName = HeaderName::from_static("x-modelport-organization-id");
-const PROJECT_ID: HeaderName = HeaderName::from_static("x-modelport-project-id");
-const ENVIRONMENT_ID: HeaderName = HeaderName::from_static("x-modelport-environment-id");
-const CSRF_HEADER: HeaderName = HeaderName::from_static("x-modelport-csrf");
+const TRAFFIC_CLASS: HeaderName = HeaderName::from_static("x-aethergateway-traffic-class");
+const ROUTING_PROFILE: HeaderName = HeaderName::from_static("x-aethergateway-routing-profile");
+const ROUTING_SESSION_ID: HeaderName = HeaderName::from_static("x-aethergateway-session-id");
+const ROUTING_DECISION_ID: HeaderName = HeaderName::from_static("x-aethergateway-routing-decision-id");
+const ROUTING_MODE: HeaderName = HeaderName::from_static("x-aethergateway-routing-mode");
+const LOGICAL_MODEL: HeaderName = HeaderName::from_static("x-aethergateway-logical-model");
+const RESOLVED_PROVIDER: HeaderName = HeaderName::from_static("x-aethergateway-resolved-provider");
+const RESOLVED_MODEL: HeaderName = HeaderName::from_static("x-aethergateway-resolved-model");
+const ROUTING_POLICY: HeaderName = HeaderName::from_static("x-aethergateway-routing-policy");
+const CLOUD_EGRESS: HeaderName = HeaderName::from_static("x-aethergateway-cloud-egress");
+const HYBRID_MODE: HeaderName = HeaderName::from_static("x-aethergateway-hybrid-mode");
+const DATA_CLASSIFICATION: HeaderName = HeaderName::from_static("x-aethergateway-data-classification");
+const EXECUTION_MODE: HeaderName = HeaderName::from_static("x-aethergateway-execution-mode");
+const CHANGE_REQUEST_ID: HeaderName = HeaderName::from_static("x-aethergateway-change-request-id");
+const ORGANIZATION_ID: HeaderName = HeaderName::from_static("x-aethergateway-organization-id");
+const PROJECT_ID: HeaderName = HeaderName::from_static("x-aethergateway-project-id");
+const ENVIRONMENT_ID: HeaderName = HeaderName::from_static("x-aethergateway-environment-id");
+const CSRF_HEADER: HeaderName = HeaderName::from_static("x-aethergateway-csrf");
 const X_CONTENT_TYPE_OPTIONS: HeaderName = HeaderName::from_static("x-content-type-options");
 const X_FRAME_OPTIONS: HeaderName = HeaderName::from_static("x-frame-options");
 const REFERRER_POLICY: HeaderName = HeaderName::from_static("referrer-policy");
 const PERMISSIONS_POLICY: HeaderName = HeaderName::from_static("permissions-policy");
-const ERROR_CONTRACT: HeaderName = HeaderName::from_static("x-modelport-error-contract");
+const ERROR_CONTRACT: HeaderName = HeaderName::from_static("x-aethergateway-error-contract");
 static ADMIN_LOGIN_WORKERS: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(4);
 const RETENTION_PREVIEW_TTL_MS: u64 = 5 * 60 * 1_000;
 
@@ -279,7 +279,7 @@ enum IpRule {
 
 impl TrustedProxyConfig {
     pub fn from_env() -> Result<Self, AppError> {
-        let value = env::var("MODELPORT_TRUSTED_PROXIES").ok();
+        let value = env::var("AETHERGATEWAY_TRUSTED_PROXIES").ok();
         Self::from_value(value.as_deref())
     }
 
@@ -296,7 +296,7 @@ impl TrustedProxyConfig {
                 .filter(|item| !item.is_empty())
             {
                 rules.push(parse_ip_rule(item).map_err(|_| {
-                    AppError::Config(format!("invalid MODELPORT_TRUSTED_PROXIES entry: {item}"))
+                    AppError::Config(format!("invalid AETHERGATEWAY_TRUSTED_PROXIES entry: {item}"))
                 })?);
             }
         }
@@ -320,7 +320,7 @@ impl TrustedProxyConfig {
 }
 
 pub(crate) fn validate_allowed_origins_from_env() -> Result<(), AppError> {
-    let value = env::var("MODELPORT_ALLOWED_ORIGINS").ok();
+    let value = env::var("AETHERGATEWAY_ALLOWED_ORIGINS").ok();
     validate_allowed_origins(value.as_deref())
 }
 
@@ -335,7 +335,7 @@ fn validate_allowed_origins(value: Option<&str>) -> Result<(), AppError> {
             .filter(|authority| !authority.is_empty())
             .ok_or_else(|| {
                 AppError::Config(
-                    "MODELPORT_ALLOWED_ORIGINS entries must be absolute http:// or https:// origins"
+                    "AETHERGATEWAY_ALLOWED_ORIGINS entries must be absolute http:// or https:// origins"
                         .to_owned(),
                 )
             })?;
@@ -343,7 +343,7 @@ fn validate_allowed_origins(value: Option<&str>) -> Result<(), AppError> {
             || authority.parse::<axum::http::uri::Authority>().is_err()
         {
             return Err(AppError::Config(
-                "MODELPORT_ALLOWED_ORIGINS entries must contain only scheme, host, and optional port"
+                "AETHERGATEWAY_ALLOWED_ORIGINS entries must contain only scheme, host, and optional port"
                     .to_owned(),
             ));
         }
@@ -354,11 +354,11 @@ fn validate_allowed_origins(value: Option<&str>) -> Result<(), AppError> {
 impl GatewaySecurityPolicy {
     pub fn from_env() -> Self {
         Self {
-            allow_legacy_client_auth: !env_flag("MODELPORT_REQUIRE_CONTROL_API_KEYS"),
-            expose_detailed_public_health: env_flag("MODELPORT_EXPOSE_DETAILED_HEALTH"),
-            allow_private_provider_urls: env_flag("MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS"),
-            require_dual_approval: env_flag("MODELPORT_ENTERPRISE_MODE")
-                || env_flag("MODELPORT_REQUIRE_DUAL_APPROVAL"),
+            allow_legacy_client_auth: !env_flag("AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS"),
+            expose_detailed_public_health: env_flag("AETHERGATEWAY_EXPOSE_DETAILED_HEALTH"),
+            allow_private_provider_urls: env_flag("AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS"),
+            require_dual_approval: env_flag("AETHERGATEWAY_ENTERPRISE_MODE")
+                || env_flag("AETHERGATEWAY_REQUIRE_DUAL_APPROVAL"),
         }
     }
 
@@ -391,13 +391,13 @@ impl RateLimiter {
     pub fn from_env() -> Self {
         Self {
             config: RateLimitConfig {
-                enabled: !env_flag("MODELPORT_RATE_LIMIT_DISABLED"),
-                window_ms: env_u64("MODELPORT_RATE_LIMIT_WINDOW_SECONDS", 60).saturating_mul(1_000),
-                global_per_minute: env_u32("MODELPORT_RATE_LIMIT_GLOBAL_PER_MINUTE", 6_000),
-                api_key_per_minute: env_u32("MODELPORT_RATE_LIMIT_API_KEY_PER_MINUTE", 600),
-                ip_per_minute: env_u32("MODELPORT_RATE_LIMIT_IP_PER_MINUTE", 1_200),
-                provider_per_minute: env_u32("MODELPORT_RATE_LIMIT_PROVIDER_PER_MINUTE", 3_000),
-                model_per_minute: env_u32("MODELPORT_RATE_LIMIT_MODEL_PER_MINUTE", 1_200),
+                enabled: !env_flag("AETHERGATEWAY_RATE_LIMIT_DISABLED"),
+                window_ms: env_u64("AETHERGATEWAY_RATE_LIMIT_WINDOW_SECONDS", 60).saturating_mul(1_000),
+                global_per_minute: env_u32("AETHERGATEWAY_RATE_LIMIT_GLOBAL_PER_MINUTE", 6_000),
+                api_key_per_minute: env_u32("AETHERGATEWAY_RATE_LIMIT_API_KEY_PER_MINUTE", 600),
+                ip_per_minute: env_u32("AETHERGATEWAY_RATE_LIMIT_IP_PER_MINUTE", 1_200),
+                provider_per_minute: env_u32("AETHERGATEWAY_RATE_LIMIT_PROVIDER_PER_MINUTE", 3_000),
+                model_per_minute: env_u32("AETHERGATEWAY_RATE_LIMIT_MODEL_PER_MINUTE", 1_200),
             },
             inner: Mutex::new(RateLimitState::default()),
         }
@@ -1111,7 +1111,7 @@ fn require_high_risk_change(
             return Ok(None);
         }
         return Err(AppError::Forbidden(
-            "high-risk change requires x-modelport-change-request-id with two distinct approvals"
+            "high-risk change requires x-aethergateway-change-request-id with two distinct approvals"
                 .to_owned(),
         ));
     };
@@ -1155,7 +1155,7 @@ fn require_api_key_write_user(
 }
 
 fn require_console_write_protection(headers: &HeaderMap) -> Result<(), AppError> {
-    if env_flag("MODELPORT_DISABLE_CSRF") {
+    if env_flag("AETHERGATEWAY_DISABLE_CSRF") {
         return Ok(());
     }
     let csrf_ok = headers
@@ -1185,7 +1185,7 @@ fn validate_admin_request_origin(headers: &HeaderMap) -> Result<(), AppError> {
     };
     let request_host = headers.get("host").and_then(|value| value.to_str().ok());
     let same_origin = request_host.is_some_and(|host| console_host_matches(host, origin_host));
-    let allowed_origin = env::var("MODELPORT_ALLOWED_ORIGINS")
+    let allowed_origin = env::var("AETHERGATEWAY_ALLOWED_ORIGINS")
         .ok()
         .is_some_and(|value| {
             value
@@ -1334,7 +1334,7 @@ fn ensure_inference_identity(identity: &ClientIdentity) -> Result<(), AppError> 
 }
 
 fn ensure_inference_purpose(purpose: Option<&str>) -> Result<(), AppError> {
-    if purpose == Some("modelport_ops_agent") {
+    if purpose == Some("aethergateway_ops_agent") {
         return Err(AppError::Forbidden(
             "operations-agent credentials cannot access the inference data plane".to_owned(),
         ));
@@ -2935,7 +2935,7 @@ mod tests {
         assert_eq!(response.headers()["location"], "/login?oidc_error=disabled");
         assert_eq!(response.headers()["cache-control"], "no-store");
         let cookie = response.headers()[SET_COOKIE].to_str().unwrap();
-        assert!(cookie.starts_with("modelport_oidc_flow="));
+        assert!(cookie.starts_with("aethergateway_oidc_flow="));
         assert!(cookie.contains("Max-Age=0"));
     }
 
@@ -2989,7 +2989,7 @@ mod tests {
     #[test]
     fn console_origin_rejects_non_loopback_cross_origin() {
         let mut headers = HeaderMap::new();
-        headers.insert(HOST, HeaderValue::from_static("modelport.internal"));
+        headers.insert(HOST, HeaderValue::from_static("aethergateway.internal"));
         headers.insert(ORIGIN, HeaderValue::from_static("https://evil.example"));
 
         assert!(validate_admin_request_origin(&headers).is_err());
@@ -3291,7 +3291,7 @@ mod tests {
             groups: HashMap::from([(
                 "general".to_owned(),
                 RouteGroupConfig {
-                    aliases: vec!["modelport-auto".to_owned()],
+                    aliases: vec!["aethergateway-auto".to_owned()],
                     default_profile: None,
                     candidates: vec![RouteCandidateConfig {
                         provider: "mimo".to_owned(),
@@ -3306,7 +3306,7 @@ mod tests {
         state.config = Arc::new(RuntimeConfig::new(config));
         let ledger = state.ledger.clone();
         let mut request = message_body(false);
-        request["model"] = json!("modelport-auto");
+        request["model"] = json!("aethergateway-auto");
 
         let response = post_message_response(router(state), CLIENT_TOKEN, request).await;
 
@@ -4131,8 +4131,8 @@ data: [DONE]
         assert_eq!(metrics.status(), StatusCode::OK);
         let body = to_bytes(metrics.into_body(), usize::MAX).await.unwrap();
         let body = String::from_utf8(body.to_vec()).unwrap();
-        assert!(body.contains("modelport_gateway_ready 0"));
-        assert!(body.contains("modelport_gateway_draining 1"));
+        assert!(body.contains("aethergateway_gateway_ready 0"));
+        assert!(body.contains("aethergateway_gateway_draining 1"));
     }
 
     #[tokio::test]
@@ -4679,9 +4679,9 @@ data: [DONE]
         assert_eq!(response.status(), StatusCode::OK);
         let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
         let body = String::from_utf8(body.to_vec()).unwrap();
-        assert!(body.contains(r#"modelport_route_requests_total{route="messages"} 1"#));
+        assert!(body.contains(r#"aethergateway_route_requests_total{route="messages"} 1"#));
         assert!(body.contains(
-            r#"modelport_message_requests_total{provider="mimo",model="mimo-v2.5-pro",traffic_class="business",stream="false"} 1"#
+            r#"aethergateway_message_requests_total{provider="mimo",model="mimo-v2.5-pro",traffic_class="business",stream="false"} 1"#
         ));
     }
 
@@ -4827,7 +4827,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "viewer".to_owned(),
-                email: "viewer@modelport.local".to_owned(),
+                email: "viewer@aethergateway.local".to_owned(),
                 password: "strong-password-123".to_owned(),
                 role: Some("viewer".to_owned()),
                 status: Some("active".to_owned()),
@@ -4880,12 +4880,12 @@ data: [DONE]
                     .method("POST")
                     .uri("/admin/users")
                     .header(COOKIE, session_cookie)
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
                     .body(Body::from(
                         json!({
                             "username": "blocked",
-                            "email": "blocked@modelport.local",
+                            "email": "blocked@aethergateway.local",
                             "password": "strong-password-123",
                             "role": "user",
                             "status": "active",
@@ -5065,7 +5065,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "alice".to_owned(),
-                email: "alice@modelport.local".to_owned(),
+                email: "alice@aethergateway.local".to_owned(),
                 password: "strong-alice-password-123".to_owned(),
                 role: Some("user".to_owned()),
                 status: Some("active".to_owned()),
@@ -5075,7 +5075,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "bob".to_owned(),
-                email: "bob@modelport.local".to_owned(),
+                email: "bob@aethergateway.local".to_owned(),
                 password: "strong-bob-password-123".to_owned(),
                 role: Some("user".to_owned()),
                 status: Some("active".to_owned()),
@@ -5085,7 +5085,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "auditor".to_owned(),
-                email: "auditor@modelport.local".to_owned(),
+                email: "auditor@aethergateway.local".to_owned(),
                 password: "strong-viewer-password-123".to_owned(),
                 role: Some("viewer".to_owned()),
                 status: Some("active".to_owned()),
@@ -5095,7 +5095,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "admin".to_owned(),
-                email: "admin@modelport.local".to_owned(),
+                email: "admin@aethergateway.local".to_owned(),
                 password: "strong-admin-password-123".to_owned(),
                 role: Some("admin".to_owned()),
                 status: Some("active".to_owned()),
@@ -5212,7 +5212,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "self-service".to_owned(),
-                email: "self-service@modelport.local".to_owned(),
+                email: "self-service@aethergateway.local".to_owned(),
                 password: "strong-self-service-password-123".to_owned(),
                 role: Some("user".to_owned()),
                 status: Some("active".to_owned()),
@@ -5222,7 +5222,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "other-owner".to_owned(),
-                email: "other-owner@modelport.local".to_owned(),
+                email: "other-owner@aethergateway.local".to_owned(),
                 password: "strong-other-owner-password-123".to_owned(),
                 role: Some("user".to_owned()),
                 status: Some("active".to_owned()),
@@ -5244,7 +5244,7 @@ data: [DONE]
                     .method("POST")
                     .uri("/admin/api-keys")
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(
                         json!({
@@ -5270,7 +5270,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/users/{}/api-keys", bob.id))
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(
                         json!({
@@ -5305,7 +5305,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/api-keys/{}/rotate", bob_key.public.id))
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -5320,7 +5320,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/api-keys/{old_key_id}/rotate"))
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -5344,7 +5344,7 @@ data: [DONE]
                             "/admin/api-keys/{old_key_id}/rotate/{cancelled_id}"
                         ))
                         .header(COOKIE, cookie.clone())
-                        .header("x-modelport-csrf", "1")
+                        .header("x-aethergateway-csrf", "1")
                         .body(Body::empty())
                         .unwrap(),
                 )
@@ -5360,7 +5360,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/api-keys/{old_key_id}/rotate"))
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -5395,7 +5395,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/api-keys/{old_key_id}/rotate/{rotated_id}"))
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -5410,7 +5410,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/api-keys/{old_key_id}/rotate/{rotated_id}"))
                     .header(COOKIE, cookie.clone())
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -5432,7 +5432,7 @@ data: [DONE]
                     .method("POST")
                     .uri(format!("/admin/api-keys/{rotated_id}/disable"))
                     .header(COOKIE, cookie)
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .body(Body::empty())
                     .unwrap(),
             )
@@ -5451,7 +5451,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "retention-user".to_owned(),
-                email: "retention-user@modelport.local".to_owned(),
+                email: "retention-user@aethergateway.local".to_owned(),
                 password: "strong-retention-user-password-123".to_owned(),
                 role: Some("user".to_owned()),
                 status: Some("active".to_owned()),
@@ -5461,7 +5461,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "retention-admin".to_owned(),
-                email: "retention-admin@modelport.local".to_owned(),
+                email: "retention-admin@aethergateway.local".to_owned(),
                 password: "strong-retention-admin-password-123".to_owned(),
                 role: Some("admin".to_owned()),
                 status: Some("active".to_owned()),
@@ -5489,7 +5489,7 @@ data: [DONE]
                     .method("POST")
                     .uri("/admin/retention/run")
                     .header(COOKIE, user_cookie)
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(r#"{"dryRun":true}"#))
                     .unwrap(),
@@ -5519,7 +5519,7 @@ data: [DONE]
                     .method("POST")
                     .uri("/admin/retention/run")
                     .header(COOKIE, admin_cookie)
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(r#"{"dryRun":true}"#))
                     .unwrap(),
@@ -5606,7 +5606,7 @@ data: [DONE]
                     .method("PUT")
                     .uri("/admin/ops/configuration")
                     .header(COOKIE, cookie)
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(body))
                     .unwrap(),
@@ -5630,7 +5630,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "retention-apply-admin".to_owned(),
-                email: "retention-apply-admin@modelport.local".to_owned(),
+                email: "retention-apply-admin@aethergateway.local".to_owned(),
                 password: "strong-retention-apply-password-123".to_owned(),
                 role: Some("admin".to_owned()),
                 status: Some("active".to_owned()),
@@ -5691,7 +5691,7 @@ data: [DONE]
                 .auth
                 .create_user(CreateUserInput {
                     username: username.to_owned(),
-                    email: format!("{username}@modelport.local"),
+                    email: format!("{username}@aethergateway.local"),
                     password: format!("strong-{username}-password-123"),
                     role: Some("admin".to_owned()),
                     status: Some("active".to_owned()),
@@ -5741,7 +5741,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "retention-expired-admin".to_owned(),
-                email: "retention-expired-admin@modelport.local".to_owned(),
+                email: "retention-expired-admin@aethergateway.local".to_owned(),
                 password: "strong-retention-expired-password-123".to_owned(),
                 role: Some("admin".to_owned()),
                 status: Some("active".to_owned()),
@@ -5774,7 +5774,7 @@ data: [DONE]
             .auth
             .create_user(CreateUserInput {
                 username: "retention-held-admin".to_owned(),
-                email: "retention-held-admin@modelport.local".to_owned(),
+                email: "retention-held-admin@aethergateway.local".to_owned(),
                 password: "strong-retention-held-password-123".to_owned(),
                 role: Some("admin".to_owned()),
                 status: Some("active".to_owned()),
@@ -5862,7 +5862,7 @@ data: [DONE]
                     .method("POST")
                     .uri("/admin/aliases")
                     .header(CONTENT_TYPE, HeaderValue::from_static("application/json"))
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(COOKIE, session_cookie)
                     .body(Body::from(
                         json!({
@@ -5907,7 +5907,7 @@ data: [DONE]
         let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
         let body = String::from_utf8(body.to_vec()).unwrap();
         assert!(body.contains(
-            r#"modelport_message_requests_total{provider="mimo",model="mimo-v2.5-pro",traffic_class="business",stream="false"} 1"#
+            r#"aethergateway_message_requests_total{provider="mimo",model="mimo-v2.5-pro",traffic_class="business",stream="false"} 1"#
         ));
     }
 
@@ -6254,7 +6254,7 @@ data: [DONE]
         let candidate_aliases =
             get_console_json(app.clone(), "/admin/aliases", candidate_cookie).await;
         assert_eq!(candidate_aliases[0]["alias"], "smart-model");
-        assert_eq!(candidate_aliases[0]["resolvedProvider"], "modelport-router");
+        assert_eq!(candidate_aliases[0]["resolvedProvider"], "aethergateway-router");
 
         // The logical alias happens to resolve through the default provider in
         // static routing. That must not make it visible when every real smart
@@ -6278,8 +6278,8 @@ data: [DONE]
 
     #[tokio::test]
     async fn catalogs_respect_credential_pool_route_readiness() {
-        const PRIMARY_ENV: &str = "MODELPORT_CATALOG_POOL_PRIMARY_UNSET";
-        const SECONDARY_ENV: &str = "MODELPORT_CATALOG_POOL_SECONDARY_READY";
+        const PRIMARY_ENV: &str = "AETHERGATEWAY_CATALOG_POOL_PRIMARY_UNSET";
+        const SECONDARY_ENV: &str = "AETHERGATEWAY_CATALOG_POOL_SECONDARY_READY";
         unsafe {
             env::remove_var(PRIMARY_ENV);
             env::set_var(SECONDARY_ENV, "secondary-key");
@@ -6411,7 +6411,7 @@ data: [DONE]
                 Request::builder()
                     .method("POST")
                     .uri("/admin/settings/reload-config")
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(COOKIE, session_cookie)
                     .body(Body::empty())
                     .unwrap(),
@@ -6504,7 +6504,7 @@ data: [DONE]
                 Request::builder()
                     .method("POST")
                     .uri("/admin/providers/mimo/models")
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(COOKIE, session_cookie)
                     .body(Body::empty())
                     .unwrap(),
@@ -6548,8 +6548,8 @@ data: [DONE]
 
     #[tokio::test]
     async fn admin_provider_test_uses_failover_pool_credential_and_records_its_id() {
-        const PRIMARY_ENV: &str = "MODELPORT_PROBE_FAILOVER_PRIMARY_UNSET";
-        const SECONDARY_ENV: &str = "MODELPORT_PROBE_FAILOVER_SECONDARY";
+        const PRIMARY_ENV: &str = "AETHERGATEWAY_PROBE_FAILOVER_PRIMARY_UNSET";
+        const SECONDARY_ENV: &str = "AETHERGATEWAY_PROBE_FAILOVER_SECONDARY";
         unsafe {
             env::remove_var(PRIMARY_ENV);
             env::set_var(SECONDARY_ENV, "probe-failover-secondary-key");
@@ -6568,7 +6568,7 @@ data: [DONE]
                 Request::builder()
                     .method("POST")
                     .uri("/admin/settings/test-provider")
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(COOKIE, cookie)
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(json!({"providerId": "mimo"}).to_string()))
@@ -6596,8 +6596,8 @@ data: [DONE]
 
     #[tokio::test]
     async fn admin_provider_discovery_uses_round_robin_pool_credential() {
-        const PRIMARY_ENV: &str = "MODELPORT_PROBE_ROUND_ROBIN_PRIMARY_UNSET";
-        const SECONDARY_ENV: &str = "MODELPORT_PROBE_ROUND_ROBIN_SECONDARY";
+        const PRIMARY_ENV: &str = "AETHERGATEWAY_PROBE_ROUND_ROBIN_PRIMARY_UNSET";
+        const SECONDARY_ENV: &str = "AETHERGATEWAY_PROBE_ROUND_ROBIN_SECONDARY";
         unsafe {
             env::remove_var(PRIMARY_ENV);
             env::set_var(SECONDARY_ENV, "probe-round-robin-secondary-key");
@@ -6620,7 +6620,7 @@ data: [DONE]
                 Request::builder()
                     .method("POST")
                     .uri("/admin/providers/mimo/models")
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(COOKIE, cookie)
                     .body(Body::empty())
                     .unwrap(),
@@ -6646,7 +6646,7 @@ data: [DONE]
 
     #[tokio::test]
     async fn management_probe_fails_closed_for_unusable_pool_but_static_provider_still_works() {
-        const MISSING_ENV: &str = "MODELPORT_PROBE_POOL_ALL_UNSET";
+        const MISSING_ENV: &str = "AETHERGATEWAY_PROBE_POOL_ALL_UNSET";
         unsafe {
             env::remove_var(MISSING_ENV);
         }
@@ -7585,19 +7585,19 @@ data: [DONE]
 
         assert_eq!(status, StatusCode::OK);
         assert_eq!(
-            response.headers()["x-modelport-logical-model"],
+            response.headers()["x-aethergateway-logical-model"],
             "mimo-v2.5-pro"
         );
-        assert_eq!(response.headers()["x-modelport-resolved-provider"], "mimo");
+        assert_eq!(response.headers()["x-aethergateway-resolved-provider"], "mimo");
         assert_eq!(
-            response.headers()["x-modelport-resolved-model"],
+            response.headers()["x-aethergateway-resolved-model"],
             "mimo-v2.5-pro"
         );
         assert_eq!(
-            response.headers()["x-modelport-routing-policy"],
+            response.headers()["x-aethergateway-routing-policy"],
             "local_strict"
         );
-        assert_eq!(response.headers()["x-modelport-cloud-egress"], "false");
+        assert_eq!(response.headers()["x-aethergateway-cloud-egress"], "false");
         let rows = wait_for_usage_rows(&ledger, 1).await;
         assert_eq!(rows.len(), 1);
         assert!(
@@ -8058,7 +8058,7 @@ data: {"type":"message_stop"}
                     .method("POST")
                     .uri("/admin/retention/run")
                     .header(COOKIE, cookie)
-                    .header("x-modelport-csrf", "1")
+                    .header("x-aethergateway-csrf", "1")
                     .header(CONTENT_TYPE, "application/json")
                     .body(Body::from(input.to_string()))
                     .unwrap(),
@@ -8511,7 +8511,7 @@ data: {"type":"message_stop"}
             .auth
             .create_user(CreateUserInput {
                 username: "admin".to_owned(),
-                email: "admin@modelport.local".to_owned(),
+                email: "admin@aethergateway.local".to_owned(),
                 password: "strong-password-123".to_owned(),
                 role: Some("admin".to_owned()),
                 status: Some("active".to_owned()),

@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
-export const databaseURL = process.env.MODELPORT_RUNTIME_TEST_DATABASE_URL
+export const databaseURL = process.env.AETHERGATEWAY_RUNTIME_TEST_DATABASE_URL
 export const root = resolve(import.meta.dirname, '../..')
 export const secret = () => randomBytes(24).toString('base64url')
 
@@ -49,11 +49,11 @@ export function json(res, value, status = 200) {
 }
 
 export async function gateway(t, overrides = {}, config) {
-  assert.ok(databaseURL, 'MODELPORT_RUNTIME_TEST_DATABASE_URL is required')
+  assert.ok(databaseURL, 'AETHERGATEWAY_RUNTIME_TEST_DATABASE_URL is required')
   const database = new URL(databaseURL)
   assert.ok(['127.0.0.1', 'localhost', '[::1]'].includes(database.hostname), 'runtime tests require loopback PostgreSQL')
-  assert.match(database.pathname, /^\/modelport_assurance(?:_[a-z0-9_]+)?$/, 'use a dedicated modelport_assurance database')
-  const runtime = await mkdtemp(join(tmpdir(), 'modelport-assurance-'))
+  assert.match(database.pathname, /^\/aethergateway_assurance(?:_[a-z0-9_]+)?$/, 'use a dedicated aethergateway_assurance database')
+  const runtime = await mkdtemp(join(tmpdir(), 'aethergateway-assurance-'))
   const reservation = await server((_req, res) => res.end())
   const url = reservation.url
   await reservation.close()
@@ -63,26 +63,26 @@ export async function gateway(t, overrides = {}, config) {
   const env = {
     PATH: process.env.PATH,
     HOME: runtime,
-    MODELPORT_ENV_FILE: join(runtime, 'absent.env'),
-    MODELPORT_CONFIG: join(runtime, 'absent.toml'),
-    MODELPORT_DATABASE_URL: databaseURL,
-    MODELPORT_DATABASE_TLS_MODE: 'disable',
-    MODELPORT_BIND: new URL(url).host,
-    MODELPORT_ADMIN_USERNAME: 'assurance_admin',
-    MODELPORT_ADMIN_PASSWORD: password,
-    MODELPORT_AUTH_TOKEN: token,
-    MODELPORT_DEFAULT_PROVIDER: 'custom',
+    AETHERGATEWAY_ENV_FILE: join(runtime, 'absent.env'),
+    AETHERGATEWAY_CONFIG: join(runtime, 'absent.toml'),
+    AETHERGATEWAY_DATABASE_URL: databaseURL,
+    AETHERGATEWAY_DATABASE_TLS_MODE: 'disable',
+    AETHERGATEWAY_BIND: new URL(url).host,
+    AETHERGATEWAY_ADMIN_USERNAME: 'assurance_admin',
+    AETHERGATEWAY_ADMIN_PASSWORD: password,
+    AETHERGATEWAY_AUTH_TOKEN: token,
+    AETHERGATEWAY_DEFAULT_PROVIDER: 'custom',
     CUSTOM_OPENAI_BASE_URL: 'http://127.0.0.1:9/v1',
     CUSTOM_OPENAI_API_KEY: secret(),
     CUSTOM_OPENAI_MODEL: 'assurance-model',
     ...overrides,
   }
   if (config) {
-    env.MODELPORT_CONFIG = join(runtime, 'config.toml')
-    await writeFile(env.MODELPORT_CONFIG, config, { mode: 0o600 })
+    env.AETHERGATEWAY_CONFIG = join(runtime, 'config.toml')
+    await writeFile(env.AETHERGATEWAY_CONFIG, config, { mode: 0o600 })
   }
-  if (env.MODELPORT_OIDC_ISSUER) env.MODELPORT_OIDC_REDIRECT_URI = `${url}/admin/auth/oidc/callback`
-  const binary = process.env.MODELPORT_TEST_BINARY || join(root, 'target/debug/model-port')
+  if (env.AETHERGATEWAY_OIDC_ISSUER) env.AETHERGATEWAY_OIDC_REDIRECT_URI = `${url}/admin/auth/oidc/callback`
+  const binary = process.env.AETHERGATEWAY_TEST_BINARY || join(root, 'target/debug/model-port')
   let child
   let output = ''
   let launchError
@@ -128,7 +128,7 @@ export async function gateway(t, overrides = {}, config) {
 }
 
 export async function evidence(name, value) {
-  const directory = process.env.MODELPORT_ASSURANCE_OUTPUT_DIR
+  const directory = process.env.AETHERGATEWAY_ASSURANCE_OUTPUT_DIR
   if (!directory) return
   await mkdir(directory, { recursive: true, mode: 0o700 })
   await writeFile(join(directory, `${name}.json`), JSON.stringify({
@@ -148,7 +148,7 @@ export async function adminSession(app) {
 export async function createUser(app, cookie, label) {
   const username = `assurance_${label}_${secret().slice(0, 8).toLowerCase().replace(/[^a-z0-9]/g, 'x')}`
   const response = await app.request('/admin/users', {
-    headers: { cookie, 'x-modelport-csrf': '1' },
+    headers: { cookie, 'x-aethergateway-csrf': '1' },
     data: { username, email: `${username}@example.test`, password: secret(), role: 'user', status: 'active' },
   })
   assert.equal(response.status, 200, 'create isolated user')

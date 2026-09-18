@@ -11,12 +11,12 @@ Build and install the backend:
 ```bash
 scripts/build-release.sh
 sudo install -m 0755 target/release/model-port /usr/local/bin/model-port
-sudo install -d -m 0750 /etc/modelport
-sudo install -m 0640 deploy/systemd/modelport.env.example /etc/modelport/modelport.env
-sudo install -m 0644 deploy/systemd/modelport.service /etc/systemd/system/modelport.service
+sudo install -d -m 0750 /etc/aethergateway
+sudo install -m 0640 deploy/systemd/aethergateway.env.example /etc/aethergateway/aethergateway.env
+sudo install -m 0644 deploy/systemd/aethergateway.service /etc/systemd/system/aethergateway.service
 ```
 
-Edit `/etc/modelport/modelport.env` and replace every required placeholder. The
+Edit `/etc/aethergateway/aethergateway.env` and replace every required placeholder. The
 file contains router, admin, database, and provider credentials; restrict access
 to administrators.
 
@@ -24,8 +24,8 @@ Then enable the unit:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now modelport
-sudo systemctl status modelport
+sudo systemctl enable --now aethergateway
+sudo systemctl status aethergateway
 ```
 
 ## State Layout
@@ -33,17 +33,17 @@ sudo systemctl status modelport
 The unit uses:
 
 ```text
-StateDirectory=modelport
-WorkingDirectory=/var/lib/modelport
-MODELPORT_STATE_DIR=/var/lib/modelport
+StateDirectory=aethergateway
+WorkingDirectory=/var/lib/aethergateway
+AETHERGATEWAY_STATE_DIR=/var/lib/aethergateway
 ```
 
-systemd creates `/var/lib/modelport` for the dynamic service user with mode
+systemd creates `/var/lib/aethergateway` for the dynamic service user with mode
 `0700`. Runtime state is stored in mandatory PostgreSQL; the directory remains
 useful for explicit backup files and a consistent working directory.
 PostgreSQL access uses SQLx with rustls and embedded migrations. For a remote
 production database, set
-`MODELPORT_ENTERPRISE_MODE=1`, `MODELPORT_DATABASE_TLS_MODE=verify-full`, and a
+`AETHERGATEWAY_ENTERPRISE_MODE=1`, `AETHERGATEWAY_DATABASE_TLS_MODE=verify-full`, and a
 trusted `sslrootcert` in the database URL. Test connectivity and migration
 permissions before starting the service.
 
@@ -53,11 +53,11 @@ Validate using the same environment file without shell-expanding or printing
 its values:
 
 ```bash
-sudo systemctl stop modelport
+sudo systemctl stop aethergateway
 sudo systemd-run --wait --pipe --collect \
-  --property=EnvironmentFile=/etc/modelport/modelport.env \
+  --property=EnvironmentFile=/etc/aethergateway/aethergateway.env \
   /usr/local/bin/model-port config validate
-sudo systemctl start modelport
+sudo systemctl start aethergateway
 ```
 
 This transient command runs as root but only reads configuration. For policies
@@ -68,9 +68,9 @@ the environment file into an issue.
 Logs and health:
 
 ```bash
-sudo journalctl -u modelport -f
+sudo journalctl -u aethergateway -f
 curl -fsS http://127.0.0.1:38082/livez
-curl -fsS -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+curl -fsS -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   http://127.0.0.1:38082/readyz
 ```
 
@@ -80,40 +80,40 @@ and returns authenticated diagnostics; it does not gate on every Provider. See
 
 ## Reverse Proxy And Dashboard
 
-Keep `MODELPORT_BIND=127.0.0.1:38082` when Nginx/Caddy runs on the same host.
+Keep `AETHERGATEWAY_BIND=127.0.0.1:38082` when Nginx/Caddy runs on the same host.
 Expose one HTTPS origin that serves the dashboard and proxies `/admin`, `/v1`,
 `/livez`, `/readyz`, `/health`, and `/metrics` to the backend.
 
 Set:
 
 ```env
-MODELPORT_ADMIN_COOKIE_SECURE=1
-MODELPORT_ALLOWED_ORIGINS=https://modelport.example.com
-MODELPORT_TRUSTED_PROXIES=127.0.0.1,::1
+AETHERGATEWAY_ADMIN_COOKIE_SECURE=1
+AETHERGATEWAY_ALLOWED_ORIGINS=https://aethergateway.example.com
+AETHERGATEWAY_TRUSTED_PROXIES=127.0.0.1,::1
 ```
 
-`MODELPORT_ALLOWED_ORIGINS` validates dashboard writes; it does not enable
+`AETHERGATEWAY_ALLOWED_ORIGINS` validates dashboard writes; it does not enable
 browser CORS. A same-origin proxy is the supported layout.
 
 Preserve the original Host authority including a non-default port. For Nginx,
 use `proxy_set_header Host $http_host`; `$host` may drop the port and cause the
 Origin/Host write check to fail. A single-hop proxy should overwrite
 `X-Forwarded-For` with `$remote_addr`. AetherGateway accepts forwarded headers only
-from `MODELPORT_TRUSTED_PROXIES` and removes trusted hops from the right-hand end
+from `AETHERGATEWAY_TRUSTED_PROXIES` and removes trusted hops from the right-hand end
 of the chain, so configure every trusted hop explicitly.
 
 ## Backup And Upgrade
 
 ```bash
-sudo systemctl stop modelport
+sudo systemctl stop aethergateway
 sudo systemd-run --wait --pipe --collect \
-  --property=EnvironmentFile=/etc/modelport/modelport.env \
-  /usr/local/bin/model-port backup export /var/lib/modelport/backup.json
+  --property=EnvironmentFile=/etc/aethergateway/aethergateway.env \
+  /usr/local/bin/model-port backup export /var/lib/aethergateway/backup.json
 sudo systemd-run --wait --pipe --collect \
-  --property=EnvironmentFile=/etc/modelport/modelport.env \
-  /usr/local/bin/model-port backup validate /var/lib/modelport/backup.json
+  --property=EnvironmentFile=/etc/aethergateway/aethergateway.env \
+  /usr/local/bin/model-port backup validate /var/lib/aethergateway/backup.json
 sudo install -m 0755 target/release/model-port /usr/local/bin/model-port
-sudo systemctl start modelport
+sudo systemctl start aethergateway
 ```
 
 The transient CLI receives the service EnvironmentFile. It runs as root for this

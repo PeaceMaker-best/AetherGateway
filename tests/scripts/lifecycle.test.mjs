@@ -10,23 +10,23 @@ import { test } from 'node:test'
 const scripts = fileURLToPath(new URL('../../scripts', import.meta.url))
 
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), 'modelport lifecycle '))
+  const root = mkdtempSync(join(tmpdir(), 'aethergateway lifecycle '))
   t.after(() => rmSync(root, { recursive: true, force: true }))
   cpSync(scripts, join(root, 'scripts'), { recursive: true })
-  mkdirSync(join(root, '.modelport'))
+  mkdirSync(join(root, '.aethergateway'))
   mkdirSync(join(root, 'bin'))
   const commands = join(root, 'commands.log')
   const env = { ...process.env, PATH: `${join(root, 'bin')}:${process.env.PATH}`,
-    MODELPORT_ENV_FILE: join(root, '.env'), MODELPORT_RUNTIME_DIR: join(root, '.modelport'),
-    MODELPORT_PID_FILE: join(root, '.modelport/model-port.pid'),
-    MODELPORT_TEST_COMMAND_LOG: commands,
+    AETHERGATEWAY_ENV_FILE: join(root, '.env'), AETHERGATEWAY_RUNTIME_DIR: join(root, '.aethergateway'),
+    AETHERGATEWAY_PID_FILE: join(root, '.aethergateway/model-port.pid'),
+    AETHERGATEWAY_TEST_COMMAND_LOG: commands,
   }
-  writeFileSync(env.MODELPORT_ENV_FILE, 'MODELPORT_BIND=127.0.0.1:38082\nMODELPORT_AUTH_TOKEN=local-test-token\n')
+  writeFileSync(env.AETHERGATEWAY_ENV_FILE, 'AETHERGATEWAY_BIND=127.0.0.1:38082\nAETHERGATEWAY_AUTH_TOKEN=local-test-token\n')
   function executable(name, source) {
     writeFileSync(join(root, 'bin', name), `#!/usr/bin/env bash\n${source}\n`, { mode: 0o755 })
   }
   executable('curl', 'exit 1')
-  executable('cargo', 'printf "%s|%s\\n" "$PWD" "$*" >> "$MODELPORT_TEST_COMMAND_LOG"')
+  executable('cargo', 'printf "%s|%s\\n" "$PWD" "$*" >> "$AETHERGATEWAY_TEST_COMMAND_LOG"')
   function run(args, legacy) {
     const result = spawnSync('bash', [join(root, 'scripts', legacy || 'dev.sh'), ...args], {
       cwd: tmpdir(), env, encoding: 'utf8', timeout: 5000,
@@ -60,7 +60,7 @@ function alive(pid) {
 
 test('help and invalid commands do not need configuration or launch Cargo', t => {
   const { run, env, commands } = fixture(t)
-  rmSync(env.MODELPORT_ENV_FILE)
+  rmSync(env.AETHERGATEWAY_ENV_FILE)
   assert.equal(run(['help']).status, 0)
   assert.equal(run(['statuz']).status, 1)
   assert.equal(run(['start', '--unexpected']).status, 1)
@@ -70,7 +70,7 @@ test('help and invalid commands do not need configuration or launch Cargo', t =>
 test('foreground, validation and Rust checks run in this checkout from another directory', t => {
   const { run, root, commands, env } = fixture(t)
   assert.equal(run([]).status, 0)
-  env.MODELPORT_FORCE_BUILD = '1'
+  env.AETHERGATEWAY_FORCE_BUILD = '1'
   assert.equal(run(['validate']).status, 0)
   assert.equal(run(['check', '--backend']).status, 0)
   assert.deepEqual(readFileSync(commands, 'utf8').trim().split('\n'), [
@@ -87,14 +87,14 @@ test('stop owns its checkout even when a stale PID and listener point to another
   const other = fixture(t)
   const foreign = await nativeProcess(t, other.root)
   const own = await nativeProcess(t, current.root)
-  writeFileSync(current.env.MODELPORT_PID_FILE, String(foreign.child.pid))
+  writeFileSync(current.env.AETHERGATEWAY_PID_FILE, String(foreign.child.pid))
   current.executable('ss', `echo 'LISTEN 0 128 127.0.0.1:38082 0.0.0.0:* users:(("model-port",pid=${foreign.child.pid},fd=3))'`)
   const ownExit = once(own.child, 'exit')
   const result = current.run(['stop'])
   assert.equal(result.status, 0, result.stderr)
   await ownExit
   assert.equal(alive(foreign.child.pid), true)
-  assert.equal(existsSync(current.env.MODELPORT_PID_FILE), false)
+  assert.equal(existsSync(current.env.AETHERGATEWAY_PID_FILE), false)
   assert.match(result.stdout, /does not belong to this checkout/)
 })
 
@@ -119,7 +119,7 @@ test('a replaced binary can still be stopped by executable ownership', async t =
 test('start refuses a second native process when the existing one is unhealthy', async t => {
   const current = fixture(t)
   const own = await nativeProcess(t, current.root)
-  writeFileSync(current.env.MODELPORT_PID_FILE, String(own.child.pid))
+  writeFileSync(current.env.AETHERGATEWAY_PID_FILE, String(own.child.pid))
   const result = current.run([], 'start.sh')
   assert.equal(result.status, 1)
   assert.match(result.stderr, /already has a running gateway/)

@@ -14,14 +14,14 @@ max_request_body_bytes = 33554432
 max_concurrent_requests = 64
 
 [auth]
-token_env = "MODELPORT_AUTH_TOKEN"
+token_env = "AETHERGATEWAY_AUTH_TOKEN"
 
 # Runtime Adapters are control-plane discovery endpoints, not inference
 # Providers. Disabled declarations are inert and do not resolve credentials.
 [runtime_adapters.example]
 enabled = false
 base_url = "https://runtime-adapter.example"
-bearer_token_env = "MODELPORT_RUNTIME_ADAPTER_EXAMPLE_TOKEN"
+bearer_token_env = "AETHERGATEWAY_RUNTIME_ADAPTER_EXAMPLE_TOKEN"
 poll_interval_seconds = 30
 stale_after_seconds = 90
 
@@ -98,7 +98,7 @@ policy_version = "builtin-v1"
 activation_percent = 0
 
 [routing.groups.general]
-aliases = ["modelport-auto"]
+aliases = ["aethergateway-auto"]
 default_profile = "balanced"
 
 [[routing.groups.general.candidates]]

@@ -129,7 +129,7 @@ fetch_model_catalog() {
   body_file="$(mktemp)"
   tmp_files+=("$body_file")
   curl_local -fsS -m 10 \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
     "$(base_url)/v1/models" > "$body_file"
 
   while IFS=$'\t' read -r model provider provider_id; do
@@ -224,8 +224,8 @@ check_non_stream() {
     curl_local -sS -m "$timeout_secs" \
       -o "$body_file" \
       -w '%{http_code}' \
-      -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
-      -H 'x-modelport-traffic-class: synthetic' \
+      -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
+      -H 'x-aethergateway-traffic-class: synthetic' \
       -H 'Content-Type: application/json' \
       "$(base_url)/v1/messages" \
       -d "$(request_payload "$model" false)" || true
@@ -262,8 +262,8 @@ check_stream() {
     curl_local -N -sS -m "$timeout_secs" \
       -o "$body_file" \
       -w '%{http_code}' \
-      -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
-      -H 'x-modelport-traffic-class: synthetic' \
+      -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
+      -H 'x-aethergateway-traffic-class: synthetic' \
       -H 'Content-Type: application/json' \
       "$(base_url)/v1/messages" \
       -d "$(request_payload "$model" true)" || true

@@ -105,7 +105,7 @@ measure_health() {
 
 measure_models() {
   curl_local -sS -m 5 -o /dev/null -w '%{time_total}\n' \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
     "$(base_url)/v1/models"
 }
 
@@ -116,8 +116,8 @@ measure_upstream_message() {
   payload="$(printf '{"model":"%s","max_tokens":32,"messages":[{"role":"user","content":"只回复 OK。"}]}' "$model")"
 
   curl_local -sS -m 120 -o /dev/null -w '%{time_total}\n' \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
-    -H 'x-modelport-traffic-class: synthetic' \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
+    -H 'x-aethergateway-traffic-class: synthetic' \
     -H 'Content-Type: application/json' \
     "$(base_url)/v1/messages" \
     -d "$payload"

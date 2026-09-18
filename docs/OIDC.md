@@ -18,7 +18,7 @@ AetherGateway -> server-side Provider credential -> OpenAI or another Provider
 - Serve the dashboard and backend from one HTTPS origin.
 - Register an OIDC confidential or public web client with the identity provider.
 - Register the exact callback URL
-  `https://modelport.example.com/admin/auth/oidc/callback`.
+  `https://aethergateway.example.com/admin/auth/oidc/callback`.
 - Keep the local bootstrap administrator available as a recovery identity until
   the OIDC configuration has been exercised successfully.
 
@@ -27,34 +27,34 @@ AetherGateway -> server-side Provider credential -> OpenAI or another Provider
 OIDC is disabled unless all required values are present:
 
 ```env
-MODELPORT_OIDC_ISSUER=https://identity.example.com/realms/modelport
-MODELPORT_OIDC_CLIENT_ID=modelport
-MODELPORT_OIDC_REDIRECT_URI=https://modelport.example.com/admin/auth/oidc/callback
+AETHERGATEWAY_OIDC_ISSUER=https://identity.example.com/realms/aethergateway
+AETHERGATEWAY_OIDC_CLIENT_ID=aethergateway
+AETHERGATEWAY_OIDC_REDIRECT_URI=https://aethergateway.example.com/admin/auth/oidc/callback
 
 # Set for a confidential client. Leave unset only when the provider accepts a
 # public-client authorization-code exchange with PKCE.
-MODELPORT_OIDC_CLIENT_SECRET=replace-with-client-secret
+AETHERGATEWAY_OIDC_CLIENT_SECRET=replace-with-client-secret
 
 # Optional presentation and claim mapping.
-MODELPORT_OIDC_LABEL=Company SSO
-MODELPORT_OIDC_USERNAME_CLAIM=preferred_username
-MODELPORT_OIDC_EMAIL_CLAIM=email
+AETHERGATEWAY_OIDC_LABEL=Company SSO
+AETHERGATEWAY_OIDC_USERNAME_CLAIM=preferred_username
+AETHERGATEWAY_OIDC_EMAIL_CLAIM=email
 
 # Disabled by default. When disabled, an administrator must create the user in
 # AetherGateway before the first OIDC sign-in. Enabling it creates ordinary `user`
 # identities only; it never grants administrator access.
-MODELPORT_OIDC_AUTO_PROVISION=0
+AETHERGATEWAY_OIDC_AUTO_PROVISION=0
 
 # Local development only. This is accepted only when both the issuer endpoints
 # and callback host are loopback addresses.
-# MODELPORT_OIDC_ALLOW_INSECURE_HTTP=1
+# AETHERGATEWAY_OIDC_ALLOW_INSECURE_HTTP=1
 ```
 
 Set the normal browser protections as well:
 
 ```env
-MODELPORT_ADMIN_COOKIE_SECURE=1
-MODELPORT_ALLOWED_ORIGINS=https://modelport.example.com
+AETHERGATEWAY_ADMIN_COOKIE_SECURE=1
+AETHERGATEWAY_ALLOWED_ORIGINS=https://aethergateway.example.com
 ```
 
 The issuer must provide standard OIDC discovery metadata. Remote issuer,
@@ -64,7 +64,7 @@ appropriate for an explicitly local development provider.
 The initial account-link and automatic-provision paths require the standard
 `email` claim together with `email_verified=true`. A verification assertion for
 the standard claim is never transferred to a differently named custom claim;
-keep `MODELPORT_OIDC_EMAIL_CLAIM=email` for initial linking and JIT in this
+keep `AETHERGATEWAY_OIDC_EMAIL_CLAIM=email` for initial linking and JIT in this
 preview.
 
 ## Sign-In Flow
@@ -120,9 +120,9 @@ through its verified email, and explicitly promote that linked identity to
 administrator. Verify the administrator's SSO access before setting:
 
 ```env
-MODELPORT_PASSWORD_LOGIN_ENABLED=0
+AETHERGATEWAY_PASSWORD_LOGIN_ENABLED=0
 # Use the exact class your identity provider defines and enforces with MFA.
-MODELPORT_OIDC_REQUIRED_ACR=urn:example:authentication:mfa
+AETHERGATEWAY_OIDC_REQUIRED_ACR=urn:example:authentication:mfa
 ```
 
 The backend refuses password login, including direct API requests. Startup
@@ -134,7 +134,7 @@ This setting cannot be combined with enabled password login. An `acr` string
 has meaning only under the operator's verified identity-provider policy; it
 does not itself prove an MFA factor was configured correctly.
 
-`MODELPORT_PASSWORD_LOGIN_ENABLED` defaults to `1` for existing deployments.
+`AETHERGATEWAY_PASSWORD_LOGIN_ENABLED` defaults to `1` for existing deployments.
 Changes require a restart. An operator with server configuration access can
 restore the bootstrap password path by setting it back to `1` and removing
 the required ACR setting, then restarting during an approved recovery window.
@@ -177,7 +177,7 @@ outside this release's supported contract.
 
 | Symptom | Check |
 | --- | --- |
-| SSO button is absent | Required `MODELPORT_OIDC_*` values and configuration validation. |
+| SSO button is absent | Required `AETHERGATEWAY_OIDC_*` values and configuration validation. |
 | Provider rejects the callback | The registered redirect URI must match exactly, including scheme, host, port, and path. |
 | Login returns to the page with an error | Issuer/audience/nonce validation, user status, and whether automatic provisioning is enabled. |
 | Existing user is not linked | The standard email claim must uniquely match an active non-admin local user and the provider must assert `email_verified=true`. |

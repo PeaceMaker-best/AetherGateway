@@ -34,7 +34,7 @@ ID returned by the account or runtime.
 | `deepseek` | Anthropic | `deepseek-v4-flash` | `DEEPSEEK_ANTHROPIC_*` |
 | `deepseek_openai` | OpenAI-compatible | `deepseek-v4-flash` | `DEEPSEEK_OPENAI_*` |
 | `anthropic` | Anthropic | `claude-fable-5` | `ANTHROPIC_API_KEY`, `ANTHROPIC_UPSTREAM_*` |
-| `openai` | OpenAI-compatible | `gpt-5.5` | `MODELPORT_OPENAI_*` |
+| `openai` | OpenAI-compatible | `gpt-5.5` | `AETHERGATEWAY_OPENAI_*` |
 | `openrouter` | OpenAI-compatible | `openrouter/auto` | `OPENROUTER_*` |
 | `gemini` | OpenAI-compatible | `gemini-3.5-flash` | `GEMINI_*` |
 | `xai` | OpenAI-compatible | `grok-3` | `XAI_*` |
@@ -45,11 +45,11 @@ ID returned by the account or runtime.
 | `mistral` | OpenAI-compatible | `mistral-large-latest` | `MISTRAL_*` |
 | `ark` | OpenAI-compatible | `doubao-seed-1-6-250615` | `ARK_*` |
 | `mimo` | OpenAI-compatible | `mimo-v2.5-pro` | `MIMO_OPENAI_*` |
-| `ollama` | OpenAI-compatible | `llama3.1` | `MODELPORT_ENABLE_OLLAMA`, `OLLAMA_*` |
-| `local_sglang` | OpenAI-compatible | `local-model` | `MODELPORT_ENABLE_LOCAL_SGLANG`, `SGLANG_*` |
-| `local_vllm` | OpenAI-compatible | `local-model` | `MODELPORT_ENABLE_LOCAL_VLLM`, `VLLM_*` |
-| `local_llamacpp` | OpenAI-compatible | `local-model` | `MODELPORT_ENABLE_LOCAL_LLAMACPP`, `LLAMACPP_*` |
-| `custom` | OpenAI-compatible | `default` | `MODELPORT_ENABLE_CUSTOM`, `CUSTOM_OPENAI_*` |
+| `ollama` | OpenAI-compatible | `llama3.1` | `AETHERGATEWAY_ENABLE_OLLAMA`, `OLLAMA_*` |
+| `local_sglang` | OpenAI-compatible | `local-model` | `AETHERGATEWAY_ENABLE_LOCAL_SGLANG`, `SGLANG_*` |
+| `local_vllm` | OpenAI-compatible | `local-model` | `AETHERGATEWAY_ENABLE_LOCAL_VLLM`, `VLLM_*` |
+| `local_llamacpp` | OpenAI-compatible | `local-model` | `AETHERGATEWAY_ENABLE_LOCAL_LLAMACPP`, `LLAMACPP_*` |
+| `custom` | OpenAI-compatible | `default` | `AETHERGATEWAY_ENABLE_CUSTOM`, `CUSTOM_OPENAI_*` |
 
 The complete field and environment contract is in
 [Configuration](CONFIGURATION.md#provider-environment-pattern).
@@ -106,13 +106,13 @@ AetherGateway deliberately exposes two Provider IDs:
 Minimal host configuration:
 
 ```env
-MODELPORT_ENABLE_CPA_CODEX=1
+AETHERGATEWAY_ENABLE_CPA_CODEX=1
 CPA_CODEX_BASE_URL=http://127.0.0.1:8317/v1
 CPA_CODEX_API_KEY=replace-with-cpa-client-api-key
 CPA_CODEX_MODEL=gpt-5.3-codex
 CPA_CODEX_MODELS=gpt-5.3-codex
 
-MODELPORT_ENABLE_CPA_CLAUDE=1
+AETHERGATEWAY_ENABLE_CPA_CLAUDE=1
 CPA_CLAUDE_BASE_URL=http://127.0.0.1:8317
 CPA_CLAUDE_API_KEY=replace-with-cpa-client-api-key
 CPA_CLAUDE_MODEL=claude-sonnet-4-6

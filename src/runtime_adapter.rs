@@ -11,7 +11,7 @@ pub use client::{
     RuntimeAdapterClient, RuntimeAdapterClientConfig, RuntimeAdapterComputeObservation,
 };
 
-pub const RUNTIME_ADAPTER_API_VERSION: &str = "runtime.modelport.io/v1alpha1";
+pub const RUNTIME_ADAPTER_API_VERSION: &str = "runtime.aethergateway.io/v1alpha1";
 pub const RUNTIME_ADAPTER_CAPABILITIES_KIND: &str = "RuntimeAdapterCapabilities";
 pub const RUNTIME_ADAPTER_COMPUTE_INVENTORY_KIND: &str = "RuntimeAdapterComputeInventory";
 pub const RUNTIME_ADAPTER_CAPABILITIES_SCHEMA: &str =
@@ -466,7 +466,7 @@ mod tests {
         for (path, replacement) in [
             (
                 "/apiVersion",
-                Value::String("runtime.modelport.io/v2".to_owned()),
+                Value::String("runtime.aethergateway.io/v2".to_owned()),
             ),
             (
                 "/spec/operations/0/method",

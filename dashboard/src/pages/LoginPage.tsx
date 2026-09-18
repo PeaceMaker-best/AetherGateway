@@ -38,7 +38,7 @@ function readSessionValue(key: string): string {
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [username, setUsername] = useState(() => window.localStorage.getItem('modelport_last_username') || '')
+  const [username, setUsername] = useState(() => window.localStorage.getItem('aethergateway_last_username') || '')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [capsLock, setCapsLock] = useState(false)
@@ -49,8 +49,8 @@ export function LoginPage() {
   const [authMethodsLoading, setAuthMethodsLoading] = useState(true)
   const [authMethodsError, setAuthMethodsError] = useState('')
   const [authMethodsAttempt, setAuthMethodsAttempt] = useState(0)
-  const [sessionNotice] = useState(() => readSessionValue('modelport_auth_notice'))
-  const [storedReturnTo] = useState(() => readSessionValue('modelport_return_to'))
+  const [sessionNotice] = useState(() => readSessionValue('aethergateway_auth_notice'))
+  const [storedReturnTo] = useState(() => readSessionValue('aethergateway_return_to'))
   const login = useAuthStore((s) => s.login)
   const from = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from
   const locationReturnTo = from?.pathname ? `${from.pathname}${from.search || ''}${from.hash || ''}` : ''
@@ -62,8 +62,8 @@ export function LoginPage() {
 
   useEffect(() => {
     try {
-      window.sessionStorage.removeItem('modelport_auth_notice')
-      window.sessionStorage.removeItem('modelport_return_to')
+      window.sessionStorage.removeItem('aethergateway_auth_notice')
+      window.sessionStorage.removeItem('aethergateway_return_to')
     } catch {
       // Session storage can be unavailable in hardened browser contexts.
     }
@@ -128,7 +128,7 @@ export function LoginPage() {
 
     try {
       await login(username.trim(), password)
-      window.localStorage.setItem('modelport_last_username', username.trim())
+      window.localStorage.setItem('aethergateway_last_username', username.trim())
       navigate(returnTo, { replace: true })
     } catch (loginError) {
       setError(loginErrorMessage(loginError))

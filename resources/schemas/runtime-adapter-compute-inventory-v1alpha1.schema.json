@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://modelport.dev/schemas/runtime-adapter-compute-inventory-v1alpha1.schema.json",
+  "$id": "https://aethergateway.dev/schemas/runtime-adapter-compute-inventory-v1alpha1.schema.json",
   "title": "AetherGateway Runtime Adapter compute inventory v1alpha1", "type": "object", "additionalProperties": false,
   "required": ["apiVersion", "kind", "metadata", "nodes"],
   "properties": {
-    "apiVersion": { "const": "runtime.modelport.io/v1alpha1" }, "kind": { "const": "RuntimeAdapterComputeInventory" },
+    "apiVersion": { "const": "runtime.aethergateway.io/v1alpha1" }, "kind": { "const": "RuntimeAdapterComputeInventory" },
     "metadata": { "$ref": "#/$defs/metadata" }, "nodes": { "type": "array", "maxItems": 1024, "items": { "$ref": "#/$defs/node" } }
   },
   "$defs": {

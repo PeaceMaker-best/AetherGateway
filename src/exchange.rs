@@ -799,7 +799,7 @@ pub(crate) fn anthropic_response_to_openai(
         match block.get("type").and_then(Value::as_str) {
             Some("text") => text.push_str(block.get("text").and_then(Value::as_str).unwrap_or("")),
             Some("tool_use") => tool_calls.push(json!({
-                "id": block.get("id").and_then(Value::as_str).unwrap_or("call_modelport"),
+                "id": block.get("id").and_then(Value::as_str).unwrap_or("call_aethergateway"),
                 "type": "function",
                 "function": {
                     "name": block.get("name").and_then(Value::as_str).unwrap_or("tool"),

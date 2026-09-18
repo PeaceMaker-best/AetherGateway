@@ -29,7 +29,7 @@ Authorization: Bearer <token>
 ```
 
 Dashboard-issued API keys are checked before the legacy router token. Set
-`MODELPORT_REQUIRE_CONTROL_API_KEYS=1` after creating a key to enforce identity,
+`AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS=1` after creating a key to enforce identity,
 team, model/provider, IP, spend, quota, and per-key policy on every data-plane
 request. It also rejects the legacy token for authenticated diagnostics and
 metrics. The legacy token represents one unrestricted local identity.
@@ -37,8 +37,8 @@ metrics. The legacy token represents one unrestricted local identity.
 Smart aliases accept two optional request headers:
 
 ```http
-x-modelport-routing-profile: balanced
-x-modelport-session-id: stable-application-session
+x-aethergateway-routing-profile: balanced
+x-aethergateway-session-id: stable-application-session
 ```
 
 The profile must be `quality`, `balanced`, `economy`, or `latency`. The session
@@ -48,16 +48,16 @@ These headers do not make deterministic aliases or `provider:model` requests
 smart.
 
 Successful inference responses include
-`x-modelport-routing-decision-id` and `x-modelport-routing-mode`. Use the
+`x-aethergateway-routing-decision-id` and `x-aethergateway-routing-mode`. Use the
 decision ID to correlate client observations with the authenticated request log
 without exposing prompts or session identifiers.
 
 Hybrid routing is independently bounded by project policy:
 
 ```http
-x-modelport-hybrid-mode: local_first
-x-modelport-data-classification: internal
-x-modelport-traffic-class: business
+x-aethergateway-hybrid-mode: local_first
+x-aethergateway-data-classification: internal
+x-aethergateway-traffic-class: business
 ```
 
 Modes are `local_strict`, `local_first`, `balanced`, and `cloud_first`.
@@ -65,13 +65,13 @@ Classifications are `unknown`, `sensitive`, `internal`, and `public`; the first
 two always force `local_strict`. A caller may request a mode no more permissive
 than the project's maximum. `batch` traffic uses a separate low-priority local
 queue. The successful response exposes the selected local/cloud boundary in
-`x-modelport-execution-mode`.
+`x-aethergateway-execution-mode`.
 
 ## Messages
 
 ```bash
 curl -sS http://127.0.0.1:38082/v1/messages \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{
     "model": "deepseek-v4-flash",
@@ -82,7 +82,7 @@ curl -sS http://127.0.0.1:38082/v1/messages \
 
 The accepted client shape is Anthropic Messages-oriented. `model`, a non-empty
 `messages` array, and `max_tokens` are required. `max_tokens` must be an integer
-greater than zero and no greater than `MODELPORT_MAX_OUTPUT_TOKENS` (default
+greater than zero and no greater than `AETHERGATEWAY_MAX_OUTPUT_TOKENS` (default
 `131072`); missing, zero, or oversized values return HTTP 400 before provider
 routing. Each message role must be `user` or `assistant`; content may be a
 string or an array of content blocks. Unknown top-level fields are preserved
@@ -96,7 +96,7 @@ Request-size and Tool Use limits are documented in
 
 ```bash
 curl -sS http://127.0.0.1:38082/v1/messages/count_tokens \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   -H 'anthropic-version: 2023-06-01' \
   -H 'content-type: application/json' \
   -d '{
@@ -118,7 +118,7 @@ a count from another tokenizer would be misleading.
 
 ```bash
 curl -sS http://127.0.0.1:38082/v1/chat/completions \
-  -H "Authorization: Bearer $MODELPORT_AUTH_TOKEN" \
+  -H "Authorization: Bearer $AETHERGATEWAY_AUTH_TOKEN" \
   -H 'content-type: application/json' \
   -d '{
     "model": "deepseek-v4-flash",
@@ -212,14 +212,14 @@ the body completes, fails, times out, or is dropped. Client cancellation is
 recorded with status code `499`; see
 [Architecture](ARCHITECTURE.md#streaming-boundary).
 
-`MODELPORT_HTTP_REQUEST_TIMEOUT_SECS` covers a complete non-stream request and
+`AETHERGATEWAY_HTTP_REQUEST_TIMEOUT_SECS` covers a complete non-stream request and
 the total upstream SSE lifecycle from connection through event-body reads.
 Each SSE read is bounded by both the remaining total time and the resettable
-`MODELPORT_HTTP_STREAM_IDLE_TIMEOUT_SECS`; line, event, and total raw-stream
+`AETHERGATEWAY_HTTP_STREAM_IDLE_TIMEOUT_SECS`; line, event, and total raw-stream
 byte limits remain in force independently.
 
 Streaming requests also require a process-local permit. The cap is
-`MODELPORT_MAX_CONCURRENT_STREAMS`, or the effective general request cap when
+`AETHERGATEWAY_MAX_CONCURRENT_STREAMS`, or the effective general request cap when
 unset. Exhaustion returns HTTP 429 with `Retry-After: 1` before an upstream
 attempt. A permit remains held until the downstream body finishes or is
 dropped, not merely until the handler returns.
@@ -324,7 +324,7 @@ Password login is `POST /admin/auth/login`. The three public OIDC/capability
 entry points are `GET /admin/auth/methods`, `GET /admin/auth/oidc/start`, and
 `GET /admin/auth/oidc/callback`, as listed above. All successful human sign-in
 methods issue the same HttpOnly, SameSite=Lax AetherGateway console cookie. Use
-`MODELPORT_ADMIN_COOKIE_SECURE=1` behind HTTPS; other normal administrator
+`AETHERGATEWAY_ADMIN_COOKIE_SECURE=1` behind HTTPS; other normal administrator
 routes require that session.
 
 This console identity boundary is separate from the data plane. Neither an
@@ -375,7 +375,7 @@ The optional operations Agent uses three versioned internal endpoints:
 
 These endpoints reject human sessions, legacy tokens, personal keys, and
 general service accounts. They require a service-account API key whose exact
-purpose is `modelport_ops_agent`. The response and evidence contract excludes
+purpose is `aethergateway_ops_agent`. The response and evidence contract excludes
 request content and secrets. See [Operations Agent](OPS_AGENT.md).
 
 Send `{"dryRun":true}` first. A successful preview returns a random,
@@ -462,7 +462,7 @@ recent evidence events. Supply `organizationId`, `projectId`, and
 
 `PUT /admin/enterprise/budget` sets the hard limit. It requires an administrator
 session and `X-AetherGateway-CSRF`. Enterprise mode or
-`MODELPORT_REQUIRE_DUAL_APPROVAL=1` additionally requires an approved matching
+`AETHERGATEWAY_REQUIRE_DUAL_APPROVAL=1` additionally requires an approved matching
 `X-AetherGateway-Change-Request-Id`; otherwise a reviewed change request is optional:
 
 ```json
@@ -544,7 +544,7 @@ approve twice.
 In default Small-Team mode this governance workflow is optional: a normal
 administrator session, CSRF checks, and the audit trail authorize high-risk
 writes so a one-admin first install remains operable. Enterprise mode or
-`MODELPORT_REQUIRE_DUAL_APPROVAL=1` makes two distinct approvals mandatory.
+`AETHERGATEWAY_REQUIRE_DUAL_APPROVAL=1` makes two distinct approvals mandatory.
 Project policy and budget changes can use the generic
 `POST /admin/governance/change-requests/{id}/apply`; dedicated Provider,
 identity, model, egress, migration, and secret operations carry an approved ID
@@ -606,7 +606,7 @@ and transactional-budget ledgers remain independent estimates/evidence and do
 not overwrite the provider invoice.
 
 Non-local/non-custom Provider URLs must use HTTPS unless the process starts
-with `MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP=1`. The override is intended only
+with `AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP=1`. The override is intended only
 for a trusted internal upstream because HTTP exposes the referenced Provider
 API key and request/response content in plaintext. Local/custom runtime classes
 retain HTTP support for controlled local integration.
@@ -696,7 +696,7 @@ candidate count, selected/recommended Provider and model, both route scores,
 bounded reason codes, session-affinity use, and `shadowDisagreement`. It never
 contains prompts, request bodies, or the raw session header.
 
-Authenticated inference clients may set `x-modelport-traffic-class` to one of
+Authenticated inference clients may set `x-aethergateway-traffic-class` to one of
 `business`, `synthetic`, or `diagnostic`; omission defaults to `business` and
 any other value returns 400. The bounded value is exposed as `trafficClass` so
 deployment dashboards can exclude acceptance traffic without provider-name
@@ -766,7 +766,7 @@ metrics-derived estimate with `sampleCount=0` and
 
 Write requests require `X-AetherGateway-CSRF: 1` plus a valid session. When the
 browser supplies Origin or Referer, it must be same-origin or listed in
-`MODELPORT_ALLOWED_ORIGINS`.
+`AETHERGATEWAY_ALLOWED_ORIGINS`.
 
 The backend does not expose a general CORS policy. Serve the dashboard and API
 through one origin (the Docker Nginx image does this). Merely setting

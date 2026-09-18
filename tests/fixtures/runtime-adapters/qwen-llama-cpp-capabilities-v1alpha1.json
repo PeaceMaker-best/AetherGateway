@@ -1,5 +1,5 @@
 {
-  "apiVersion": "runtime.modelport.io/v1alpha1",
+  "apiVersion": "runtime.aethergateway.io/v1alpha1",
   "kind": "RuntimeAdapterCapabilities",
   "metadata": {
     "adapterId": "qwen-llama-cpp-reference", "displayName": "Qwen llama.cpp reference adapter", "adapterVersion": "0.1.0"

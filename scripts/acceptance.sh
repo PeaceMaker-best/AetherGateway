@@ -37,9 +37,9 @@ esac
 
 load_env
 
-dashboard_url="${MODELPORT_DASHBOARD_URL:-http://127.0.0.1:33002}"
-admin_username="${MODELPORT_ADMIN_USERNAME:-admin}"
-admin_password="${MODELPORT_ADMIN_PASSWORD:-}"
+dashboard_url="${AETHERGATEWAY_DASHBOARD_URL:-http://127.0.0.1:33002}"
+admin_username="${AETHERGATEWAY_ADMIN_USERNAME:-admin}"
+admin_password="${AETHERGATEWAY_ADMIN_PASSWORD:-}"
 acceptance_model="$(default_upstream_model)"
 
 cookie_file="$(mktemp)"
@@ -122,7 +122,7 @@ expect_status() {
   fi
 }
 
-modelport_cli() {
+aethergateway_cli() {
   if [[ -x "$RELEASE_BIN" ]]; then
     "$RELEASE_BIN" "$@"
   elif [[ -x "$DEBUG_BIN" ]]; then
@@ -171,7 +171,7 @@ require_command curl
 require_command node
 
 if [[ -z "$admin_password" ]]; then
-  die "MODELPORT_ADMIN_PASSWORD is required for acceptance login"
+  die "AETHERGATEWAY_ADMIN_PASSWORD is required for acceptance login"
 fi
 
 if health_ok; then
@@ -206,7 +206,7 @@ models_status="$(
   curl_local -sS -m 10 \
     -o "$body_file" \
     -w '%{http_code}' \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
     "$(base_url)/v1/models"
 )"
 expect_status "$models_status" "200" "authenticated /v1/models"
@@ -220,7 +220,7 @@ create_user_payload="$(
     const username = process.argv[1];
     process.stdout.write(JSON.stringify({
       username,
-      email: `${username}@modelport.local`,
+      email: `${username}@aethergateway.local`,
       password: "acceptance-password-123",
       role: "user",
       status: "active"
@@ -313,8 +313,8 @@ else
   die "audit log is empty after acceptance operations"
 fi
 
-modelport_cli backup export "$backup_file" >/dev/null
-modelport_cli backup validate "$backup_file" >/dev/null
+aethergateway_cli backup export "$backup_file" >/dev/null
+aethergateway_cli backup validate "$backup_file" >/dev/null
 ok "backup export and validate succeeded"
 
 if [[ "$upstream" == "1" ]]; then

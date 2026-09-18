@@ -1551,7 +1551,7 @@ export function ModelsPage() {
                   className="min-h-20 w-full rounded-md border bg-background px-3 py-2 font-mono text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                   value={providerForm.staticHeaders}
                   onChange={(event) => setProviderForm({ ...providerForm, staticHeaders: event.target.value })}
-                  placeholder={'HTTP-Referer: https://modelport.example\nX-Title: AetherGateway'}
+                  placeholder={'HTTP-Referer: https://aethergateway.example\nX-Title: AetherGateway'}
                   aria-invalid={providerSubmitAttempted && Boolean(providerValidation.errors.staticHeaders)}
                 />
               </Field>

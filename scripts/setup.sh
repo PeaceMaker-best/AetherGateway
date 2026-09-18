@@ -25,27 +25,27 @@ random_secret() {
 if [[ ! -e "$target_dir/.env" ]]; then
   cat > "$target_dir/.env" <<EOF
 # Generated local Compose configuration. Advanced options: docs/CONFIGURATION.md
-MODELPORT_AUTH_TOKEN=$(random_secret)
-MODELPORT_ADMIN_USERNAME=admin
-MODELPORT_ADMIN_PASSWORD=Mp_$(random_secret)
-MODELPORT_POSTGRES_PASSWORD=$(random_secret)
-MODELPORT_BIND=127.0.0.1:38082
-MODELPORT_DEFAULT_PROVIDER=deepseek
+AETHERGATEWAY_AUTH_TOKEN=$(random_secret)
+AETHERGATEWAY_ADMIN_USERNAME=admin
+AETHERGATEWAY_ADMIN_PASSWORD=Mp_$(random_secret)
+AETHERGATEWAY_POSTGRES_PASSWORD=$(random_secret)
+AETHERGATEWAY_BIND=127.0.0.1:38082
+AETHERGATEWAY_DEFAULT_PROVIDER=deepseek
 DEEPSEEK_ANTHROPIC_AUTH_TOKEN=replace-with-provider-key
-ANTHROPIC_AUTH_TOKEN=\${MODELPORT_AUTH_TOKEN}
+ANTHROPIC_AUTH_TOKEN=\${AETHERGATEWAY_AUTH_TOKEN}
 ANTHROPIC_MODEL=deepseek-v4-flash
 EOF
-  printf '[modelport] Created %s/.env with unique local credentials.\n' "$target_dir"
+  printf '[aethergateway] Created %s/.env with unique local credentials.\n' "$target_dir"
 else
-  printf '[modelport] Preserved existing %s/.env\n' "$target_dir"
+  printf '[aethergateway] Preserved existing %s/.env\n' "$target_dir"
 fi
 if [[ ! -e "$target_dir/config.toml" ]]; then
   cat "$ROOT_DIR/config.example.toml" > "$target_dir/config.toml"
   # This file contains only configuration and secret references. The gateway
   # runs as an unprivileged container user; only .env requires owner-only read.
   chmod 0644 "$target_dir/config.toml"
-  printf '[modelport] Created %s/config.toml\n' "$target_dir"
+  printf '[aethergateway] Created %s/config.toml\n' "$target_dir"
 else
-  printf '[modelport] Preserved existing %s/config.toml\n' "$target_dir"
+  printf '[aethergateway] Preserved existing %s/config.toml\n' "$target_dir"
 fi
-printf '[modelport] Set the Provider key in .env, then run scripts/doctor.sh --setup.\n'
+printf '[aethergateway] Set the Provider key in .env, then run scripts/doctor.sh --setup.\n'

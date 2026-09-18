@@ -58,7 +58,7 @@ as active-active or public multi-tenant.
 ## Before Shared Use
 
 1. Complete the [Production checklist](PRODUCTION.md).
-2. Set `MODELPORT_ENTERPRISE_MODE=1` and resolve every startup failure rather
+2. Set `AETHERGATEWAY_ENTERPRISE_MODE=1` and resolve every startup failure rather
    than disabling its guardrails.
 3. Use PostgreSQL TLS `verify-full` for a remote production database.
 4. Configure exact HTTPS origins and trusted proxy CIDRs.

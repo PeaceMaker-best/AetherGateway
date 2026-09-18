@@ -1,7 +1,7 @@
 # Observability Alert Runbook
 
 This runbook corresponds to
-[`deploy/observability/prometheus/modelport-alerts.yml`](../deploy/observability/prometheus/modelport-alerts.yml).
+[`deploy/observability/prometheus/aethergateway-alerts.yml`](../deploy/observability/prometheus/aethergateway-alerts.yml).
 It covers the supported single-instance Small-Team Beta. Prometheus and Grafana
 are optional operator-owned dependencies; the default Compose stack does not
 install them.
@@ -14,7 +14,7 @@ install them.
 
    ```bash
    curl -fsS http://127.0.0.1:38082/livez
-   curl -fsS -H "Authorization: Bearer $MODELPORT_HEALTHCHECK_API_KEY" \
+   curl -fsS -H "Authorization: Bearer $AETHERGATEWAY_HEALTHCHECK_API_KEY" \
      http://127.0.0.1:38082/readyz
    ```
 
@@ -36,7 +36,7 @@ readiness.
    Prometheus network reachability, DNS, the scoped metrics key, and whether
    `/metrics` returns 401.
 2. If liveness fails, run
-   `docker compose -f "${MODELPORT_COMPOSE_FILE:-docker-compose.yml}" ps` and
+   `docker compose -f "${AETHERGATEWAY_COMPOSE_FILE:-docker-compose.yml}" ps` and
    inspect the last 100 backend log lines. Distinguish startup configuration
    rejection from a crash or host failure.
 3. Check host memory, disk, container restarts, and PostgreSQL reachability.
@@ -55,19 +55,19 @@ the Nginx container itself is unhealthy.
 2. Read the safe readiness category and backend logs. Check PostgreSQL DNS,
    TCP/TLS, certificate hostname, migrations, database permissions, and pool
    acquisition timeout.
-3. Inspect `modelport_ledger_operation_degraded` and
-   `modelport_ledger_operation_failures_total` by operation.
+3. Inspect `aethergateway_ledger_operation_degraded` and
+   `aethergateway_ledger_operation_failures_total` by operation.
 4. Keep traffic stopped until readiness returns. A Provider test does not repair
    persistence readiness.
 
-`modelport_gateway_ready` is computed during the authenticated metrics scrape.
+`aethergateway_gateway_ready` is computed during the authenticated metrics scrape.
 The optional Blackbox Exporter probe independently confirms that `/readyz` can
 be reached with a scoped credential; if `probe_success` is absent, only the
 in-process readiness gauge is available.
 
 ## AetherGatewayDirtyBuildRunning
 
-1. Compare `modelport_build_info` with the intended release and deployment
+1. Compare `aethergateway_build_info` with the intended release and deployment
    record.
 2. Replace a `dirty` or `unknown` build with the signed release image pinned by
    digest. Preserve the old digest and database backup until acceptance passes.
@@ -80,15 +80,15 @@ in-process readiness gauge is available.
 2. For finalization or lease operations, stop new inference traffic and check
    PostgreSQL availability before restarting. An immediate restart can turn a
    recoverable in-process finalizer into an expired lease.
-3. Check `modelport_ledger_pending_finalizers` and the request log for
+3. Check `aethergateway_ledger_pending_finalizers` and the request log for
    non-terminal or `unreconciled` evidence.
 4. Allow the next successful operation to clear the degraded gauge, then verify
    authenticated readiness and run `scripts/smoke-test.sh`.
 5. If the operation remains degraded, preserve logs and a database-native
    backup, then follow the database incident path in [Operations](OPERATIONS.md#common-incidents).
 
-`modelport_database_ready` reports the direct readiness query.
-`modelport_database_pool_utilization_ratio` and the bounded connection-state
+`aethergateway_database_ready` reports the direct readiness query.
+`aethergateway_database_pool_utilization_ratio` and the bounded connection-state
 gauges report application-pool pressure. Acquire latency is not yet exported;
 use database-native wait/session metrics as the second source of evidence.
 
@@ -145,9 +145,9 @@ use database-native wait/session metrics as the second source of evidence.
 2. Check Provider-specific cumulative mean:
 
    ```promql
-   sum by (provider) (rate(modelport_message_duration_ms_total[10m]))
+   sum by (provider) (rate(aethergateway_message_duration_ms_total[10m]))
    /
-   clamp_min(sum by (provider) (rate(modelport_message_requests_total[10m])), 0.001)
+   clamp_min(sum by (provider) (rate(aethergateway_message_requests_total[10m])), 0.001)
    ```
 
 3. Review slow request IDs and stream idle behavior before changing timeouts.
@@ -164,9 +164,9 @@ use database-native wait/session metrics as the second source of evidence.
    capacity.
 3. For `admission`, verify model context/output limits and exact token-counting
    capability. Do not bypass a context safety limit merely to clear the alert.
-4. Inspect `modelport_local_scheduler_{running,interactive_queued,batch_queued,
+4. Inspect `aethergateway_local_scheduler_{running,interactive_queued,batch_queued,
    users_queued,estimated_service_ms,oldest_interactive_wait_ms,
-   oldest_batch_wait_ms}` and `modelport_stream_permits_available`. Available
+   oldest_batch_wait_ms}` and `aethergateway_stream_permits_available`. Available
    permits do not by themselves reveal configured capacity; correlate zero
    permits with concurrency rejections before declaring exhaustion.
 
@@ -193,8 +193,8 @@ use database-native wait/session metrics as the second source of evidence.
    region, protocol, Tool Use, and rate limits separately.
 3. Compare the failing Provider against the logical model policy. Disable a
    route or credential rather than allowing an unapproved cloud destination.
-4. Compare completed traffic with `modelport_provider_available` and
-   `modelport_provider_cooldown`. Availability means a usable credential and no
+4. Compare completed traffic with `aethergateway_provider_available` and
+   `aethergateway_provider_cooldown`. Availability means a usable credential and no
    active cooldown; it does not prove model entitlement, Tool Use, balance, or a
    successful live generation.
 

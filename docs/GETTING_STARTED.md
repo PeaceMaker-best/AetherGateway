@@ -28,7 +28,7 @@ The initializer creates `.env` with unique router, administrator and database
 credentials (mode `0600`) and copies `config.toml`. Existing files are preserved.
 Set `DEEPSEEK_ANTHROPIC_AUTH_TOKEN` in `.env` to your Provider key. For another
 Provider, follow [Providers](PROVIDERS.md). Advanced environment options remain
-in the [Docker reference](../deploy/docker/modelport.env.example).
+in the [Docker reference](../deploy/docker/aethergateway.env.example).
 
 Do not commit `.env` or `config.toml`. Provider credentials stay on the server;
 client applications use a scoped AetherGateway API key.
@@ -41,7 +41,7 @@ the request examples together.
 
 Run the read-only Linux and Compose preflight before building images. The
 scripts default to the root source-build manifest (`docker-compose.yml`), so no
-`MODELPORT_COMPOSE_FILE` export is needed:
+`AETHERGATEWAY_COMPOSE_FILE` export is needed:
 
 ```bash
 scripts/doctor.sh --setup
@@ -54,25 +54,25 @@ Provider request.
 
 ```bash
 scripts/build-container.sh
-MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh
+AETHERGATEWAY_LOCAL_BUILD=1 scripts/compose-up.sh
 docker compose ps
 ```
 
-`scripts/build-container.sh` builds `modelport:local`,
-`modelport-dashboard:local` with Docker. Add `--with-ops-agent` only when the
+`scripts/build-container.sh` builds `aethergateway:local`,
+`aethergateway-dashboard:local` with Docker. Add `--with-ops-agent` only when the
 optional Agent is needed.
-`MODELPORT_LOCAL_BUILD=1` verifies the selected local images exist and disables image
+`AETHERGATEWAY_LOCAL_BUILD=1` verifies the selected local images exist and disables image
 pulls; with the manifest defaulting to `docker-compose.yml`, `docker compose
 ps` shows the running project.
 
 ### Optional: Pull Published Release Images
 
 ```bash
-export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
-docker compose -f "$MODELPORT_COMPOSE_FILE" config --quiet
-docker compose -f "$MODELPORT_COMPOSE_FILE" pull
-MODELPORT_LOCAL_BUILD=0 scripts/compose-up.sh
-docker compose -f "$MODELPORT_COMPOSE_FILE" ps
+export AETHERGATEWAY_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" config --quiet
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" pull
+AETHERGATEWAY_LOCAL_BUILD=0 scripts/compose-up.sh
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" ps
 ```
 
 The images are published by the tagged release. Initial evaluation may use the
@@ -91,13 +91,13 @@ Expected services:
 | Service | Expected state |
 | --- | --- |
 | `postgres` | healthy |
-| `modelport` | healthy |
+| `aethergateway` | healthy |
 | `dashboard` | running |
 
 The table shows the default internal-database stack. When `.env` sets
-`MODELPORT_DATABASE_URL` to an external PostgreSQL instance, `postgres` is not
+`AETHERGATEWAY_DATABASE_URL` to an external PostgreSQL instance, `postgres` is not
 started (Compose profile `internal-db`); the remaining services connect to that
-external instance, so expect only `modelport` and `dashboard` in `docker
+external instance, so expect only `aethergateway` and `dashboard` in `docker
 compose ps`.
 
 The optional operations Agent is not started by the default profile. After the
@@ -116,9 +116,9 @@ unavailable.
 If a service does not start:
 
 ```bash
-docker compose -f "${MODELPORT_COMPOSE_FILE:-docker-compose.yml}" logs --tail=100 postgres
-docker compose -f "${MODELPORT_COMPOSE_FILE:-docker-compose.yml}" logs --tail=100 modelport
-docker compose -f "${MODELPORT_COMPOSE_FILE:-docker-compose.yml}" logs --tail=100 dashboard
+docker compose -f "${AETHERGATEWAY_COMPOSE_FILE:-docker-compose.yml}" logs --tail=100 postgres
+docker compose -f "${AETHERGATEWAY_COMPOSE_FILE:-docker-compose.yml}" logs --tail=100 aethergateway
+docker compose -f "${AETHERGATEWAY_COMPOSE_FILE:-docker-compose.yml}" logs --tail=100 dashboard
 ```
 
 ## 5. Verify The Gateway
@@ -149,7 +149,7 @@ and keep the default classification `unknown`. The advanced fields should use:
 
 Submit the recorded change. In default Small-Team mode, choose
 **Direct apply (直接应用)**; the write still requires CSRF protection and is
-audited. Enterprise mode or `MODELPORT_REQUIRE_DUAL_APPROVAL=1` requires a
+audited. Enterprise mode or `AETHERGATEWAY_REQUIRE_DUAL_APPROVAL=1` requires a
 different administrator to approve the change before **Apply change (应用变更)**
 becomes available.
 
@@ -167,10 +167,10 @@ This request can consume Provider quota:
 source .env
 
 curl -fsS \
-  -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
+  -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
   -H 'content-type: application/json' \
-  -H 'x-modelport-data-classification: public' \
-  -H 'x-modelport-hybrid-mode: cloud_first' \
+  -H 'x-aethergateway-data-classification: public' \
+  -H 'x-aethergateway-hybrid-mode: cloud_first' \
   http://127.0.0.1:38082/v1/messages \
   -d '{
     "model":"deepseek-v4-flash",
@@ -207,19 +207,19 @@ classify arbitrary source code as public to bypass this check.
 Setup checks do not send a Provider request or reserve budget. Actual client IP,
 quota, upstream health and payload-specific Tool Use/fidelity checks still apply
 when a request runs; inspect its request log. Production hardening can require
-scoped keys with `MODELPORT_REQUIRE_CONTROL_API_KEYS=1`. Never give a client the
+scoped keys with `AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS=1`. Never give a client the
 upstream Provider key.
 
 ## 9. Stop, Restart, Or Upgrade
 
 ```bash
-docker compose -f "$MODELPORT_COMPOSE_FILE" stop
-docker compose -f "$MODELPORT_COMPOSE_FILE" start
-docker compose -f "$MODELPORT_COMPOSE_FILE" logs -f modelport
-docker compose -f "$MODELPORT_COMPOSE_FILE" down
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" stop
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" start
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" logs -f aethergateway
+docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" down
 ```
 
-`docker compose -f "$MODELPORT_COMPOSE_FILE" down` preserves named volumes. Do
+`docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" down` preserves named volumes. Do
 not add `-v` unless permanent database deletion is intentional and a verified
 backup exists.
 
@@ -235,11 +235,11 @@ Before an upgrade, follow [Upgrading and Rollback](UPGRADING.md),
 | Startup rejects a placeholder | Replace every required `replace-with-...` value in `.env`. |
 | Dashboard opens but login fails | Use the admin username/password, not the router token. |
 | Dashboard opens but API calls return 502 | Static Nginx is healthy but the backend is absent/unreachable; check `/livez`, `/readyz`, and backend logs. |
-| `/v1/*` returns 401 | Send `x-api-key: <MODELPORT_AUTH_TOKEN>` or `Authorization: Bearer <key>`. |
+| `/v1/*` returns 401 | Send `x-api-key: <AETHERGATEWAY_AUTH_TOKEN>` or `Authorization: Bearer <key>`. |
 | Model is not listed | Align the Provider's configured model ID with the account/runtime catalog. |
 | Local runtime is unreachable from Docker | Use `host.docker.internal`, not container loopback. |
 | Stream starts with HTTP 200 then fails | Inspect the SSE `event: error` and matching request log. |
-| Port is already allocated | Change `MODELPORT_API_PUBLISH` or `MODELPORT_DASHBOARD_PUBLISH` in `.env`. |
+| Port is already allocated | Change `AETHERGATEWAY_API_PUBLISH` or `AETHERGATEWAY_DASHBOARD_PUBLISH` in `.env`. |
 
 Continue with [Configuration](CONFIGURATION.md), [Providers](PROVIDERS.md),
 [Deployment](DEPLOYMENT.md), or [Operations](OPERATIONS.md) only when your task

@@ -55,7 +55,7 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
 
 - `/v1/*`, `/metrics`, and detailed diagnostics require a router or dashboard-
   issued API key. For a shared deployment, create control-plane keys and set
-  `MODELPORT_REQUIRE_CONTROL_API_KEYS=1` so the unrestricted legacy token is not
+  `AETHERGATEWAY_REQUIRE_CONTROL_API_KEYS=1` so the unrestricted legacy token is not
   accepted.
 - Dashboard users authenticate separately. Passwords use Argon2 hashes. Hash
   work runs outside the auth-state mutex on blocking workers, with at most four
@@ -65,23 +65,23 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
   for 15 minutes. Lockout counters, the worker gate, and sessions are
   process-local and reset on restart.
 - Session cookies are HttpOnly and SameSite=Lax. Set
-  `MODELPORT_ADMIN_COOKIE_SECURE=1` whenever the dashboard is served over HTTPS.
-- `MODELPORT_PASSWORD_LOGIN_ENABLED=0` enforces OIDC-only login at the backend.
+  `AETHERGATEWAY_ADMIN_COOKIE_SECURE=1` whenever the dashboard is served over HTTPS.
+- `AETHERGATEWAY_PASSWORD_LOGIN_ENABLED=0` enforces OIDC-only login at the backend.
   Startup requires an active administrator already linked to that issuer.
-  `MODELPORT_OIDC_REQUIRED_ACR` additionally requires an exact signed `acr`
+  `AETHERGATEWAY_OIDC_REQUIRED_ACR` additionally requires an exact signed `acr`
   claim and forbids password fallback. Configure the identity provider's MFA
   policy for that class; AetherGateway does not implement an MFA factor itself.
 - Dashboard writes require a session, `X-AetherGateway-CSRF`, and an allowed
-  Origin/Referer when present. `MODELPORT_ALLOWED_ORIGINS` extends that write
+  Origin/Referer when present. `AETHERGATEWAY_ALLOWED_ORIGINS` extends that write
   check; it does not enable browser CORS.
 - The backend has no general CORS response policy. Serve dashboard and API from
   one trusted origin.
 
 ## Network And Provider URLs
 
-- Keep `MODELPORT_BIND` and published Docker ports on loopback unless a trusted
+- Keep `AETHERGATEWAY_BIND` and published Docker ports on loopback unless a trusted
   network or reverse proxy needs them.
-- Configure `MODELPORT_TRUSTED_PROXIES` with exact proxy IPs/CIDRs. Forwarded
+- Configure `AETHERGATEWAY_TRUSTED_PROXIES` with exact proxy IPs/CIDRs. Forwarded
   client-IP headers are security inputs for IP policy and rate limiting.
   AetherGateway walks XFF from the connected peer right-to-left and removes only
   explicitly trusted hops; a single-hop proxy should overwrite XFF with its
@@ -95,7 +95,7 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
   query parameter.
 - Non-local/non-custom Providers require HTTPS by default. Plain HTTP exposes
   the Provider API key and prompt/response content to every network hop. Use
-  `MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP=1` only for an explicitly trusted
+  `AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP=1` only for an explicitly trusted
   internal upstream; local/custom runtimes retain HTTP support for controlled
   local integration. The HTTP override does not disable private/metadata-IP
   protection.
@@ -117,11 +117,11 @@ Do not place exploit details, provider keys, session tokens, backups, or a full
   on its private bridge. Remote and production databases should use
   `verify-full` with a trusted root and a hostname that matches the server
   certificate. Enterprise mode requires `verify-full` and refuses to start
-  without `MODELPORT_DATABASE_URL`. Compose's constructed URL also requires a
+  without `AETHERGATEWAY_DATABASE_URL`. Compose's constructed URL also requires a
   URL-safe password or an explicitly percent-encoded
-  `MODELPORT_DATABASE_URL` override.
+  `AETHERGATEWAY_DATABASE_URL` override.
 
-`MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS=1` deliberately weakens the URL boundary
+`AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS=1` deliberately weakens the URL boundary
 and should only be used for a trusted internal runtime.
 
 ## Logs, Errors, And Backups
@@ -173,7 +173,7 @@ retain the automatically saved previous values plus a storage-native backup.
    policy, malformed PostgreSQL URLs and pool bounds, invalid lease timing,
    trusted-proxy CIDRs, and allowed origins as well as application settings.
    It does not test database reachability or the certificate chain. Never set
-   `MODELPORT_ALLOW_NO_AUTH=1` on a shared host.
+   `AETHERGATEWAY_ALLOW_NO_AUTH=1` on a shared host.
 3. Bind to loopback or place the service behind a firewall and same-origin HTTPS
    reverse proxy.
 4. Set secure cookies, exact trusted proxies, and the expected dashboard origin.

@@ -25,12 +25,12 @@ sha256sum --check SHA256SUMS
 gh attestation verify model-port-v0.1.1-linux-amd64.tar.gz \
   --repo PeaceMaker-best/AetherGateway
 gh attestation verify \
-  oci://ghcr.io/peacemaker-best/modelport@sha256:<backend-digest> \
+  oci://ghcr.io/peacemaker-best/aethergateway@sha256:<backend-digest> \
   --repo PeaceMaker-best/AetherGateway
 cosign verify \
   --certificate-identity-regexp='https://github.com/PeaceMaker-best/AetherGateway/.github/workflows/release.yml@refs/tags/v0[.]1[.]1' \
   --certificate-oidc-issuer=https://token.actions.githubusercontent.com \
-  ghcr.io/peacemaker-best/modelport@sha256:<backend-digest>
+  ghcr.io/peacemaker-best/aethergateway@sha256:<backend-digest>
 ```
 
 The binary archive includes `Cargo.lock`; its SBOM inventories locked workspace
@@ -38,8 +38,8 @@ dependencies, including optional and test dependencies. It does not claim that
 every listed crate is linked into the gateway executable. Container SBOMs also
 cover their runtime image contents.
 
-Repeat the image verification for `modelport-dashboard` and, when enabled,
-`modelport-ops-agent`. Verification proves
+Repeat the image verification for `aethergateway-dashboard` and, when enabled,
+`aethergateway-ops-agent`. Verification proves
 release provenance; it does not prove that a Provider account or model remains
 compatible.
 
@@ -49,7 +49,7 @@ Select the manifest used by the running deployment before any Compose or helper
 command. The normal release profile is:
 
 ```bash
-export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
+export AETHERGATEWAY_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 ```
 
 1. Read `CHANGELOG.md`, [Compatibility](COMPATIBILITY.md), and known limits.
@@ -67,8 +67,8 @@ export MODELPORT_COMPOSE_FILE="$PWD/deploy/release/compose.yml"
 
    ```bash
    scripts/backup-compose.sh create
-   scripts/backup-compose.sh verify backups/modelport-<UTC>.tar.gz
-   scripts/backup-compose.sh drill backups/modelport-<UTC>.tar.gz
+   scripts/backup-compose.sh verify backups/aethergateway-<UTC>.tar.gz
+   scripts/backup-compose.sh drill backups/aethergateway-<UTC>.tar.gz
    ```
 
    This helper is only for the bundled Compose PostgreSQL service. For the
@@ -89,11 +89,11 @@ Set the target images to the exact release digests in the shell or the
 operator-owned deployment environment:
 
 ```bash
-export MODELPORT_IMAGE='ghcr.io/peacemaker-best/modelport@sha256:<backend-digest>'
-export MODELPORT_DASHBOARD_IMAGE='ghcr.io/peacemaker-best/modelport-dashboard@sha256:<dashboard-digest>'
+export AETHERGATEWAY_IMAGE='ghcr.io/peacemaker-best/aethergateway@sha256:<backend-digest>'
+export AETHERGATEWAY_DASHBOARD_IMAGE='ghcr.io/peacemaker-best/aethergateway-dashboard@sha256:<dashboard-digest>'
 # Required only when the optional Compose profile is enabled.
-export MODELPORT_OPS_AGENT_IMAGE='ghcr.io/peacemaker-best/modelport-ops-agent@sha256:<agent-digest>'
-export MODELPORT_PULL_POLICY=always
+export AETHERGATEWAY_OPS_AGENT_IMAGE='ghcr.io/peacemaker-best/aethergateway-ops-agent@sha256:<agent-digest>'
+export AETHERGATEWAY_PULL_POLICY=always
 ```
 
 Then:
@@ -103,7 +103,7 @@ Then:
    backend through Compose:
 
    ```bash
-   docker compose -f "$MODELPORT_COMPOSE_FILE" stop modelport
+   docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" stop aethergateway
    ```
 
    Compose sends SIGTERM. AetherGateway stops accepting new connections, waits for
@@ -120,8 +120,8 @@ Then:
 4. Pull and recreate the two application containers. Keep PostgreSQL running:
 
    ```bash
-   docker compose -f "$MODELPORT_COMPOSE_FILE" pull modelport dashboard
-   scripts/compose-up.sh modelport dashboard
+   docker compose -f "$AETHERGATEWAY_COMPOSE_FILE" pull aethergateway dashboard
+   scripts/compose-up.sh aethergateway dashboard
    ```
 
 5. Watch the backend startup migration. Do not repeatedly restart a migration
@@ -131,7 +131,7 @@ Then:
 
    ```bash
    curl -fsS http://127.0.0.1:38082/livez
-   curl -fsS -H "Authorization: Bearer $MODELPORT_HEALTHCHECK_API_KEY" \
+   curl -fsS -H "Authorization: Bearer $AETHERGATEWAY_HEALTHCHECK_API_KEY" \
      http://127.0.0.1:38082/readyz
    scripts/smoke-test.sh
    ```
@@ -145,7 +145,7 @@ For the phase-one external-database production template, export the selected
 manifest and run the production preflight before the same sequence:
 
 ```bash
-export MODELPORT_COMPOSE_FILE="$PWD/deploy/production/compose.single.yml"
+export AETHERGATEWAY_COMPOSE_FILE="$PWD/deploy/production/compose.single.yml"
 ./scripts/production-preflight.sh
 ```
 

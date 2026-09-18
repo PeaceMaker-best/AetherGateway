@@ -45,8 +45,8 @@ test('expired session explains the redirect and returns to the protected URL', a
   const env = requireE2EEnv()
   await page.goto('/login')
   await page.evaluate(() => {
-    window.sessionStorage.setItem('modelport_auth_notice', '会话已过期，请重新登录后继续。')
-    window.sessionStorage.setItem('modelport_return_to', '/logs?status=error')
+    window.sessionStorage.setItem('aethergateway_auth_notice', '会话已过期，请重新登录后继续。')
+    window.sessionStorage.setItem('aethergateway_return_to', '/logs?status=error')
   })
   await page.reload()
 

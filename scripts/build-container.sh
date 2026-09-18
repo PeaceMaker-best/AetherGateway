@@ -46,57 +46,57 @@ trap cleanup EXIT
 if [[ "$source_state" == "clean" ]]; then
   # Pin every image to the same immutable source even if the worktree changes
   # during a long build. Dirty local tests deliberately use the working tree.
-  snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/modelport-build.XXXXXX")"
+  snapshot_dir="$(mktemp -d "${TMPDIR:-/tmp}/aethergateway-build.XXXXXX")"
   git -C "$ROOT_DIR" archive "$source_revision" | tar -x -C "$snapshot_dir"
   build_context="$snapshot_dir"
 fi
-modelport_version="$(
+aethergateway_version="$(
   sed -n 's/^version = "\([^"]*\)"/\1/p' "$build_context/Cargo.toml" | head -n 1
 )"
-if [[ -z "$modelport_version" ]]; then
+if [[ -z "$aethergateway_version" ]]; then
   die "could not read package version from Cargo.toml"
 fi
-log "building AetherGateway images version=$modelport_version revision=$source_revision source_state=$source_state"
+log "building AetherGateway images version=$aethergateway_version revision=$source_revision source_state=$source_state"
 common_args=(
-  --build-arg "MODELPORT_VERSION=$modelport_version"
-  --build-arg "MODELPORT_SOURCE_REVISION=$source_revision"
-  --build-arg "MODELPORT_SOURCE_STATE=$source_state"
-  --build-arg "MODELPORT_BUILD_DATE=$build_date"
+  --build-arg "AETHERGATEWAY_VERSION=$aethergateway_version"
+  --build-arg "AETHERGATEWAY_SOURCE_REVISION=$source_revision"
+  --build-arg "AETHERGATEWAY_SOURCE_STATE=$source_state"
+  --build-arg "AETHERGATEWAY_BUILD_DATE=$build_date"
 )
 
 docker build \
   "${common_args[@]}" \
   --file "$build_context/Dockerfile" \
-  --tag modelport:local \
+  --tag aethergateway:local \
   "$build_context"
 docker build \
   "${common_args[@]}" \
   --file "$build_context/dashboard/Dockerfile" \
-  --tag modelport-dashboard:local \
+  --tag aethergateway-dashboard:local \
   "$build_context"
-images=(modelport:local modelport-dashboard:local)
+images=(aethergateway:local aethergateway-dashboard:local)
 if [[ "$with_ops_agent" == "1" ]]; then
   docker build \
     "${common_args[@]}" \
     --file "$build_context/crates/ops-agent/Dockerfile" \
-    --tag modelport-ops-agent:local \
+    --tag aethergateway-ops-agent:local \
     "$build_context"
-  images+=(modelport-ops-agent:local)
+  images+=(aethergateway-ops-agent:local)
 fi
 
 for image in "${images[@]}"; do
   image_id="$(docker image inspect "$image" --format '{{.Id}}')"
   image_revision="$(docker image inspect "$image" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}')"
-  image_state="$(docker image inspect "$image" --format '{{index .Config.Labels "io.modelport.source-state"}}')"
+  image_state="$(docker image inspect "$image" --format '{{index .Config.Labels "io.aethergateway.source-state"}}')"
   image_version="$(docker image inspect "$image" --format '{{index .Config.Labels "org.opencontainers.image.version"}}')"
 
-  if [[ "$image_revision" != "$source_revision" || "$image_state" != "$source_state" || "$image_version" != "$modelport_version" ]]; then
+  if [[ "$image_revision" != "$source_revision" || "$image_state" != "$source_state" || "$image_version" != "$aethergateway_version" ]]; then
     die "$image provenance labels do not match the requested source state"
   fi
   log "built $image id=$image_id version=$image_version revision=$image_revision source_state=$image_state"
 done
 
-log "start these source-built images with: MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh"
+log "start these source-built images with: AETHERGATEWAY_LOCAL_BUILD=1 scripts/compose-up.sh"
 if [[ "$with_ops_agent" == "1" ]]; then
-  log "enable the agent with: COMPOSE_PROFILES=ops-agent MODELPORT_LOCAL_BUILD=1 scripts/compose-up.sh"
+  log "enable the agent with: COMPOSE_PROFILES=ops-agent AETHERGATEWAY_LOCAL_BUILD=1 scripts/compose-up.sh"
 fi

@@ -129,7 +129,7 @@ policy, routing, quota, retry/fallback, health, and durable evidence. CPA owns
 OAuth material and bounded account selection. Its management API is outside
 AetherGateway's data plane. LiteLLM is not linked or deployed; only independently
 useful design patterns may be adopted. This boundary is recorded in
-[ADR-0004](adr/0004-modelport-gateway-and-cpa-provider-boundary.md).
+[ADR-0004](adr/0004-aethergateway-gateway-and-cpa-provider-boundary.md).
 
 Operational logs, latency percentiles, and Dashboard ranges are filtered,
 aggregated, bucketed, ordered, and paginated in PostgreSQL. Runtime routes do
@@ -309,8 +309,8 @@ There are two logical JSON documents:
 | `auth` | Users, password hashes, and OIDC issuer/subject bindings. Sessions, pending OIDC authorization state, and failed-login counters are process-local. |
 | `control` | Teams, API-key hashes, policy and quota definitions, routing overrides, credentials metadata, and provider health. |
 
-`MODELPORT_DATABASE_URL` is mandatory. These low-frequency documents are stored
-as two `jsonb` rows in `modelport_state`; there is no runtime file fallback or
+`AETHERGATEWAY_DATABASE_URL` is mandatory. These low-frequency documents are stored
+as two `jsonb` rows in `aethergateway_state`; there is no runtime file fallback or
 automatic JSON import. Each row carries a monotonic `revision`; complete-document
 writes use compare-and-swap and return a stable HTTP 409 conflict instead of
 overwriting a newer revision. Readiness also fails closed when an instance
@@ -320,8 +320,8 @@ lost-update guard, not a substitute for the planned tenant-scoped relational
 repositories and cross-domain transactions. The synchronous store boundary
 uses a dedicated SQLx/Tokio worker with rustls and a one-connection pool.
 
-The async normalized ledger uses `MODELPORT_ENTERPRISE_DATABASE_URL` or falls
-back to `MODELPORT_DATABASE_URL`. Embedded migrations create explicit
+The async normalized ledger uses `AETHERGATEWAY_ENTERPRISE_DATABASE_URL` or falls
+back to `AETHERGATEWAY_DATABASE_URL`. Embedded migrations create explicit
 organization, project, and environment parents plus gateway-request and
 Provider-attempt children, budget accounts, per-attempt reservations, and an
 append-only evidence event stream. Composite keys make the tenant part of every parent
@@ -445,7 +445,7 @@ upstream SSE lifecycle. After response headers, each body read is bounded by
 both the remaining total time and a resettable per-chunk idle timeout. Line,
 event, and total raw-stream byte ceilings apply independently.
 
-The stream permit count comes from `MODELPORT_MAX_CONCURRENT_STREAMS`, defaulting
+The stream permit count comes from `AETHERGATEWAY_MAX_CONCURRENT_STREAMS`, defaulting
 to the effective general request-concurrency limit. Unlike the normal handler
 future, the permit is moved into the returned body and survives until that body
 finishes or is dropped. This makes downstream slow readers visible to capacity
@@ -500,7 +500,7 @@ upstream outcome.
   private Provider remains an operator trust decision and should be paired with
   outbound network policy.
 - Non-local/non-custom Providers require HTTPS by default. The explicit
-  `MODELPORT_ALLOW_INSECURE_PROVIDER_HTTP=1` escape hatch is only for a trusted
+  `AETHERGATEWAY_ALLOW_INSECURE_PROVIDER_HTTP=1` escape hatch is only for a trusted
   internal network because HTTP exposes Provider API keys and prompt/response
   content in plaintext. Local/custom runtime classes retain HTTP support for
   loopback and controlled local integration.

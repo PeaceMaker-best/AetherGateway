@@ -56,7 +56,7 @@ export function GovernancePage() {
   const [payloadText, setPayloadText] = useState(() => formatTemplate(ACTIONS[0][0]))
   const [policyDraft, setPolicyDraft] = useState(EMPTY_PROJECT_POLICY)
   const [notice, setNotice] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
-  const [selectedChangeId, setSelectedChangeId] = useState(() => window.sessionStorage.getItem('modelport_change_request_id') || '')
+  const [selectedChangeId, setSelectedChangeId] = useState(() => window.sessionStorage.getItem('aethergateway_change_request_id') || '')
 
   const actionLabels = useMemo(() => new Map(ACTIONS), [])
 
@@ -141,7 +141,7 @@ export function GovernancePage() {
         <div className="flex flex-col gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-900 sm:flex-row sm:items-center sm:justify-between" role="status">
           <span>专用操作已选择审批单 <code>{selectedChangeId}</code>；后续 Dashboard 写请求会自动携带该 ID，服务端仍会校验动作、目标与载荷摘要。</span>
           <Button size="sm" variant="outline" onClick={() => {
-            window.sessionStorage.removeItem('modelport_change_request_id')
+            window.sessionStorage.removeItem('aethergateway_change_request_id')
             setSelectedChangeId('')
           }}>清除选择</Button>
         </div>
@@ -246,7 +246,7 @@ export function GovernancePage() {
                   )}
                   {change.status === 'approved' && !DIRECT_APPLY_ACTIONS.has(change.action) && (
                     <Button size="sm" variant="outline" onClick={() => {
-                      window.sessionStorage.setItem('modelport_change_request_id', change.id)
+                      window.sessionStorage.setItem('aethergateway_change_request_id', change.id)
                       setSelectedChangeId(change.id)
                       setNotice({ kind: 'success', text: '已选择审批单；请到对应管理员页面执行载荷完全一致的操作' })
                     }}>用于下一次专用操作</Button>

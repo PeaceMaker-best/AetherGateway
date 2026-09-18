@@ -128,11 +128,11 @@ pub(super) async fn metrics(
         .record_route("metrics", true, started.elapsed());
     let mut metrics = state.metrics.render_prometheus();
     metrics.push_str(
-        "\n# HELP modelport_ledger_pending_finalizers Streaming ledger finalizers pending database commit.\n",
+        "\n# HELP aethergateway_ledger_pending_finalizers Streaming ledger finalizers pending database commit.\n",
     );
-    metrics.push_str("# TYPE modelport_ledger_pending_finalizers gauge\n");
+    metrics.push_str("# TYPE aethergateway_ledger_pending_finalizers gauge\n");
     metrics.push_str(&format!(
-        "modelport_ledger_pending_finalizers {}\n",
+        "aethergateway_ledger_pending_finalizers {}\n",
         state.finalizers.active()
     ));
     append_runtime_metrics(&state, &mut metrics).await;
@@ -153,24 +153,24 @@ async fn append_runtime_metrics(state: &AppState, output: &mut String) {
         && governance_ready
         && ledger_operations_ready;
 
-    output.push_str("\n# HELP modelport_gateway_ready Whether all fail-closed gateway dependencies are currently ready.\n");
-    output.push_str("# TYPE modelport_gateway_ready gauge\n");
+    output.push_str("\n# HELP aethergateway_gateway_ready Whether all fail-closed gateway dependencies are currently ready.\n");
+    output.push_str("# TYPE aethergateway_gateway_ready gauge\n");
     output.push_str(&format!(
-        "modelport_gateway_ready {}\n",
+        "aethergateway_gateway_ready {}\n",
         u8::from(gateway_ready)
     ));
     output.push_str(
-        "# HELP modelport_gateway_draining Whether shutdown drain mode is rejecting new inference traffic.\n",
+        "# HELP aethergateway_gateway_draining Whether shutdown drain mode is rejecting new inference traffic.\n",
     );
-    output.push_str("# TYPE modelport_gateway_draining gauge\n");
+    output.push_str("# TYPE aethergateway_gateway_draining gauge\n");
     output.push_str(&format!(
-        "modelport_gateway_draining {}\n",
+        "aethergateway_gateway_draining {}\n",
         u8::from(draining)
     ));
-    output.push_str("# HELP modelport_database_ready Whether the PostgreSQL operational ledger responds to a readiness query.\n");
-    output.push_str("# TYPE modelport_database_ready gauge\n");
+    output.push_str("# HELP aethergateway_database_ready Whether the PostgreSQL operational ledger responds to a readiness query.\n");
+    output.push_str("# TYPE aethergateway_database_ready gauge\n");
     output.push_str(&format!(
-        "modelport_database_ready {}\n",
+        "aethergateway_database_ready {}\n",
         u8::from(database_ready)
     ));
     if let Some(pool) = state.ledger.database_pool_snapshot() {
@@ -181,32 +181,32 @@ async fn append_runtime_metrics(state: &AppState, output: &mut String) {
             f64::from(in_use) / f64::from(pool.max)
         };
         output.push_str(
-            "# HELP modelport_database_pool_connections PostgreSQL pool connections by state.\n",
+            "# HELP aethergateway_database_pool_connections PostgreSQL pool connections by state.\n",
         );
-        output.push_str("# TYPE modelport_database_pool_connections gauge\n");
+        output.push_str("# TYPE aethergateway_database_pool_connections gauge\n");
         output.push_str(&format!(
-            "modelport_database_pool_connections{{state=\"open\"}} {}\n",
+            "aethergateway_database_pool_connections{{state=\"open\"}} {}\n",
             pool.size
         ));
         output.push_str(&format!(
-            "modelport_database_pool_connections{{state=\"idle\"}} {}\n",
+            "aethergateway_database_pool_connections{{state=\"idle\"}} {}\n",
             pool.idle
         ));
         output.push_str(&format!(
-            "modelport_database_pool_connections{{state=\"in_use\"}} {in_use}\n"
+            "aethergateway_database_pool_connections{{state=\"in_use\"}} {in_use}\n"
         ));
         output.push_str(
-            "# HELP modelport_database_pool_max_connections Configured PostgreSQL pool limit.\n",
+            "# HELP aethergateway_database_pool_max_connections Configured PostgreSQL pool limit.\n",
         );
-        output.push_str("# TYPE modelport_database_pool_max_connections gauge\n");
+        output.push_str("# TYPE aethergateway_database_pool_max_connections gauge\n");
         output.push_str(&format!(
-            "modelport_database_pool_max_connections {}\n",
+            "aethergateway_database_pool_max_connections {}\n",
             pool.max
         ));
-        output.push_str("# HELP modelport_database_pool_utilization_ratio In-use PostgreSQL connections divided by the configured pool limit.\n");
-        output.push_str("# TYPE modelport_database_pool_utilization_ratio gauge\n");
+        output.push_str("# HELP aethergateway_database_pool_utilization_ratio In-use PostgreSQL connections divided by the configured pool limit.\n");
+        output.push_str("# TYPE aethergateway_database_pool_utilization_ratio gauge\n");
         output.push_str(&format!(
-            "modelport_database_pool_utilization_ratio {utilization:.6}\n"
+            "aethergateway_database_pool_utilization_ratio {utilization:.6}\n"
         ));
     }
 
@@ -225,25 +225,25 @@ async fn append_runtime_metrics(state: &AppState, output: &mut String) {
             .and_then(serde_json::Value::as_u64)
             .unwrap_or(0);
         output.push_str(&format!(
-            "# TYPE modelport_local_scheduler_{metric} gauge\n"
+            "# TYPE aethergateway_local_scheduler_{metric} gauge\n"
         ));
-        output.push_str(&format!("modelport_local_scheduler_{metric} {value}\n"));
+        output.push_str(&format!("aethergateway_local_scheduler_{metric} {value}\n"));
     }
     output.push_str(
-        "# HELP modelport_stream_permits_available Inference stream permits currently available.\n",
+        "# HELP aethergateway_stream_permits_available Inference stream permits currently available.\n",
     );
-    output.push_str("# TYPE modelport_stream_permits_available gauge\n");
+    output.push_str("# TYPE aethergateway_stream_permits_available gauge\n");
     output.push_str(&format!(
-        "modelport_stream_permits_available {}\n",
+        "aethergateway_stream_permits_available {}\n",
         state.stream_permits.available_permits()
     ));
 
-    output.push_str("# HELP modelport_provider_available Whether a configured Provider has usable credentials and is not cooling down.\n");
-    output.push_str("# TYPE modelport_provider_available gauge\n");
+    output.push_str("# HELP aethergateway_provider_available Whether a configured Provider has usable credentials and is not cooling down.\n");
+    output.push_str("# TYPE aethergateway_provider_available gauge\n");
     output.push_str(
-        "# HELP modelport_provider_cooldown Whether routing has placed a Provider in cooldown.\n",
+        "# HELP aethergateway_provider_cooldown Whether routing has placed a Provider in cooldown.\n",
     );
-    output.push_str("# TYPE modelport_provider_cooldown gauge\n");
+    output.push_str("# TYPE aethergateway_provider_cooldown gauge\n");
     let config = effective_config(state);
     for provider_id in &config.provider_order {
         let Some(provider) = config.providers.get(provider_id) else {
@@ -262,11 +262,11 @@ async fn append_runtime_metrics(state: &AppState, output: &mut String) {
         let cooldown = state.control.provider_in_cooldown(provider_id);
         let provider = prometheus_label(provider_id);
         output.push_str(&format!(
-            "modelport_provider_available{{provider=\"{provider}\"}} {}\n",
+            "aethergateway_provider_available{{provider=\"{provider}\"}} {}\n",
             u8::from(credential_ready && !cooldown)
         ));
         output.push_str(&format!(
-            "modelport_provider_cooldown{{provider=\"{provider}\"}} {}\n",
+            "aethergateway_provider_cooldown{{provider=\"{provider}\"}} {}\n",
             u8::from(cooldown)
         ));
     }

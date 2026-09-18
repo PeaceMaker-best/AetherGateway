@@ -67,10 +67,10 @@ check_shell_lint() {
 
   if command -v shellcheck >/dev/null 2>&1; then
     run_check "running ShellCheck for ${#files[@]} script(s)" shellcheck "${files[@]}"
-  elif [[ "${CI:-}" == "true" || "${MODELPORT_REQUIRE_SHELLCHECK:-0}" == "1" ]]; then
+  elif [[ "${CI:-}" == "true" || "${AETHERGATEWAY_REQUIRE_SHELLCHECK:-0}" == "1" ]]; then
     die "shellcheck is required in CI/release mode but was not found"
   else
-    log "ShellCheck skipped: install shellcheck or set MODELPORT_REQUIRE_SHELLCHECK=1 to enforce it"
+    log "ShellCheck skipped: install shellcheck or set AETHERGATEWAY_REQUIRE_SHELLCHECK=1 to enforce it"
   fi
 }
 
@@ -84,7 +84,7 @@ npm_has_script() {
 }
 
 prepare_dashboard_dependencies() {
-  if [[ "${CI:-}" == "true" || "${MODELPORT_CHECK_NPM_CI:-0}" == "1" || ! -d "$ROOT_DIR/dashboard/node_modules" ]]; then
+  if [[ "${CI:-}" == "true" || "${AETHERGATEWAY_CHECK_NPM_CI:-0}" == "1" || ! -d "$ROOT_DIR/dashboard/node_modules" ]]; then
     run_check "installing locked dashboard dependencies" \
       npm --prefix "$ROOT_DIR/dashboard" ci --no-audit --no-fund
     return
@@ -190,9 +190,9 @@ validate_env_example() {
     env -i \
       HOME="$CHECK_TMP_DIR/home" \
       PATH="$PATH" \
-      MODELPORT_CONFIG="$CHECK_TMP_DIR/no-config.toml" \
-      MODELPORT_ENV_FILE="$sanitized_file" \
-      MODELPORT_DATABASE_URL="postgres://modelport:ci-validation@db.example:5432/modelport" \
+      AETHERGATEWAY_CONFIG="$CHECK_TMP_DIR/no-config.toml" \
+      AETHERGATEWAY_ENV_FILE="$sanitized_file" \
+      AETHERGATEWAY_DATABASE_URL="postgres://aethergateway:ci-validation@db.example:5432/aethergateway" \
       "$ROOT_DIR/target/debug/model-port" config validate
 }
 
@@ -207,7 +207,7 @@ write_config_validation_env() {
         print key "=ci-validation-secret-" FNR
       }
     }
-    END { print "MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS=1" }
+    END { print "AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS=1" }
   ' "$config_file" > "$destination_file"
 }
 
@@ -217,15 +217,15 @@ validate_config_examples() {
   local env_example
   local config_examples=(
     "$ROOT_DIR/config.example.toml"
-    "$ROOT_DIR/deploy/local-inference/modelport.local-qwen.toml"
+    "$ROOT_DIR/deploy/local-inference/aethergateway.local-qwen.toml"
   )
   local env_examples=(
     "$ROOT_DIR/.env.example"
-    "$ROOT_DIR/deploy/docker/modelport.env.example"
-    "$ROOT_DIR/deploy/systemd/modelport.env.example"
+    "$ROOT_DIR/deploy/docker/aethergateway.env.example"
+    "$ROOT_DIR/deploy/systemd/aethergateway.env.example"
   )
 
-  CHECK_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/modelport-check.XXXXXX")"
+  CHECK_TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/aethergateway-check.XXXXXX")"
   mkdir -p "$CHECK_TMP_DIR/home"
 
   run_check "building the configuration validator" \
@@ -248,9 +248,9 @@ validate_config_examples() {
       env -i \
         HOME="$CHECK_TMP_DIR/home" \
         PATH="$PATH" \
-        MODELPORT_CONFIG="$config_example" \
-        MODELPORT_ENV_FILE="$config_env_file" \
-        MODELPORT_DATABASE_URL="postgres://modelport:ci-validation@db.example:5432/modelport" \
+        AETHERGATEWAY_CONFIG="$config_example" \
+        AETHERGATEWAY_ENV_FILE="$config_env_file" \
+        AETHERGATEWAY_DATABASE_URL="postgres://aethergateway:ci-validation@db.example:5432/aethergateway" \
         "$ROOT_DIR/target/debug/model-port" config validate
   done
 }
@@ -268,7 +268,7 @@ validate_runtime_adapter_examples() {
     "$ROOT_DIR/target/debug/model-port" runtime-adapter validate "$compute_inventory"
 
   printf '%s\n' \
-    '{"apiVersion":"runtime.modelport.io/v1alpha1","kind":"RuntimeAdapterCapabilities","metadata":{},"spec":{"operations":[{"operationId":"capabilities.get","method":"POST","path":"/runtime-adapter/v1alpha1/capabilities","sideEffectFree":false}]}}' \
+    '{"apiVersion":"runtime.aethergateway.io/v1alpha1","kind":"RuntimeAdapterCapabilities","metadata":{},"spec":{"operations":[{"operationId":"capabilities.get","method":"POST","path":"/runtime-adapter/v1alpha1/capabilities","sideEffectFree":false}]}}' \
     > "$invalid"
   if "$ROOT_DIR/target/debug/model-port" runtime-adapter validate "$invalid" >/dev/null 2>&1; then
     die "the Runtime Adapter validator accepted a mutating invalid document"
@@ -276,7 +276,7 @@ validate_runtime_adapter_examples() {
   log "invalid Runtime Adapter capability document rejected"
 
   printf '%s\n' \
-    '{"apiVersion":"runtime.modelport.io/v1alpha1","kind":"RuntimeAdapterComputeInventory","metadata":{"adapterId":"fixture","snapshotId":"snapshot:invalid","observedAt":"not-rfc3339","source":{"collectorId":"fixture","collectorVersion":"0.1.0"}},"nodes":[]}' \
+    '{"apiVersion":"runtime.aethergateway.io/v1alpha1","kind":"RuntimeAdapterComputeInventory","metadata":{"adapterId":"fixture","snapshotId":"snapshot:invalid","observedAt":"not-rfc3339","source":{"collectorId":"fixture","collectorVersion":"0.1.0"}},"nodes":[]}' \
     > "$invalid_compute"
   if "$ROOT_DIR/target/debug/model-port" runtime-adapter validate "$invalid_compute" >/dev/null 2>&1; then
     die "the Runtime Adapter validator accepted an invalid observation timestamp"

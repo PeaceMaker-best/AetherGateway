@@ -82,8 +82,8 @@ describe('api client', () => {
     await expect(api.get('/admin/logs')).rejects.toMatchObject({ status: 401 })
 
     expect(queryClient.getQueryData(['private', 'logs'])).toBeUndefined()
-    expect(values.get('modelport_return_to')).toBe('/logs?status=error#request')
-    expect(values.get('modelport_auth_notice')).toContain('会话已过期')
+    expect(values.get('aethergateway_return_to')).toBe('/logs?status=error#request')
+    expect(values.get('aethergateway_auth_notice')).toContain('会话已过期')
     expect(windowMock.location.href).toBe('/login')
   })
 })

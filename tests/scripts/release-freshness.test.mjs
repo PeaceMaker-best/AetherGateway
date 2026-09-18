@@ -9,7 +9,7 @@ import { test } from 'node:test'
 const library = fileURLToPath(new URL('../../scripts/lib.sh', import.meta.url))
 
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), 'modelport-freshness-'))
+  const root = mkdtempSync(join(tmpdir(), 'aethergateway-freshness-'))
   t.after(() => rmSync(root, { recursive: true, force: true }))
   for (const path of [
     'src/main.rs', 'crates/ops-protocol/src/lib.rs', 'resources/catalog/models.json',

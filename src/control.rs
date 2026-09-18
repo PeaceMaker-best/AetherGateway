@@ -1395,7 +1395,7 @@ impl ControlStore {
         crate::config::validate_provider_base_url_for_request(
             &id,
             &record.base_url,
-            env_flag("MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS"),
+            env_flag("AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS"),
         )?;
         record.default_model = validate_non_empty("defaultModel", &record.default_model, 240)?;
         record.models = normalize_policy_list(record.models)?;
@@ -1614,7 +1614,7 @@ impl ControlStore {
         record.base_url = validate_credential_base_url(
             &record.provider_id,
             record.base_url,
-            env_flag("MODELPORT_ALLOW_PRIVATE_PROVIDER_URLS"),
+            env_flag("AETHERGATEWAY_ALLOW_PRIVATE_PROVIDER_URLS"),
         )?;
         record.status = validate_credential_status(&record.status)?;
         let now = now_millis();
@@ -2313,7 +2313,7 @@ impl ControlStore {
             api_key_id: None,
             quota_subject_id: None,
             quota_subject_aliases: Vec::new(),
-            api_key_name: Some("MODELPORT_AUTH_TOKEN".to_owned()),
+            api_key_name: Some("AETHERGATEWAY_AUTH_TOKEN".to_owned()),
             api_key_group: Some("legacy".to_owned()),
             team_id: None,
             team_name: None,
@@ -4039,7 +4039,7 @@ fn hash_secret(value: &str) -> String {
 pub(crate) fn quota_subject_for_seed(seed: &str) -> String {
     format!(
         "qsub_{}",
-        hash_secret(&format!("modelport-quota-subject-v1:{seed}"))
+        hash_secret(&format!("aethergateway-quota-subject-v1:{seed}"))
     )
 }
 
@@ -4114,7 +4114,7 @@ mod tests {
 
     fn failing_store_path(label: &str) -> PathBuf {
         let path = std::env::temp_dir().join(format!(
-            "modelport-{label}-{}-{}",
+            "aethergateway-{label}-{}-{}",
             std::process::id(),
             Uuid::new_v4().simple()
         ));
@@ -4180,13 +4180,13 @@ mod tests {
                 &created.public.id,
                 BindApiKeyScopeInput {
                     organization_id: "org_dave".to_owned(),
-                    project_id: "prj_quantpilot".to_owned(),
+                    project_id: "prj_signalfoundry".to_owned(),
                     environment_id: "env_test".to_owned(),
                 },
             )
             .unwrap();
         assert_eq!(bound.organization_id, "org_dave");
-        assert_eq!(bound.project_id, "prj_quantpilot");
+        assert_eq!(bound.project_id, "prj_signalfoundry");
         assert_eq!(bound.environment_id, "env_test");
 
         let mut headers = HeaderMap::new();
@@ -4194,7 +4194,7 @@ mod tests {
         let identity = store.authenticate_headers(&headers).unwrap().unwrap();
         let tenant = store.tenant_scope(&identity).unwrap();
         assert_eq!(tenant.organization_id.as_str(), "org_dave");
-        assert_eq!(tenant.project_id.as_str(), "prj_quantpilot");
+        assert_eq!(tenant.project_id.as_str(), "prj_signalfoundry");
         assert_eq!(tenant.environment_id.as_str(), "env_test");
     }
 
@@ -4208,7 +4208,7 @@ mod tests {
                     &created.public.id,
                     BindApiKeyScopeInput {
                         organization_id: "org dave".to_owned(),
-                        project_id: "prj_quantpilot".to_owned(),
+                        project_id: "prj_signalfoundry".to_owned(),
                         environment_id: "env_test".to_owned(),
                     },
                 )

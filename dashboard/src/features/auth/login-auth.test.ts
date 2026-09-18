@@ -15,7 +15,7 @@ describe('login auth helpers', () => {
     expect(buildOidcStartUrl(
       '/admin/auth/oidc/start?connection=corporate#authorize',
       '/logs?status=error#request',
-      'https://modelport.example',
+      'https://aethergateway.example',
     )).toBe(
       '/admin/auth/oidc/start?connection=corporate&returnTo=%2Flogs%3Fstatus%3Derror%23request#authorize',
     )
@@ -23,13 +23,13 @@ describe('login auth helpers', () => {
 
   it('replaces an existing returnTo value and preserves a same-origin absolute start URL', () => {
     const result = buildOidcStartUrl(
-      'https://modelport.example/admin/auth/oidc/start?returnTo=%2Funtrusted&connection=corporate',
+      'https://aethergateway.example/admin/auth/oidc/start?returnTo=%2Funtrusted&connection=corporate',
       '/dashboard',
-      'https://modelport.example',
+      'https://aethergateway.example',
     )
     const url = new URL(result)
 
-    expect(url.origin).toBe('https://modelport.example')
+    expect(url.origin).toBe('https://aethergateway.example')
     expect(url.searchParams.getAll('returnTo')).toEqual(['/dashboard'])
     expect(url.searchParams.get('connection')).toBe('corporate')
   })
@@ -38,7 +38,7 @@ describe('login auth helpers', () => {
     expect(() => buildOidcStartUrl(
       'javascript:alert(1)',
       '/dashboard',
-      'https://modelport.example',
+      'https://aethergateway.example',
     )).toThrow('Unsupported OIDC start URL protocol')
   })
 
@@ -46,17 +46,17 @@ describe('login auth helpers', () => {
     expect(() => buildOidcStartUrl(
       'https://auth.example/admin/auth/oidc/start',
       '/dashboard',
-      'https://modelport.example',
+      'https://aethergateway.example',
     )).toThrow('OIDC start URL must be same-origin')
     expect(() => buildOidcStartUrl(
-      '//modelport.example/admin/auth/oidc/start',
+      '//aethergateway.example/admin/auth/oidc/start',
       '/dashboard',
-      'https://modelport.example',
+      'https://aethergateway.example',
     )).toThrow('OIDC start URL must be same-origin')
     expect(() => buildOidcStartUrl(
       '/admin/auth/another-start',
       '/dashboard',
-      'https://modelport.example',
+      'https://aethergateway.example',
     )).toThrow('Unexpected OIDC start URL path')
   })
 

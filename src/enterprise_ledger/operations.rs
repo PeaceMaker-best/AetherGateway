@@ -111,7 +111,7 @@ impl EnterpriseLedger {
                                OR terminal_reason = 'downstream_cancelled'
                         )::bigint AS stream_failures,
                         COALESCE(avg(latency_ms), 0)::bigint AS average_latency_ms
-                    FROM modelport_gateway_requests
+                    FROM aethergateway_gateway_requests
                     WHERE traffic_class = 'business'
                       AND created_at >= now() - ($1::bigint * interval '1 second')
                     "#,
@@ -123,31 +123,31 @@ impl EnterpriseLedger {
                     r#"
                     SELECT
                         (SELECT count(*)::bigint
-                         FROM modelport_gateway_requests
+                         FROM aethergateway_gateway_requests
                          WHERE billing_mode = 'unreconciled'
                            AND updated_at >= now() - interval '24 hours')
                             AS unreconciled_requests,
                         (SELECT count(*)::bigint
-                         FROM modelport_usage_reservations
+                         FROM aethergateway_usage_reservations
                          WHERE state = 'reserved') AS open_usage_reservations,
                         COALESCE((
                             SELECT (EXTRACT(EPOCH FROM (now() - min(created_at))) * 1000)::bigint
-                            FROM modelport_usage_reservations
+                            FROM aethergateway_usage_reservations
                             WHERE state = 'reserved'
                         ), 0)::bigint AS oldest_open_reservation_age_ms,
                         (SELECT count(*)::bigint
-                         FROM modelport_budget_accounts
+                         FROM aethergateway_budget_accounts
                          WHERE limit_microunits IS NOT NULL
                            AND limit_microunits > 0
                            AND reserved_microunits + settled_microunits
                                >= limit_microunits * 0.8) AS budget_warning,
                         (SELECT count(*)::bigint
-                         FROM modelport_budget_accounts
+                         FROM aethergateway_budget_accounts
                          WHERE limit_microunits IS NOT NULL
                            AND reserved_microunits + settled_microunits
                                >= limit_microunits) AS budget_exhausted,
                         (SELECT max((EXTRACT(EPOCH FROM occurred_at) * 1000)::bigint)
-                         FROM modelport_audit_events
+                         FROM aethergateway_audit_events
                          WHERE activity_type IN ('config_change', 'high_risk_change_applied'))
                             AS recent_change_at_ms
                     "#,
@@ -321,7 +321,7 @@ impl EnterpriseLedger {
                 let mut transaction = pool.begin().await?;
                 let existing = sqlx::query(
                     "SELECT incident_id, status
-                     FROM modelport_ops_incidents
+                     FROM aethergateway_ops_incidents
                      WHERE event_key = $1
                      FOR UPDATE",
                 )
@@ -357,7 +357,7 @@ impl EnterpriseLedger {
                         (previous_status.as_str(), None, 0_i64, None)
                     };
                     sqlx::query(
-                        "UPDATE modelport_ops_incidents
+                        "UPDATE aethergateway_ops_incidents
                          SET detector_type = $2, severity = $3, status = $4,
                              title = $5, summary = $6, affected_scope = $7,
                              recovery_criteria = $8,
@@ -398,7 +398,7 @@ impl EnterpriseLedger {
                     }
                     let incident_id = format!("opi_{}", Uuid::new_v4().simple());
                     sqlx::query(
-                        "INSERT INTO modelport_ops_incidents (
+                        "INSERT INTO aethergateway_ops_incidents (
                             incident_id, event_key, detector_type, severity, status,
                             title, summary, affected_scope, recovery_criteria,
                             first_seen_at, last_seen_at
@@ -427,7 +427,7 @@ impl EnterpriseLedger {
                 };
 
                 sqlx::query(
-                    "INSERT INTO modelport_ops_incident_evidence (
+                    "INSERT INTO aethergateway_ops_incident_evidence (
                         evidence_id, incident_id, evidence_hash, observed_at, evidence
                      ) VALUES (
                         $1, $2, $3, to_timestamp($4::double precision / 1000.0), $5
@@ -442,7 +442,7 @@ impl EnterpriseLedger {
                 .await?;
                 if let (Some(event_type), Some(message)) = (timeline_event, timeline_message) {
                     sqlx::query(
-                        "INSERT INTO modelport_ops_incident_timeline (
+                        "INSERT INTO aethergateway_ops_incident_timeline (
                             timeline_id, incident_id, event_type, actor_id,
                             actor_name, message, occurred_at
                          ) VALUES (
@@ -482,7 +482,7 @@ impl EnterpriseLedger {
             }
             LedgerBackend::Postgres(pool) => {
                 sqlx::query(
-                    "INSERT INTO modelport_ops_agent_heartbeats (
+                    "INSERT INTO aethergateway_ops_agent_heartbeats (
                         instance_id, agent_version, mode, rule_set_version,
                         queue_depth, interval_seconds, analysis_enabled,
                         selected_model, model_status, model_last_success_at, observed_at
@@ -570,7 +570,7 @@ impl EnterpriseLedger {
                             (EXTRACT(EPOCH FROM first_seen_at) * 1000)::bigint AS first_seen_at_ms,
                             (EXTRACT(EPOCH FROM last_seen_at) * 1000)::bigint AS last_seen_at_ms,
                             (EXTRACT(EPOCH FROM resolved_at) * 1000)::bigint AS resolved_at_ms
-                         FROM modelport_ops_incidents
+                         FROM aethergateway_ops_incidents
                          WHERE status = $1
                          ORDER BY last_seen_at DESC, incident_id DESC
                          LIMIT $2",
@@ -585,7 +585,7 @@ impl EnterpriseLedger {
                             (EXTRACT(EPOCH FROM first_seen_at) * 1000)::bigint AS first_seen_at_ms,
                             (EXTRACT(EPOCH FROM last_seen_at) * 1000)::bigint AS last_seen_at_ms,
                             (EXTRACT(EPOCH FROM resolved_at) * 1000)::bigint AS resolved_at_ms
-                         FROM modelport_ops_incidents
+                         FROM aethergateway_ops_incidents
                          ORDER BY last_seen_at DESC, incident_id DESC
                          LIMIT $1",
                     )
@@ -605,7 +605,7 @@ impl EnterpriseLedger {
                                 WHEN 'SEV-3' THEN 3 WHEN 'SEV-4' THEN 4
                                 ELSE 5 END
                             ) FILTER (WHERE status <> 'resolved') AS highest
-                     FROM modelport_ops_incidents",
+                     FROM aethergateway_ops_incidents",
                 )
                 .fetch_one(pool)
                 .await?;
@@ -615,7 +615,7 @@ impl EnterpriseLedger {
                             (EXTRACT(EPOCH FROM model_last_success_at) * 1000)::bigint
                                 AS model_last_success_at_ms,
                             (EXTRACT(EPOCH FROM observed_at) * 1000)::bigint AS observed_at_ms
-                     FROM modelport_ops_agent_heartbeats
+                     FROM aethergateway_ops_agent_heartbeats
                      ORDER BY observed_at DESC, instance_id",
                 )
                 .fetch_all(pool)
@@ -654,7 +654,7 @@ impl EnterpriseLedger {
                         (EXTRACT(EPOCH FROM first_seen_at) * 1000)::bigint AS first_seen_at_ms,
                         (EXTRACT(EPOCH FROM last_seen_at) * 1000)::bigint AS last_seen_at_ms,
                         (EXTRACT(EPOCH FROM resolved_at) * 1000)::bigint AS resolved_at_ms
-                     FROM modelport_ops_incidents WHERE incident_id = $1",
+                     FROM aethergateway_ops_incidents WHERE incident_id = $1",
                 )
                 .bind(incident_id)
                 .fetch_optional(pool)
@@ -663,7 +663,7 @@ impl EnterpriseLedger {
                 let evidence = sqlx::query(
                     "SELECT evidence_id, evidence,
                             (EXTRACT(EPOCH FROM observed_at) * 1000)::bigint AS observed_at_ms
-                     FROM modelport_ops_incident_evidence
+                     FROM aethergateway_ops_incident_evidence
                      WHERE incident_id = $1
                      ORDER BY observed_at DESC, evidence_id DESC LIMIT 100",
                 )
@@ -683,7 +683,7 @@ impl EnterpriseLedger {
                 let timeline = sqlx::query(
                     "SELECT timeline_id, event_type, actor_id, actor_name, message,
                             (EXTRACT(EPOCH FROM occurred_at) * 1000)::bigint AS occurred_at_ms
-                     FROM modelport_ops_incident_timeline
+                     FROM aethergateway_ops_incident_timeline
                      WHERE incident_id = $1
                      ORDER BY occurred_at, timeline_id LIMIT 500",
                 )
@@ -761,7 +761,7 @@ impl EnterpriseLedger {
             LedgerBackend::Postgres(pool) => {
                 let mut transaction = pool.begin().await?;
                 let result = sqlx::query(
-                    "UPDATE modelport_ops_incidents
+                    "UPDATE aethergateway_ops_incidents
                      SET status = $2, updated_at = now()
                      WHERE incident_id = $1 AND status <> 'resolved'",
                 )
@@ -772,7 +772,7 @@ impl EnterpriseLedger {
                 if result.rows_affected() == 0 {
                     let exists = sqlx::query_scalar::<_, bool>(
                         "SELECT EXISTS(
-                            SELECT 1 FROM modelport_ops_incidents WHERE incident_id = $1
+                            SELECT 1 FROM aethergateway_ops_incidents WHERE incident_id = $1
                          )",
                     )
                     .bind(incident_id)
@@ -787,7 +787,7 @@ impl EnterpriseLedger {
                     });
                 }
                 sqlx::query(
-                    "INSERT INTO modelport_ops_incident_timeline (
+                    "INSERT INTO aethergateway_ops_incident_timeline (
                         timeline_id, incident_id, event_type, actor_id, actor_name, message
                      ) VALUES ($1, $2, 'status_changed', $3, $4, $5)",
                 )
@@ -852,7 +852,7 @@ impl EnterpriseLedger {
                 let mut transaction = pool.begin().await?;
                 let exists = sqlx::query_scalar::<_, bool>(
                     "SELECT EXISTS(
-                        SELECT 1 FROM modelport_ops_incidents WHERE incident_id = $1
+                        SELECT 1 FROM aethergateway_ops_incidents WHERE incident_id = $1
                      )",
                 )
                 .bind(incident_id)
@@ -864,7 +864,7 @@ impl EnterpriseLedger {
                     ));
                 }
                 sqlx::query(
-                    "INSERT INTO modelport_ops_incident_feedback (
+                    "INSERT INTO aethergateway_ops_incident_feedback (
                         feedback_id, incident_id, actor_id, actor_name, outcome,
                         root_cause_correct, recommendation_adopted, note
                      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
@@ -880,7 +880,7 @@ impl EnterpriseLedger {
                 .execute(&mut *transaction)
                 .await?;
                 sqlx::query(
-                    "INSERT INTO modelport_ops_incident_timeline (
+                    "INSERT INTO aethergateway_ops_incident_timeline (
                         timeline_id, incident_id, event_type, actor_id, actor_name, message
                      ) VALUES ($1, $2, 'feedback', $3, $4, $5)",
                 )
@@ -1055,7 +1055,7 @@ async fn fetch_ops_incident_row(
             (EXTRACT(EPOCH FROM first_seen_at) * 1000)::bigint AS first_seen_at_ms,
             (EXTRACT(EPOCH FROM last_seen_at) * 1000)::bigint AS last_seen_at_ms,
             (EXTRACT(EPOCH FROM resolved_at) * 1000)::bigint AS resolved_at_ms
-         FROM modelport_ops_incidents WHERE incident_id = $1",
+         FROM aethergateway_ops_incidents WHERE incident_id = $1",
     )
     .bind(incident_id)
     .fetch_one(&mut **transaction)

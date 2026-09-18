@@ -1,5 +1,5 @@
 {
-  "apiVersion": "runtime.modelport.io/v1alpha1", "kind": "RuntimeAdapterComputeInventory",
+  "apiVersion": "runtime.aethergateway.io/v1alpha1", "kind": "RuntimeAdapterComputeInventory",
   "metadata": {
     "adapterId": "qwen-llama-cpp-reference", "snapshotId": "snapshot:qwen-local-20260823t040000z", "observedAt": "2026-08-23T04:00:00Z",
     "source": { "collectorId": "qwen-llama-cpp-reference", "collectorVersion": "0.1.0", "sourceRevision": "fixture" },

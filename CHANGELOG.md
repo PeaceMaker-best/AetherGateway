@@ -61,7 +61,7 @@ All notable AetherGateway changes are recorded here. The project follows
 
 - Generate minimal local configuration and independent credentials with
   `scripts/setup.sh`; preserve existing files on rerun.
-- Honor deployment `MODELPORT_BIND` with TOML and allow external-database
+- Honor deployment `AETHERGATEWAY_BIND` with TOML and allow external-database
   Compose rendering without an unused internal database password.
 - Resume the four-step setup journey from saved configuration, require a
   completed request for success, and link logs to exact ledger evidence.
@@ -122,7 +122,7 @@ All notable AetherGateway changes are recorded here. The project follows
   learning documents were consolidated into maintained references.
 - PostgreSQL is mandatory for every runtime deployment.
 - The default Compose and CI database is PostgreSQL 18.4, using the PostgreSQL
-  18 versioned data directory and a new `modelport-postgres-18` named volume.
+  18 versioned data directory and a new `aethergateway-postgres-18` named volume.
 - The dashboard runtime uses the current Nginx 1.30.4 stable security release.
 - Dashboard, logs, quotas, audit, and management statistics use relational
   operational rows instead of process estimates or control-document arrays.
@@ -151,7 +151,7 @@ Migration `0005_current_operational_schema.sql` now preserves existing
 normalized request/attempt rows, backfills conservative operational defaults,
 and derives request-level Provider/retry snapshots from historical attempts.
 Back up PostgreSQL and run a restore drill before upgrading. Compose still uses
-the PostgreSQL 18 volume `modelport_modelport-postgres-18`; export any older
+the PostgreSQL 18 volume `aethergateway_aethergateway-postgres-18`; export any older
 volume before removing it.
 
 [Unreleased]: https://github.com/PeaceMaker-best/AetherGateway/compare/v0.1.3...HEAD

@@ -1399,7 +1399,7 @@ dependencies = [
  "futures-util",
  "httpdate",
  "jsonschema",
- "modelport-ops-protocol",
+ "aethergateway-ops-protocol",
  "openidconnect",
  "rand_core 0.6.4",
  "reqwest",
@@ -1418,12 +1418,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "modelport-ops-agent"
+name = "aethergateway-ops-agent"
 version = "0.1.3"
 dependencies = [
  "anyhow",
  "axum",
- "modelport-ops-protocol",
+ "aethergateway-ops-protocol",
  "reqwest",
  "serde_json",
  "sha2",
@@ -1435,7 +1435,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "modelport-ops-protocol"
+name = "aethergateway-ops-protocol"
 version = "0.1.3"
 dependencies = [
  "serde",

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COMPOSE_FILE="${MODELPORT_COMPOSE_FILE:-$ROOT_DIR/docker-compose.yml}"
-BACKUP_DIR="${MODELPORT_BACKUP_DIR:-$ROOT_DIR/backups}"
-RETENTION_DAYS="${MODELPORT_BACKUP_RETENTION_DAYS:-14}"
-POSTGRES_IMAGE="${MODELPORT_BACKUP_POSTGRES_IMAGE:-postgres:18.4-alpine}"
+COMPOSE_FILE="${AETHERGATEWAY_COMPOSE_FILE:-$ROOT_DIR/docker-compose.yml}"
+BACKUP_DIR="${AETHERGATEWAY_BACKUP_DIR:-$ROOT_DIR/backups}"
+RETENTION_DAYS="${AETHERGATEWAY_BACKUP_RETENTION_DAYS:-14}"
+POSTGRES_IMAGE="${AETHERGATEWAY_BACKUP_POSTGRES_IMAGE:-postgres:18.4-alpine}"
 STAGING_DIR=""
 DRILL_CONTAINER=""
 
@@ -18,10 +18,10 @@ Usage:
   scripts/backup-compose.sh upgrade-drill ARCHIVE
 
 Environment:
-  MODELPORT_COMPOSE_FILE          Deployment manifest (default: ./docker-compose.yml)
-  MODELPORT_BACKUP_DIR             Destination directory (default: ./backups)
-  MODELPORT_BACKUP_RETENTION_DAYS  Delete completed archives older than this (default: 14)
-  MODELPORT_BACKUP_POSTGRES_IMAGE  Ephemeral restore/upgrade image (default: postgres:18.4-alpine)
+  AETHERGATEWAY_COMPOSE_FILE          Deployment manifest (default: ./docker-compose.yml)
+  AETHERGATEWAY_BACKUP_DIR             Destination directory (default: ./backups)
+  AETHERGATEWAY_BACKUP_RETENTION_DAYS  Delete completed archives older than this (default: 14)
+  AETHERGATEWAY_BACKUP_POSTGRES_IMAGE  Ephemeral restore/upgrade image (default: postgres:18.4-alpine)
 
 New archives contain a PostgreSQL dump plus secret-free deployment provenance.
 Runtime .env and config.toml files are deliberately excluded; recover them from
@@ -31,12 +31,12 @@ USAGE
 }
 
 die() {
-  printf '[modelport-backup] ERROR: %s\n' "$*" >&2
+  printf '[aethergateway-backup] ERROR: %s\n' "$*" >&2
   exit 1
 }
 
 cleanup() {
-  if [[ -n "$DRILL_CONTAINER" && "$DRILL_CONTAINER" == modelport-restore-drill-* ]]; then
+  if [[ -n "$DRILL_CONTAINER" && "$DRILL_CONTAINER" == aethergateway-restore-drill-* ]]; then
     docker rm -f "$DRILL_CONTAINER" >/dev/null 2>&1 || true
   fi
   if [[ -n "$STAGING_DIR" && -d "$STAGING_DIR" ]]; then
@@ -58,7 +58,7 @@ validate_settings() {
 prepare_staging() {
   local parent="$1"
   mkdir -p "$parent"
-  STAGING_DIR="$(mktemp -d "$parent/.modelport-backup.XXXXXX")"
+  STAGING_DIR="$(mktemp -d "$parent/.aethergateway-backup.XXXXXX")"
   chmod 700 "$STAGING_DIR"
 }
 
@@ -148,7 +148,7 @@ if schema == 1:
         if not (root / name).is_file():
             raise SystemExit(f"legacy schema-v1 backup is missing {name}")
     print(
-        "[modelport-backup] WARNING: legacy schema-v1 archive contains plaintext "
+        "[aethergateway-backup] WARNING: legacy schema-v1 archive contains plaintext "
         "runtime configuration and must be treated as credential material",
         file=sys.stderr,
     )
@@ -204,12 +204,12 @@ create_backup() {
   verify_dump_catalog
 
   container_id="$(
-    docker compose -f "$COMPOSE_FILE" ps -q modelport
+    docker compose -f "$COMPOSE_FILE" ps -q aethergateway
   )"
   [[ -n "$container_id" ]] || die "Compose AetherGateway service is not running"
   image_id="$(docker inspect "$container_id" --format '{{.Image}}')"
   revision="$(docker image inspect "$image_id" --format '{{index .Config.Labels "org.opencontainers.image.revision"}}' 2>/dev/null || true)"
-  source_state="$(docker image inspect "$image_id" --format '{{index .Config.Labels "io.modelport.source-state"}}' 2>/dev/null || true)"
+  source_state="$(docker image inspect "$image_id" --format '{{index .Config.Labels "io.aethergateway.source-state"}}' 2>/dev/null || true)"
   postgres_container="$(docker compose -f "$COMPOSE_FILE" ps -q postgres)"
   [[ -n "$postgres_container" ]] || die "Compose PostgreSQL service is not running"
   postgres_image="$(docker inspect "$postgres_container" --format '{{.Config.Image}}')"
@@ -261,13 +261,13 @@ PY
     chmod 600 SHA256SUMS
   )
 
-  final_archive="$BACKUP_DIR/modelport-$timestamp.tar.gz"
-  temporary_archive="$BACKUP_DIR/.modelport-$timestamp.tar.gz.tmp"
+  final_archive="$BACKUP_DIR/aethergateway-$timestamp.tar.gz"
+  temporary_archive="$BACKUP_DIR/.aethergateway-$timestamp.tar.gz.tmp"
   tar -czf "$temporary_archive" -C "$STAGING_DIR" \
     SHA256SUMS manifest.json postgres.dump
   chmod 600 "$temporary_archive"
   mv -- "$temporary_archive" "$final_archive"
-  find "$BACKUP_DIR" -maxdepth 1 -type f -name 'modelport-*.tar.gz' \
+  find "$BACKUP_DIR" -maxdepth 1 -type f -name 'aethergateway-*.tar.gz' \
     -mtime "+$RETENTION_DAYS" -delete
   printf '%s\n' "$final_archive"
 }
@@ -277,36 +277,36 @@ verify_backup() {
   extract_archive "$archive"
   verify_dump_catalog
   python3 -m json.tool "$STAGING_DIR/manifest.json" >/dev/null
-  printf '[modelport-backup] verified %s\n' "$archive"
+  printf '[aethergateway-backup] verified %s\n' "$archive"
 }
 
 drill_backup() {
   local archive="$1" require_target_major="${2:-}" namespace_count target_version source_version
   extract_archive "$archive"
   verify_dump_catalog
-  DRILL_CONTAINER="modelport-restore-drill-$$-$RANDOM"
+  DRILL_CONTAINER="aethergateway-restore-drill-$$-$RANDOM"
   docker run --detach --rm --name "$DRILL_CONTAINER" \
     -e POSTGRES_PASSWORD=local-restore-drill-only \
-    -e POSTGRES_USER=modelport \
-    -e POSTGRES_DB=modelport \
+    -e POSTGRES_USER=aethergateway \
+    -e POSTGRES_DB=aethergateway \
     "$POSTGRES_IMAGE" >/dev/null
   for _ in $(seq 1 60); do
-    if docker exec "$DRILL_CONTAINER" pg_isready -U modelport -d modelport >/dev/null 2>&1; then
+    if docker exec "$DRILL_CONTAINER" pg_isready -U aethergateway -d aethergateway >/dev/null 2>&1; then
       break
     fi
     sleep 1
   done
-  docker exec "$DRILL_CONTAINER" pg_isready -U modelport -d modelport >/dev/null \
+  docker exec "$DRILL_CONTAINER" pg_isready -U aethergateway -d aethergateway >/dev/null \
     || die "ephemeral PostgreSQL did not become ready"
-  target_version="$(docker exec "$DRILL_CONTAINER" psql -U modelport -d modelport -Atc \
+  target_version="$(docker exec "$DRILL_CONTAINER" psql -U aethergateway -d aethergateway -Atc \
     'show server_version')"
   if [[ -n "$require_target_major" && "${target_version%%.*}" != "$require_target_major" ]]; then
     die "upgrade drill requires PostgreSQL $require_target_major, got $target_version from $POSTGRES_IMAGE"
   fi
   docker exec -i "$DRILL_CONTAINER" pg_restore --exit-on-error --no-owner \
-    --no-privileges -U modelport -d modelport < "$STAGING_DIR/postgres.dump"
-  namespace_count="$(docker exec "$DRILL_CONTAINER" psql -U modelport -d modelport -Atc \
-    "select count(*) from modelport_state where namespace in ('auth', 'control')")"
+    --no-privileges -U aethergateway -d aethergateway < "$STAGING_DIR/postgres.dump"
+  namespace_count="$(docker exec "$DRILL_CONTAINER" psql -U aethergateway -d aethergateway -Atc \
+    "select count(*) from aethergateway_state where namespace in ('auth', 'control')")"
   [[ "$namespace_count" == "2" ]] \
     || die "restored database is missing auth/control namespaces"
   source_version="$(python3 - "$STAGING_DIR/manifest.json" <<'PY'
@@ -318,10 +318,10 @@ with open(sys.argv[1], encoding="utf-8") as handle:
 PY
 )"
   if [[ -n "$require_target_major" ]]; then
-    printf '[modelport-backup] isolated PostgreSQL upgrade drill passed: source=%s target=%s archive=%s\n' \
+    printf '[aethergateway-backup] isolated PostgreSQL upgrade drill passed: source=%s target=%s archive=%s\n' \
       "$source_version" "$target_version" "$archive"
   else
-    printf '[modelport-backup] isolated restore drill passed for %s on PostgreSQL %s\n' \
+    printf '[aethergateway-backup] isolated restore drill passed for %s on PostgreSQL %s\n' \
       "$archive" "$target_version"
   fi
 }

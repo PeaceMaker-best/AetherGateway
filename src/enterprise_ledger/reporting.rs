@@ -109,7 +109,7 @@ impl EnterpriseLedger {
                         count(DISTINCT organization_id)::bigint AS organization_count,
                         count(DISTINCT (organization_id, project_id))::bigint AS project_count,
                         count(DISTINCT (organization_id, project_id, environment_id))::bigint AS environment_count
-                     FROM modelport_gateway_requests",
+                     FROM aethergateway_gateway_requests",
                 )
                 .fetch_one(pool)
                 .await?;
@@ -313,7 +313,7 @@ impl EnterpriseLedger {
                 count(r.first_byte_latency_ms)::bigint AS first_byte_latency_sample_count,
                 (EXTRACT(EPOCH FROM min(r.created_at)) * 1000)::bigint AS first_timestamp_ms,
                 (EXTRACT(EPOCH FROM max(r.created_at)) * 1000)::bigint AS last_timestamp_ms
-             FROM modelport_gateway_requests r",
+             FROM aethergateway_gateway_requests r",
         );
         push_operational_log_filters(&mut summary_query, query);
         let summary_row = summary_query.build().fetch_one(pool).await?;
@@ -431,7 +431,7 @@ impl EnterpriseLedger {
                 COALESCE(sum(cache_write_tokens), 0)::bigint AS cache_write_tokens,
                 COALESCE(sum(cache_read_tokens), 0)::bigint AS cache_read_tokens,
                 COALESCE(sum(cost_amount_microunits), 0)::bigint AS cost_microunits
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE state <> 'started'
                AND traffic_class = 'business'
                AND created_at >= to_timestamp($1::double precision / 1000.0)
@@ -513,7 +513,7 @@ impl EnterpriseLedger {
                 COALESCE(sum(cache_write_tokens), 0)::bigint AS cache_write_tokens,
                 COALESCE(sum(cache_read_tokens), 0)::bigint AS cache_read_tokens,
                 COALESCE(sum(cost_amount_microunits), 0)::bigint AS cost_microunits
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE state <> 'started'
                AND traffic_class = 'business'
                AND created_at >= to_timestamp($1::double precision / 1000.0)
@@ -570,7 +570,7 @@ impl EnterpriseLedger {
                     input_tokens + output_tokens + cache_write_tokens + cache_read_tokens
                 ), 0)::bigint AS tokens,
                 COALESCE(sum(cost_amount_microunits), 0)::bigint AS cost_microunits
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE state <> 'started'
                AND traffic_class = 'business'
                AND created_at >= to_timestamp($1::double precision / 1000.0)
@@ -664,7 +664,7 @@ impl EnterpriseLedger {
                 floor(COALESCE(avg(latency_ms), 0))::bigint AS avg,
                 COALESCE(max(latency_ms), 0)::bigint AS max,
                 count(*)::bigint AS count
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE state <> 'started'
                AND created_at >= to_timestamp($1::double precision / 1000.0)",
         )
@@ -681,7 +681,7 @@ impl EnterpriseLedger {
                 floor(COALESCE(avg(latency_ms), 0))::bigint AS avg,
                 COALESCE(max(latency_ms), 0)::bigint AS max,
                 count(*)::bigint AS count
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE state <> 'started'
                AND created_at >= to_timestamp($1::double precision / 1000.0)
              GROUP BY COALESCE(resolved_model, requested_model, 'unknown')
@@ -701,7 +701,7 @@ impl EnterpriseLedger {
                 floor(COALESCE(avg(latency_ms), 0))::bigint AS avg,
                 COALESCE(max(latency_ms), 0)::bigint AS max,
                 count(*)::bigint AS count
-             FROM modelport_gateway_requests
+             FROM aethergateway_gateway_requests
              WHERE state <> 'started'
                AND created_at >= to_timestamp($1::double precision / 1000.0)
              GROUP BY COALESCE(provider_id, 'unrouted')
@@ -822,7 +822,7 @@ impl EnterpriseLedger {
                             input_tokens + output_tokens
                             + cache_write_tokens + cache_read_tokens
                         ), 0)::bigint AS tokens_today
-                     FROM modelport_gateway_requests
+                     FROM aethergateway_gateway_requests
                      WHERE state <> 'started'
                        AND api_key_id IS NOT NULL
                        AND created_at >= (
@@ -849,7 +849,7 @@ impl EnterpriseLedger {
                         COALESCE(sum(billable_cost_microunits) FILTER (
                             WHERE chargeable
                         ), 0)::bigint AS monthly_spend_microunits
-                     FROM modelport_gateway_requests
+                     FROM aethergateway_gateway_requests
                      WHERE state <> 'started'
                        AND team_id IS NOT NULL
                        AND created_at >= (
@@ -861,7 +861,7 @@ impl EnterpriseLedger {
                 .await?;
                 let user_rows = sqlx::query(
                     "SELECT principal_id, count(*)::bigint AS requests_24h
-                     FROM modelport_gateway_requests
+                     FROM aethergateway_gateway_requests
                      WHERE state <> 'started'
                        AND created_at >= now() - interval '24 hours'
                      GROUP BY principal_id",

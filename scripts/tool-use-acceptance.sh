@@ -7,7 +7,7 @@ source "$SCRIPT_DIR/lib.sh"
 
 mode="mock"
 timeout_secs=60
-max_tokens="${MODELPORT_TOOL_USE_MAX_TOKENS:-128}"
+max_tokens="${AETHERGATEWAY_TOOL_USE_MAX_TOKENS:-128}"
 
 usage() {
   cat <<'USAGE'
@@ -25,7 +25,7 @@ Options:
   -h, --help           Show this help.
 
 Required in --mock mode:
-  MODELPORT_ADMIN_PASSWORD must be set so the script can create and clean up a temporary provider.
+  AETHERGATEWAY_ADMIN_PASSWORD must be set so the script can create and clean up a temporary provider.
 
 USAGE
 }
@@ -65,7 +65,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 if [[ -z "$max_tokens" || ! "$max_tokens" =~ ^[0-9]+$ || "$max_tokens" -lt 1 ]]; then
-  die "MODELPORT_TOOL_USE_MAX_TOKENS must be a positive integer"
+  die "AETHERGATEWAY_TOOL_USE_MAX_TOKENS must be a positive integer"
 fi
 
 load_env
@@ -87,8 +87,8 @@ mock_ready_file="$(mktemp)"
 mock_log_file="$(mktemp)"
 temp_files=("$cookie_file" "$body_file" "$mock_server_file" "$mock_ready_file" "$mock_log_file")
 
-admin_username="${MODELPORT_ADMIN_USERNAME:-admin}"
-admin_password="${MODELPORT_ADMIN_PASSWORD:-}"
+admin_username="${AETHERGATEWAY_ADMIN_USERNAME:-admin}"
+admin_password="${AETHERGATEWAY_ADMIN_PASSWORD:-}"
 provider_id=""
 mock_pid=""
 mock_port=""
@@ -234,7 +234,7 @@ parallel_tool_request() {
       tool_choice: { type: "auto", disable_parallel_tool_use: false },
       messages: [{
         role: "user",
-        content: "MODELPORT_PARALLEL_TOOL_FIXTURE"
+        content: "AETHERGATEWAY_PARALLEL_TOOL_FIXTURE"
       }]
     }));
   ' "$model" "$stream" "$max_tokens"
@@ -359,7 +359,7 @@ strict_schema_guard_request() {
         }
       }],
       tool_choice: { type: "tool", name: "read_file" },
-      messages: [{ role: "user", content: "MODELPORT_SCHEMA_MISMATCH_FIXTURE" }]
+      messages: [{ role: "user", content: "AETHERGATEWAY_SCHEMA_MISMATCH_FIXTURE" }]
     }));
   ' "$model"
 }
@@ -369,8 +369,8 @@ post_message() {
   curl_local -sS -m "$timeout_secs" \
     -o "$body_file" \
     -w '%{http_code}' \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
-    -H 'x-modelport-traffic-class: synthetic' \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
+    -H 'x-aethergateway-traffic-class: synthetic' \
     -H 'Content-Type: application/json' \
     "$(base_url)/v1/messages" \
     -d "$payload" || true
@@ -381,8 +381,8 @@ post_message_stream() {
   curl_local -N -sS -m "$timeout_secs" \
     -o "$body_file" \
     -w '%{http_code}' \
-    -H "x-api-key: $MODELPORT_AUTH_TOKEN" \
-    -H 'x-modelport-traffic-class: synthetic' \
+    -H "x-api-key: $AETHERGATEWAY_AUTH_TOKEN" \
+    -H 'x-aethergateway-traffic-class: synthetic' \
     -H 'Content-Type: application/json' \
     "$(base_url)/v1/messages" \
     -d "$payload" || true
@@ -580,14 +580,14 @@ assert_mock_received_parallel_false() {
 }
 
 mock_provider_host() {
-  if [[ -n "${MODELPORT_TOOL_USE_MOCK_HOST:-}" ]]; then
-    printf '%s' "$MODELPORT_TOOL_USE_MOCK_HOST"
+  if [[ -n "${AETHERGATEWAY_TOOL_USE_MOCK_HOST:-}" ]]; then
+    printf '%s' "$AETHERGATEWAY_TOOL_USE_MOCK_HOST"
     return
   fi
 
   if command -v docker >/dev/null 2>&1 \
-    && docker compose ps modelport --status running >/dev/null 2>&1 \
-    && docker compose ps modelport --status running | grep -q 'modelport-modelport'; then
+    && docker compose ps aethergateway --status running >/dev/null 2>&1 \
+    && docker compose ps aethergateway --status running | grep -q 'aethergateway-aethergateway'; then
     printf '%s' 'host.docker.internal'
     return
   fi
@@ -628,7 +628,7 @@ const server = http.createServer(async (req, res) => {
   const body = JSON.parse(raw || "{}");
   const lastMessage = [...(body.messages || [])].reverse().find((message) => message.role !== "system");
   const lastText = typeof lastMessage?.content === "string" ? lastMessage.content : "";
-  const parallelFixture = lastText.includes("MODELPORT_PARALLEL_TOOL_FIXTURE");
+  const parallelFixture = lastText.includes("AETHERGATEWAY_PARALLEL_TOOL_FIXTURE");
 
   if (body.stream) {
     res.writeHead(200, {
@@ -690,7 +690,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (lastText.includes("MODELPORT_INVALID_ARGUMENTS_FIXTURE")) {
+  if (lastText.includes("AETHERGATEWAY_INVALID_ARGUMENTS_FIXTURE")) {
     writeJson(res, {
       id: "chatcmpl_invalid_arguments_fixture",
       choices: [{
@@ -709,7 +709,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (lastText.includes("MODELPORT_SCHEMA_MISMATCH_FIXTURE")) {
+  if (lastText.includes("AETHERGATEWAY_SCHEMA_MISMATCH_FIXTURE")) {
     writeJson(res, {
       id: "chatcmpl_schema_mismatch_fixture",
       choices: [{
@@ -778,7 +778,7 @@ NODE
 
 login_admin() {
   if [[ -z "$admin_password" ]]; then
-    die "MODELPORT_ADMIN_PASSWORD is required in --mock mode"
+    die "AETHERGATEWAY_ADMIN_PASSWORD is required in --mock mode"
   fi
 
   local status
@@ -924,7 +924,7 @@ run_strict_response_rejections() {
   fi
   ok "strict response validation blocks undeclared upstream tool names"
 
-  status="$(post_message "$(strict_response_guard_request "$test_model" "read_file" "MODELPORT_INVALID_ARGUMENTS_FIXTURE")")"
+  status="$(post_message "$(strict_response_guard_request "$test_model" "read_file" "AETHERGATEWAY_INVALID_ARGUMENTS_FIXTURE")")"
   expect_status "$status" "502" "strict non-object upstream arguments rejection"
   if ! grep -q 'must be a JSON object' "$body_file"; then
     printf '[fail] strict response error did not identify non-object arguments\n' >&2

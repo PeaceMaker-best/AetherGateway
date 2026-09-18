@@ -12,7 +12,7 @@ teams. Administrators connect local or cloud models and define access boundaries
 developers copy client configuration and inspect request, routing, usage and
 billing evidence when something fails. Licensed under MIT.
 
-![AetherGateway architecture overview](docs/assets/modelport-overview.svg)
+![AetherGateway architecture overview](docs/assets/aethergateway-overview.svg)
 
 ## What You Get
 

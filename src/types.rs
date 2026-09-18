@@ -224,7 +224,7 @@ pub fn openai_response_to_anthropic(
         .unwrap_or(0);
 
     Ok(json!({
-        "id": format!("msg_{}", response.get("id").and_then(Value::as_str).unwrap_or("modelport")),
+        "id": format!("msg_{}", response.get("id").and_then(Value::as_str).unwrap_or("aethergateway")),
         "type": "message",
         "role": "assistant",
         "model": requested_model,

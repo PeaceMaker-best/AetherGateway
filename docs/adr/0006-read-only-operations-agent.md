@@ -19,7 +19,7 @@ reviewable incidents.
 
 - AetherGateway remains the policy and data boundary. The agent has no PostgreSQL
   connection and uses `/internal/ops/v1` with a dedicated expiring service
-  account whose exact purpose is `modelport_ops_agent`.
+  account whose exact purpose is `aethergateway_ops_agent`.
 - Detection is deterministic and versioned. The MVP evaluates readiness and
   storage, Provider health, request anomalies, budget capacity, ledger backlog,
   and post-change verification.
