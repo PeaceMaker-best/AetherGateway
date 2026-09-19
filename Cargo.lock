@@ -3,6 +3,31 @@
 version = 4
 
 [[package]]
+name = "aethergateway-ops-agent"
+version = "0.1.3"
+dependencies = [
+ "aethergateway-ops-protocol",
+ "anyhow",
+ "axum",
+ "reqwest",
+ "serde_json",
+ "sha2",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "aethergateway-ops-protocol"
+version = "0.1.3"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ahash"
 version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1393,13 +1418,13 @@ dependencies = [
 name = "model-port"
 version = "0.1.3"
 dependencies = [
+ "aethergateway-ops-protocol",
  "argon2",
  "async-stream",
  "axum",
  "futures-util",
  "httpdate",
  "jsonschema",
- "aethergateway-ops-protocol",
  "openidconnect",
  "rand_core 0.6.4",
  "reqwest",
@@ -1411,35 +1436,10 @@ dependencies = [
  "tokio",
  "toml",
  "tower",
- "tower-http",
+ "tower-http 0.7.1",
  "tracing",
  "tracing-subscriber",
  "uuid",
-]
-
-[[package]]
-name = "aethergateway-ops-agent"
-version = "0.1.3"
-dependencies = [
- "anyhow",
- "axum",
- "aethergateway-ops-protocol",
- "reqwest",
- "serde_json",
- "sha2",
- "sqlx",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
-name = "aethergateway-ops-protocol"
-version = "0.1.3"
-dependencies = [
- "serde",
- "serde_json",
 ]
 
 [[package]]
@@ -2044,7 +2044,7 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "tower",
- "tower-http",
+ "tower-http 0.6.11",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -2923,8 +2923,24 @@ dependencies = [
  "tower",
  "tower-layer",
  "tower-service",
- "tracing",
  "url",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08a05a66a4fdd61cbbe0a1d755ffe0ca6aba159dd4820936a0ff8a8278245b9c"
+dependencies = [
+ "bitflags",
+ "bytes",
+ "http",
+ "http-body",
+ "percent-encoding",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+ "tracing",
  "uuid",
 ]
 
